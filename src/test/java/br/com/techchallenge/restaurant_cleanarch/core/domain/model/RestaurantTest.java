@@ -1,12 +1,17 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
+import br.com.techchallenge.restaurant_cleanarch.core.domain.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import org.junit.jupiter.api.*;
+
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-public class RestaurantTest {
+class RestaurantTest {
 
     @Test
     @DisplayName("Deve criar Restaurant válido sem lançar exceção")
@@ -16,9 +21,9 @@ public class RestaurantTest {
         User owner = User.builder().userType(ownerType).build();
         Restaurant restaurant = Restaurant.builder()
                 .name("Restaurante Exemplo")
-                .address("Rua Teste, 123")
+                .address(new Address("Rua Teste", "30", "São Paulo", "SP", "12345-678"))
                 .cuisineType("Italiana")
-                .openingHours("10:00-22:00")
+                .openingHours(Set.of(new OpeningHours(1L, DayOfWeek.MONDAY, LocalTime.of(10, 0), LocalTime.of(22, 0))))
                 .owner(owner)
                 .build();
 
