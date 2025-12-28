@@ -12,6 +12,14 @@ public class Address {
     private String state;
     private String zipCode;
 
+    public Address(String street, String number, String city, String state, String zipCode) {
+        this.street = street;
+        this.number = number;
+        this.city = city;
+        this.state = state;
+        this.zipCode = zipCode;
+    }
+
     public void validateAddress() {
         if (street == null || street.trim().isEmpty()) {
             throw new BusinessException("Rua é obrigatória.");

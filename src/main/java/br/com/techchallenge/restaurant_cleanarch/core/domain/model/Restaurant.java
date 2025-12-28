@@ -1,18 +1,19 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
+import br.com.techchallenge.restaurant_cleanarch.core.domain.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import lombok.*;
 
-import java.util.UUID;
+import java.util.Set;
 
 @Getter
 @Builder
 public class Restaurant {
-    private UUID id;
+    private Long id;
     private String name;
-    private String address;
+    private Address address;
     private String cuisineType;
-    private String openingHours;
+    private Set<OpeningHours> openingHours;
     private User owner;
 
     public void validate() {
