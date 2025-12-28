@@ -3,14 +3,13 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase.impl;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserTypeGateway;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -25,10 +24,16 @@ class CreateUserTypeUseCaseImplTest {
 
     @InjectMocks
     private CreateUserTypeUseCaseImpl useCase;
+    private AutoCloseable closeable;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        closeable = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        closeable.close();
     }
 
     @Test
@@ -36,7 +41,7 @@ class CreateUserTypeUseCaseImplTest {
     void deveCriarUserTypeValido() {
         // Arrange
         UserType input = UserType.builder().name("Dono de Restaurante").build();
-        UserType saved = input.toBuilder().id(UUID.randomUUID()).build();
+        UserType saved = input.toBuilder().id(1L).build();
         when(gateway.save(any(UserType.class))).thenReturn(saved);
 
         // Act

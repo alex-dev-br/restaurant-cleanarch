@@ -22,7 +22,7 @@ class RestaurantTest {
         User owner = User.builder().userType(ownerType).build();
         Restaurant restaurant = Restaurant.builder()
                 .name("Restaurante Exemplo")
-                .address(new Address("Rua Teste", "30", "São Paulo", "SP", "12345-678"))
+                .address(new Address("Rua Teste", "30", "São Paulo", "SP", "12345-678", "N/A"))
                 .cuisineType("Italiana")
                 .openingHours(Set.of(new OpeningHours(1L, DayOfWeek.MONDAY, LocalTime.of(10, 0), LocalTime.of(22, 0))))
                 .owner(owner)

@@ -1,7 +1,8 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
@@ -14,16 +15,12 @@ class MenuItemTest {
     @DisplayName("Deve criar MenuItem válido sem lançar exceção")
     void deveCriarMenuItemValido() {
         // Arrange
-        UserType ownerType = UserType.builder().name("Dono de Restaurante").build();
-        User owner = User.builder().userType(ownerType).build();
-        Restaurant restaurant = Restaurant.builder().owner(owner).build();
         MenuItem item = MenuItem.builder()
                 .name("Pizza Margherita")
                 .description("Pizza clássica")
                 .price(new BigDecimal("30"))
                 .restaurantOnly(false)
                 .photoPath("/photos/pizza.jpg")
-                .restaurant(restaurant)
                 .build();
 
         // Act & Assert
@@ -54,15 +51,4 @@ class MenuItemTest {
                 .hasMessage("Preço do item do menu deve ser maior que zero.");
     }
 
-    @Test
-    @DisplayName("Deve lançar BusinessException sem restaurante associado")
-    void deveLancarExcecaoSemRestaurante() {
-        // Arrange
-        MenuItem invalid = MenuItem.builder().name("Item").price(new BigDecimal("10")).build();
-
-        // Act & Assert
-        assertThatThrownBy(invalid::validate)
-                .isInstanceOf(BusinessException.class)
-                .hasMessage("Item deve estar associado a um restaurante.");
-    }
 }

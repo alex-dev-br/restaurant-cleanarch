@@ -13,12 +13,13 @@ public class Address {
     private String zipCode;
     private String complement;
 
-    public Address(String street, String number, String city, String state, String zipCode) {
+    public Address(String street, String number, String city, String state, String zipCode, String complement) {
         this.street = street;
         this.number = number;
         this.city = city;
         this.state = state;
         this.zipCode = zipCode;
+        this.complement = complement;
     }
 
     public void validateAddress() {
