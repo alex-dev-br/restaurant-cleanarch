@@ -15,6 +15,7 @@ public class Restaurant {
     private Address address;
     private String cuisineType;
     private Set<OpeningHours> openingHours;
+    private Set<MenuItem> menu;
     private User owner;
 
     public void validate() {

@@ -6,8 +6,6 @@ import br.com.techchallenge.restaurant_cleanarch.core.usecase.CreateUserTypeUseC
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
 public class CreateUserTypeUseCaseImpl implements CreateUserTypeUseCase {
@@ -16,9 +14,6 @@ public class CreateUserTypeUseCaseImpl implements CreateUserTypeUseCase {
 
     @Override
     public UserType execute(UserType userType) {
-        if (userType.getId() == null) {
-            userType = userType.toBuilder().id(UUID.randomUUID()).build();
-        }
         userType.validate();
         return gateway.save(userType);
     }

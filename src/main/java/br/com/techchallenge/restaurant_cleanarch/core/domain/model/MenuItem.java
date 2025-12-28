@@ -15,7 +15,6 @@ public class MenuItem {
     private BigDecimal price;
     private boolean restaurantOnly;
     private String photoPath;
-    private Restaurant restaurant;
 
     public void validate() {
         if (name == null || name.trim().isEmpty()) {
@@ -23,9 +22,6 @@ public class MenuItem {
         }
         if (price.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException("Preço do item do menu deve ser maior que zero.");
-        }
-        if (restaurant == null) {
-            throw new BusinessException("Item deve estar associado a um restaurante.");
         }
         // Adicionar outras validações conforme necessário
     }
