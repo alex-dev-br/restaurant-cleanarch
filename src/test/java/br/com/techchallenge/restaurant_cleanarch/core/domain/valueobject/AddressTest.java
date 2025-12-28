@@ -1,12 +1,13 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.valueobject;
 
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import org.junit.jupiter.api.*;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-public class AddressTest {
+class AddressTest {
 
     @Test
     @DisplayName("Deve criar Address válido sem lançar exceção")

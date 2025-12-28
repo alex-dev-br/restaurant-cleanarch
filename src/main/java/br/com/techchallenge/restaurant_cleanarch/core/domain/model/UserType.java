@@ -1,14 +1,13 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
-import lombok.*;
-
-import java.util.UUID;
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
 @Builder(toBuilder = true)
 public class UserType {
-    private UUID id;
+    private Long id;
     private String name;   // "Dono de Restaurante", "Cliente"
 
     public void validate() {

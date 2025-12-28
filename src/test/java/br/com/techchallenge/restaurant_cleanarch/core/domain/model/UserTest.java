@@ -1,13 +1,13 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import org.junit.jupiter.api.*;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-public class UserTest {
+class UserTest {
 
     @Test
     @DisplayName("Deve criar User válido como dono de restaurante")

@@ -1,6 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import lombok.*;
 

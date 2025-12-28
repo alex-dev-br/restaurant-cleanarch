@@ -1,4 +1,4 @@
-package br.com.techchallenge.restaurant_cleanarch.core.domain.valueobject;
+package br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject;
 
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import lombok.*;
@@ -11,6 +11,7 @@ public class Address {
     private String city;
     private String state;
     private String zipCode;
+    private String complement;
 
     public Address(String street, String number, String city, String state, String zipCode) {
         this.street = street;
