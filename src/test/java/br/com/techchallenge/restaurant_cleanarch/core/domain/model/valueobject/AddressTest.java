@@ -1,5 +1,6 @@
-package br.com.techchallenge.restaurant_cleanarch.core.domain.valueobject;
+package br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject;
 
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import org.junit.jupiter.api.*;
@@ -13,26 +14,20 @@ class AddressTest {
     @DisplayName("Deve criar Address válido sem lançar exceção")
     void deveCriarAddressValido() {
         // Arrange
-        Address address = Address.builder()
-                .street("Rua Exemplo")
-                .number("123")
-                .city("São Paulo")
-                .state("SP")
-                .zipCode("01000-000")
-                .build();
+        var addressBuilder = new AddressBuilder();
 
         // Act & Assert
-        assertDoesNotThrow(address::validateAddress);
+        assertDoesNotThrow(addressBuilder::build);
     }
 
     @Test
     @DisplayName("Deve lançar BusinessException sem rua")
     void deveLancarExcecaoSemRua() {
         // Arrange
-        Address invalid = Address.builder().street("").build();
+        var addressBuilder = new AddressBuilder().withStreet("");
 
         // Act & Assert
-        assertThatThrownBy(invalid::validateAddress)
+        assertThatThrownBy(addressBuilder::build)
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Rua é obrigatória.");
     }

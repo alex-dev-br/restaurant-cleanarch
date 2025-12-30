@@ -14,7 +14,7 @@ public class CreateUserTypeUseCaseImpl implements CreateUserTypeUseCase {
 
     @Override
     public UserType execute(UserType userType) {
-        userType.validate();
+        //userType.validate();
         return gateway.save(userType);
     }
 }

@@ -4,7 +4,8 @@ import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessExceptio
 import lombok.*;
 
 @Getter
-@Builder
+@ToString
+@EqualsAndHashCode
 public class Address {
     private String street;
     private String number;
@@ -14,18 +15,14 @@ public class Address {
     private String complement;
 
     public Address(String street, String number, String city, String state, String zipCode, String complement) {
+        if (street == null || street.trim().isEmpty()) {
+            throw new BusinessException("Rua é obrigatória.");
+        }
         this.street = street;
         this.number = number;
         this.city = city;
         this.state = state;
         this.zipCode = zipCode;
         this.complement = complement;
-    }
-
-    public void validateAddress() {
-        if (street == null || street.trim().isEmpty()) {
-            throw new BusinessException("Rua é obrigatória.");
-        }
-        // Adicionar outras validações para código postal, estado, etc.
     }
 }
