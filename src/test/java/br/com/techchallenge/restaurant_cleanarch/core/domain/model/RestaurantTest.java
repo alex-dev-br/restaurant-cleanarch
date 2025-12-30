@@ -1,5 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.RestaurantBuilder;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
@@ -18,30 +20,22 @@ class RestaurantTest {
     @DisplayName("Deve criar Restaurant válido sem lançar exceção")
     void deveCriarRestaurantValido() {
         // Arrange
-        UserType ownerType = UserType.builder().name("Dono de Restaurante").build();
-        User owner = User.builder().userType(ownerType).build();
-        Restaurant restaurant = Restaurant.builder()
-                .name("Restaurante Exemplo")
-                .address(new Address("Rua Teste", "30", "São Paulo", "SP", "12345-678", "N/A"))
-                .cuisineType("Italiana")
-                .openingHours(Set.of(new OpeningHours(1L, DayOfWeek.MONDAY, LocalTime.of(10, 0), LocalTime.of(22, 0))))
-                .owner(owner)
-                .build();
+//        UserType ownerType = new UserType(1L,"Dono de Restaurante");
+        var restaurantBuilder = new RestaurantBuilder();
 
         // Act & Assert
-        assertDoesNotThrow(restaurant::validate);
+        assertDoesNotThrow(restaurantBuilder::build);
     }
 
     @Test
     @DisplayName("Deve lançar BusinessException sem dono válido")
     void deveLancarExcecaoSemDonoValido() {
         // Arrange
-        UserType clientType = UserType.builder().name("Cliente").build();
-        User invalidOwner = User.builder().userType(clientType).build();
-        Restaurant invalid = Restaurant.builder().owner(invalidOwner).build();
+        var invalidOwner = new UserBuilder().withUserType(new UserType(1L, "Cliente")).build();
+        var invalidRestaurantBuilder = new RestaurantBuilder().withOwner(invalidOwner);
 
         // Act & Assert
-        assertThatThrownBy(invalid::validate)
+        assertThatThrownBy(invalidRestaurantBuilder::build)
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("O restaurante deve ter um dono válido.");
     }
@@ -50,10 +44,10 @@ class RestaurantTest {
     @DisplayName("Deve lançar BusinessException sem dono")
     void deveLancarExcecaoSemDono() {
         // Arrange
-        Restaurant invalid = Restaurant.builder().build();  // Sem owner
+        var invalidBuilder = new RestaurantBuilder().withOwner(null);  // Sem owner
 
         // Act & Assert
-        assertThatThrownBy(invalid::validate)
+        assertThatThrownBy(invalidBuilder::build)
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("O restaurante deve ter um dono válido.");
     }

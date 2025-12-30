@@ -12,37 +12,37 @@ public class UserTypeTest {
     @DisplayName("Deve criar UserType válido sem lançar exceção")
     void deveCriarUserTypeValido() {
         // Arrange
-        UserType userType = UserType.builder()
-                .name("Dono de Restaurante")
-                .build();
+//        UserType userType = UserType.builder()
+//                .name("Dono de Restaurante")
+//                .build();
 
         // Act & Assert
-        assertDoesNotThrow(userType::validate);
+        assertDoesNotThrow(() -> new UserType(1L, "Dono de Restaurante"));
     }
 
     @Test
     @DisplayName("Deve lançar BusinessException quando nome do UserType for vazio")
     void deveLancarExcecaoQuandoNomeVazio() {
         // Arrange
-        UserType invalid = UserType.builder()
-                .name("")
-                .build();
+//        UserType invalid = UserType.builder()
+//                .name("")
+//                .build();
 
         // Act & Assert
-        assertThatThrownBy(invalid::validate)
+        assertThatThrownBy(() -> new UserType(1L, " "))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("Nome do tipo de usuário é obrigatório.");
+                .hasMessage("Name cannot be blank.");
     }
 
     @Test
     @DisplayName("Deve lançar BusinessException quando nome do UserType for null")
     void deveLancarExcecaoQuandoNomeNull() {
         // Arrange
-        UserType invalid = UserType.builder().build();   // name null
+//        UserType invalid = UserType.builder().build();   // name null
 
         // Act & Assert
-        assertThatThrownBy(invalid::validate)
-                .isInstanceOf(BusinessException.class)
-                .hasMessage("Nome do tipo de usuário é obrigatório.");
+        assertThatThrownBy(() -> new UserType(null, null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("Name cannot be null.");
     }
 }

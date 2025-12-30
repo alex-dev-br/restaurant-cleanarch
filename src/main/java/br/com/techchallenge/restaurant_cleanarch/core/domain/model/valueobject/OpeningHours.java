@@ -1,12 +1,16 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject;
 
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
 @Getter
+@ToString
+@EqualsAndHashCode
 public class OpeningHours {
     private final Long id;
     private final DayOfWeek dayOfDay;

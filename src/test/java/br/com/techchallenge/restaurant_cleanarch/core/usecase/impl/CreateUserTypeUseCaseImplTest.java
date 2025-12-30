@@ -40,8 +40,8 @@ class CreateUserTypeUseCaseImplTest {
     @DisplayName("Deve criar UserType válido e salvar via gateway")
     void deveCriarUserTypeValido() {
         // Arrange
-        UserType input = UserType.builder().name("Dono de Restaurante").build();
-        UserType saved = input.toBuilder().id(1L).build();
+        UserType input = new UserType(null, "Dono de Restaurante");
+        UserType saved = new UserType(1L, "Dono de Restaurante");;
         when(gateway.save(any(UserType.class))).thenReturn(saved);
 
         // Act
@@ -57,11 +57,11 @@ class CreateUserTypeUseCaseImplTest {
     @DisplayName("Deve lançar exceção com nome inválido")
     void deveLancarExcecaoNomeInvalido() {
         // Arrange
-        UserType invalid = UserType.builder().name("").build();
+//        UserType invalid = UserType.builder().name("").build();
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.execute(invalid))
+        assertThatThrownBy(() -> new UserType(null, " "))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("Nome do tipo de usuário é obrigatório.");
+                .hasMessage("Name cannot be blank.");
     }
 }
