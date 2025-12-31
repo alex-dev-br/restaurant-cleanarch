@@ -25,6 +25,9 @@ public class UserTypeGatewayAdapter implements UserTypeGateway {
         return mapper.toDomain(entity);
     }
 
-    // Implementar outros métodos do CRUD...
+    @Override
+    public boolean existsUserTypeWithName(String name) {
+        return false;
+    }
 
 }

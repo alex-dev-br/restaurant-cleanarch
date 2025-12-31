@@ -4,6 +4,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 
+import java.util.Set;
 import java.util.UUID;
 
 public class UserBuilder {
@@ -18,7 +19,7 @@ public class UserBuilder {
         this.name = "João Silva";
         this.email = "joao@example.com";
         this.address = new AddressBuilder().build();
-        this.userType = new UserType(1L, "Dono de Restaurante");
+        this.userType = new UserType(1L, "Dono de Restaurante", Set.of());
     }
 
     public UserBuilder withoutId() {
