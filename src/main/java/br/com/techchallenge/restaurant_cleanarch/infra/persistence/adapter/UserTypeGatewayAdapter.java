@@ -5,6 +5,8 @@ import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserTypeGateway;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.UserTypeMapper;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserTypeEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserTypeRepository;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Component;
 
 @Component   // Cria um bean gerenciado pelo Spring
@@ -27,7 +29,13 @@ public class UserTypeGatewayAdapter implements UserTypeGateway {
 
     @Override
     public boolean existsUserTypeWithName(String name) {
-        return false;
-    }
+        var probe = new UserTypeEntity();
+        probe.setName(name);
 
+        var matcher = ExampleMatcher.matching()
+                .withIgnorePaths("id", "roles")
+                .withMatcher("name", ExampleMatcher.GenericPropertyMatchers.exact());
+
+        return repository.exists(Example.of(probe, matcher));
+    }
 }

@@ -17,7 +17,8 @@ class UserTest {
     @DisplayName("Deve criar User válido como dono de restaurante")
     void deveCriarUserValidoComoDonoDeRestaurante() {
         // Arrange
-        UserType ownerType = new UserType(null, "Dono de Restaurante", Set.of());
+        Set<Role> roles = Set.of(new Role(null, "ADMIN"));
+        UserType ownerType = new UserType(null, "Dono de Restaurante", roles);
         var userBuilder = new UserBuilder().withUserType(ownerType);
 
         // Act
@@ -56,7 +57,8 @@ class UserTest {
     @DisplayName("Deve verificar que User não é dono de restaurante")
     void deveVerificarNaoEDono() {
         // Arrange
-        UserType clienteType = new UserType(1L, "Cliente", Set.of());
+        Set<Role> roles = Set.of(new Role(null, "ADMIN"));
+        UserType clienteType = new UserType(1L, "Cliente", roles);
         User user = new UserBuilder().withUserType(clienteType).build();
 
         // Act
