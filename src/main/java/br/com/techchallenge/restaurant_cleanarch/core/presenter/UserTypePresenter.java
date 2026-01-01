@@ -7,7 +7,10 @@ import br.com.techchallenge.restaurant_cleanarch.core.outbound.UserTypeOutput;
 import java.util.stream.Collectors;
 
 public class UserTypePresenter {
-    public UserTypeOutput toOutput(UserType userType) {
+
+    private UserTypePresenter() {}
+
+    public static UserTypeOutput toOutput(UserType userType) {
         return new UserTypeOutput (
             userType.getId(),
             userType.getName(),
