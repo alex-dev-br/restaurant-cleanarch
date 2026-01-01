@@ -2,12 +2,14 @@ package br.com.techchallenge.restaurant_cleanarch.infra.persistence.adapter;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.CreateUserTypeUseCase;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.RoleMapper;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.UserTypeMapper;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.RoleEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserTypeEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.RoleRepository;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserTypeRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,14 +39,19 @@ class UserTypeGatewayAdapterTest {
     @Autowired
     private RoleRepository roleRepository;
 
+    private RoleEntity roleEntity;
+
+    @BeforeEach
+    void setUp() {
+        roleEntity = new RoleEntity();
+        roleEntity.setName(CreateUserTypeUseCase.CREATE_USER_TYPE_ROLE);
+        roleEntity = roleRepository.save(roleEntity);
+    }
+
     @Test
     @DisplayName("Deve salvar UserType com sucesso no banco de dados")
     void shouldSaveUserTypeSuccessfully() {
         // Given
-        RoleEntity roleEntity = new RoleEntity();
-        roleEntity.setName("ADMIN");
-        roleEntity = roleRepository.save(roleEntity);
-        
         Role role = new Role(roleEntity.getId(), roleEntity.getName());
         UserType userType = new UserType(null, "Administrator", Set.of(role));
 
@@ -55,7 +63,7 @@ class UserTypeGatewayAdapterTest {
         assertThat(savedUserType.getId()).isNotNull();
         assertThat(savedUserType.getName()).isEqualTo("Administrator");
         assertThat(savedUserType.getRoles()).hasSize(1);
-        assertThat(savedUserType.getRoles().iterator().next().name()).isEqualTo("ADMIN");
+        assertThat(savedUserType.getRoles().iterator().next().name()).isEqualTo(CreateUserTypeUseCase.CREATE_USER_TYPE_ROLE);
         
         // Verify in repository
         UserTypeEntity savedEntity = userTypeRepository.findById(savedUserType.getId()).orElseThrow();
@@ -85,5 +93,60 @@ class UserTypeGatewayAdapterTest {
 
         // Then
         assertThat(exists).isFalse();
+    }
+
+    @Test
+    @DisplayName("Deve encontrar UserType por nome quando existe")
+    void shouldFindUserTypeByNameWhenExists() {
+        // Given
+        UserTypeEntity entity = new UserTypeEntity();
+        entity.setName("Manager");
+        entity.setRoles(Set.of(roleEntity));
+        userTypeRepository.save(entity);
+
+        // When
+        Optional<UserType> foundUserType = adapter.findByName("Manager");
+
+        // Then
+        assertThat(foundUserType).isPresent();
+        assertThat(foundUserType.get().getName()).isEqualTo("Manager");
+    }
+
+    @Test
+    @DisplayName("Deve retornar vazio ao buscar UserType por nome inexistente")
+    void shouldReturnEmptyWhenFindingUserTypeByNonExistentName() {
+        // When
+        Optional<UserType> foundUserType = adapter.findByName("NonExistent");
+
+        // Then
+        assertThat(foundUserType).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deve encontrar UserType por ID quando existe")
+    void shouldFindUserTypeByIdWhenExists() {
+        // Given
+        UserTypeEntity entity = new UserTypeEntity();
+        entity.setName("Supervisor");
+        entity.setRoles(Set.of(roleEntity));
+        entity = userTypeRepository.save(entity);
+
+        // When
+        Optional<UserType> foundUserType = adapter.findById(entity.getId());
+
+        // Then
+        assertThat(foundUserType).isPresent();
+        assertThat(foundUserType.get().getId()).isEqualTo(entity.getId());
+        assertThat(foundUserType.get().getName()).isEqualTo("Supervisor");
+    }
+
+    @Test
+    @DisplayName("Deve retornar vazio ao buscar UserType por ID inexistente")
+    void shouldReturnEmptyWhenFindingUserTypeByNonExistentId() {
+        // When
+        Optional<UserType> foundUserType = adapter.findById(999L);
+
+        // Then
+        assertThat(foundUserType).isEmpty();
     }
 }
