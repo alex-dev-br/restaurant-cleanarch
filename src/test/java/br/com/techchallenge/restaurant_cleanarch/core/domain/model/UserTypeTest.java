@@ -123,4 +123,32 @@ class UserTypeTest {
 
         assertThat(userType1).hasSameHashCodeAs(userType2);
     }
+
+    @Test
+    @DisplayName("Deve retornar false em equals quando objeto não é UserType")
+    void shouldReturnFalseInEqualsWhenObjectIsNotUserType() {
+        // Arrange
+        Role role = new Role(1L, "ADMIN_ROLE");
+        Set<Role> roles = Set.of(role);
+        UserType userType = new UserType(1L, "ADMIN", roles);
+
+        // Act & Assert
+        assertThat(userType.equals(null)).isFalse();
+        assertThat(userType.equals("Not a UserType")).isFalse(); // objeto de outra classe
+    }
+
+    @Test
+    @DisplayName("Deve considerar diferentes quando um tem id nulo e outro não")
+    void shouldBeDifferentWhenOneHasIdAndOtherDoesNot() {
+        // Arrange
+        Role role = new Role(1L, "ADMIN_ROLE");
+        Set<Role> roles = Set.of(role);
+
+        UserType withId = new UserType(1L, "ADMIN", roles);
+        UserType withoutId = new UserType(null, "ADMIN", roles);
+
+        // Act & Assert
+        assertThat(withId).isNotEqualTo(withoutId);
+        assertThat(withoutId).isNotEqualTo(withId);
+    }
 }

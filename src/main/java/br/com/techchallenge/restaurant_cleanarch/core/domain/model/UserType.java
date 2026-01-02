@@ -30,12 +30,15 @@ public class UserType {
 
     @Override
     public final boolean equals(Object o) {
+        if (this == o) return true;
         if (!(o instanceof UserType userType)) return false;
 
-        if (this.id != null && userType.id != null) {
+        // Se pelo menos um dos ids não for null, compara pelo id
+        if (this.id != null || userType.id != null) {
             return Objects.equals(this.id, userType.id);
         }
 
+        // Ambos ids null → compara pelo name
         return Objects.equals(this.name, userType.name);
     }
 
