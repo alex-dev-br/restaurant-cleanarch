@@ -6,6 +6,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateUserTypeInpu
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UserTypeInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.UserTypeOutput;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.CreateUserTypeUseCase;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.DeleteUserTypeUseCase;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.UpdateUserTypeUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,6 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,6 +32,9 @@ class UserTypeControllerTest {
 
     @Mock
     private UpdateUserTypeUseCase updateUserTypeUseCase;
+
+    @Mock
+    private DeleteUserTypeUseCase deleteUserTypeUseCase;
 
     @InjectMocks
     private UserTypeController userTypeController;
@@ -115,9 +118,34 @@ class UserTypeControllerTest {
     }
 
     @Test
+    @DisplayName("Deve deletar UserType com sucesso")
+    void shouldDeleteUserTypeSuccessfully() {
+        Long id = 1L;
+
+        userTypeController.deleteUserType(id);
+
+        then(deleteUserTypeUseCase).should().execute(id);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando DeleteUserTypeUseCase lança exceção")
+    void shouldThrowExceptionWhenDeleteUseCaseThrowsException() {
+        Long id = 1L;
+        RuntimeException expectedException = new RuntimeException("Error deleting user type");
+
+        willThrow(expectedException).given(deleteUserTypeUseCase).execute(id);
+
+        assertThatThrownBy(() -> userTypeController.deleteUserType(id))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Error deleting user type");
+
+        then(deleteUserTypeUseCase).should().execute(id);
+    }
+
+    @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com CreateUserTypeUseCase nulo")
     void shouldThrowExceptionWhenCreateUseCaseIsNull() {
-        assertThatThrownBy(() -> new UserTypeController(null, updateUserTypeUseCase))
+        assertThatThrownBy(() -> new UserTypeController(null, updateUserTypeUseCase, deleteUserTypeUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("CreateUserTypeUseCase cannot be null.");
     }
@@ -125,8 +153,16 @@ class UserTypeControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com UpdateUserTypeUseCase nulo")
     void shouldThrowExceptionWhenUpdateUseCaseIsNull() {
-        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, null))
+        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, null, deleteUserTypeUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("UpdateUserTypeUseCase cannot be null.");
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao instanciar controller com DeleteUserTypeUseCase nulo")
+    void shouldThrowExceptionWhenDeleteUseCaseIsNull() {
+        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, updateUserTypeUseCase, null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("DeleteUserTypeUseCase cannot be null.");
     }
 }

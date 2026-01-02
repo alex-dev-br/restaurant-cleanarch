@@ -6,8 +6,10 @@ import br.com.techchallenge.restaurant_cleanarch.core.usecase.CreateUserTypeUseC
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.RoleMapper;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.UserTypeMapper;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.RoleEntity;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserTypeEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.RoleRepository;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserRepository;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserTypeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,6 +40,9 @@ class UserTypeGatewayAdapterTest {
     
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private RoleEntity roleEntity;
 
@@ -148,5 +153,59 @@ class UserTypeGatewayAdapterTest {
 
         // Then
         assertThat(foundUserType).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deve deletar UserType com sucesso")
+    void shouldDeleteUserTypeSuccessfully() {
+        // Given
+        UserTypeEntity entity = new UserTypeEntity();
+        entity.setName("ToDelete");
+        entity.setRoles(Set.of(roleEntity));
+        entity = userTypeRepository.save(entity);
+        Long id = entity.getId();
+
+        // When
+        adapter.delete(id);
+
+        // Then
+        Optional<UserTypeEntity> deletedEntity = userTypeRepository.findById(id);
+        assertThat(deletedEntity).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deve retornar true se UserType está em uso")
+    void shouldReturnTrueIfUserTypeIsInUse() {
+        // Given
+        UserTypeEntity userTypeEntity = new UserTypeEntity();
+        userTypeEntity.setName("InUse");
+        userTypeEntity.setRoles(Set.of(roleEntity));
+        userTypeEntity = userTypeRepository.save(userTypeEntity);
+
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUserType(userTypeEntity);
+        userRepository.save(userEntity);
+
+        // When
+        boolean inUse = adapter.isInUse(userTypeEntity.getId());
+
+        // Then
+        assertThat(inUse).isTrue();
+    }
+
+    @Test
+    @DisplayName("Deve retornar false se UserType não está em uso")
+    void shouldReturnFalseIfUserTypeIsNotInUse() {
+        // Given
+        UserTypeEntity userTypeEntity = new UserTypeEntity();
+        userTypeEntity.setName("NotInUse");
+        userTypeEntity.setRoles(Set.of(roleEntity));
+        userTypeEntity = userTypeRepository.save(userTypeEntity);
+
+        // When
+        boolean inUse = adapter.isInUse(userTypeEntity.getId());
+
+        // Then
+        assertThat(inUse).isFalse();
     }
 }

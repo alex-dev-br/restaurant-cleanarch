@@ -42,6 +42,16 @@ public class UserTypeGatewayAdapter implements UserTypeGateway {
     }
 
     @Override
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
+
+    @Override
+    public boolean isInUse(Long id) {
+        return repository.countUsersByTypeId(id) > 0;
+    }
+
+    @Override
     public Optional<UserType> findByName(String name) {
         return repository.findByName(name).map(mapper::toDomain);
     }

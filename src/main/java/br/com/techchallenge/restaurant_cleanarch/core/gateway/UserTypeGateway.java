@@ -9,4 +9,6 @@ public interface UserTypeGateway {
     boolean existsUserTypeWithName(String name);
     Optional<UserType> findByName(String name);
     Optional<UserType> findById(Long id);
+    void delete(Long id);
+    boolean isInUse(Long id);
 }
