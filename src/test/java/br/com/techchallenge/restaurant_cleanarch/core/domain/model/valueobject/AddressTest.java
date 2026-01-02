@@ -21,6 +21,18 @@ class AddressTest {
     }
 
     @Test
+    @DisplayName("Deve lançar BusinessException quando rua for nula")
+    void deveLancarExcecaoQuandoRuaForNula() {
+        // Arrange
+        var addressBuilder = new AddressBuilder().withStreet(null);
+
+        // Act & Assert
+        assertThatThrownBy(addressBuilder::build)
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Rua é obrigatória.");
+    }
+
+    @Test
     @DisplayName("Deve lançar BusinessException sem rua")
     void deveLancarExcecaoSemRua() {
         // Arrange
