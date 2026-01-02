@@ -6,6 +6,8 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.A
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import org.junit.jupiter.api.*;
 
+import java.util.Set;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
@@ -15,7 +17,8 @@ class UserTest {
     @DisplayName("Deve criar User válido como dono de restaurante")
     void deveCriarUserValidoComoDonoDeRestaurante() {
         // Arrange
-        UserType ownerType = new UserType(null, "Dono de Restaurante");
+        Set<Role> roles = Set.of(new Role(null, "ADMIN"));
+        UserType ownerType = new UserType(null, "Dono de Restaurante", roles);
         var userBuilder = new UserBuilder().withUserType(ownerType);
 
         // Act
@@ -54,7 +57,8 @@ class UserTest {
     @DisplayName("Deve verificar que User não é dono de restaurante")
     void deveVerificarNaoEDono() {
         // Arrange
-        UserType clienteType = new UserType(1L, "Cliente");
+        Set<Role> roles = Set.of(new Role(null, "ADMIN"));
+        UserType clienteType = new UserType(1L, "Cliente", roles);
         User user = new UserBuilder().withUserType(clienteType).build();
 
         // Act

@@ -31,7 +31,8 @@ class RestaurantTest {
     @DisplayName("Deve lançar BusinessException sem dono válido")
     void deveLancarExcecaoSemDonoValido() {
         // Arrange
-        var invalidOwner = new UserBuilder().withUserType(new UserType(1L, "Cliente")).build();
+        Set<Role> roles = Set.of(new Role(null, "ADMIN"));
+        var invalidOwner = new UserBuilder().withUserType(new UserType(1L, "Cliente", roles)).build();
         var invalidRestaurantBuilder = new RestaurantBuilder().withOwner(invalidOwner);
 
         // Act & Assert

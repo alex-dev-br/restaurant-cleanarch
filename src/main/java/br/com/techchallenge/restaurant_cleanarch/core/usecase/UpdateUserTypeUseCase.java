@@ -2,27 +2,24 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.InvalidRoleException;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.UserTypeNameIsAlreadyInUseException;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.UserTypeWithoutRolesException;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.*;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RoleGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserTypeGateway;
-import br.com.techchallenge.restaurant_cleanarch.core.inbound.UserTypeInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateUserTypeInput;
 
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class CreateUserTypeUseCase {
+public class UpdateUserTypeUseCase {
 
-    public static final String CREATE_USER_TYPE_ROLE = "CREATE_USER_TYPE";
+    public static final String UPDATE_USER_TYPE_ROLE = "UPDATE_USER_TYPE";
 
     private final RoleGateway roleGateway;
     private final UserTypeGateway userTypeGateway;
     private final LoggedUserGateway loggedUserGateway;
 
-    public CreateUserTypeUseCase(RoleGateway roleGateway, UserTypeGateway userTypeGateway, LoggedUserGateway loggedUserGateway) {
+    public UpdateUserTypeUseCase(RoleGateway roleGateway, UserTypeGateway userTypeGateway, LoggedUserGateway loggedUserGateway) {
         Objects.requireNonNull(roleGateway, "RoleGateway cannot be null");
         Objects.requireNonNull(userTypeGateway, "UserTypeGateway cannot be null");
         Objects.requireNonNull(loggedUserGateway, "LoggerUserGateway cannot be null");
@@ -32,11 +29,14 @@ public class CreateUserTypeUseCase {
         this.loggedUserGateway = loggedUserGateway;
     }
 
-    public UserType execute(UserTypeInput input) {
-        Objects.requireNonNull(input, "UserTypeInput cannot be null.");
+    public void execute(UpdateUserTypeInput input) {
+        Objects.requireNonNull(input, "UpdateUserTypeInput cannot be null.");
 
-        if (!loggedUserGateway.hasRole(CREATE_USER_TYPE_ROLE))
-            throw new OperationNotAllowedException("The current user does not have permission to create user types.");
+        if (!loggedUserGateway.hasRole(UPDATE_USER_TYPE_ROLE)) {
+            throw new OperationNotAllowedException("The current user does not have permission to update user types.");
+        }
+
+        userTypeGateway.findById(input.id()).orElseThrow(() -> new BusinessException("User type not found."));
 
         var roles = roleGateway.getRolesByName(input.roles());
         if (roles.isEmpty()) throw new UserTypeWithoutRolesException();
@@ -46,11 +46,14 @@ public class CreateUserTypeUseCase {
             throw new InvalidRoleException(invalidRoles);
         }
 
-        var exists = userTypeGateway.existsUserTypeWithName(input.name());
-        if (exists) throw new UserTypeNameIsAlreadyInUseException();
+        var optionalUserType = userTypeGateway.findByName(input.name());
+        optionalUserType.ifPresent(userType -> {
+            if (!userType.getId().equals(input.id())) {
+                throw new UserTypeNameIsAlreadyInUseException();
+            }
+        });
 
-        UserType userType = new UserType(null, input.name(), roles);
-
-        return userTypeGateway.save(userType);
+        var userType = new UserType(input.id(), input.name(), roles);
+        userTypeGateway.save(userType);
     }
 }
