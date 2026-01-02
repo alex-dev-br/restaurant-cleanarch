@@ -41,13 +41,20 @@ public class User {
 
     @Override
     public final boolean equals(Object o) {
+        if (this == o) return true;  // ← reflexividade e otimização
         if (!(o instanceof User user)) return false;
 
-        return Objects.equals(id, user.id);
+        // Se id não é null, compara pelo id
+        if (id != null) {
+            return Objects.equals(id, user.id);
+        }
+
+        // Se id é null nos dois, considera diferentes (referência)
+        return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return id != null ? Objects.hashCode(id) : super.hashCode();
     }
 }
