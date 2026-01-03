@@ -2,11 +2,13 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.UserTypeInUseException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserTypeGateway;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype.DeleteUserTypeUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,13 +44,13 @@ class DeleteUserTypeUseCaseTest {
         Long id = 1L;
         UserType userType = new UserType(id, "Administrator", Set.of(new Role(1L, "ADMIN")));
 
-        given(loggedUserGateway.hasRole(DeleteUserTypeUseCase.DELETE_USER_TYPE_ROLE)).willReturn(true);
+        given(loggedUserGateway.hasRole(UserTypeRoles.DELETE_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.of(userType));
         given(userTypeGateway.isInUse(id)).willReturn(false);
 
         deleteUserTypeUseCase.execute(id);
 
-        then(loggedUserGateway).should().hasRole(DeleteUserTypeUseCase.DELETE_USER_TYPE_ROLE);
+        then(loggedUserGateway).should().hasRole(UserTypeRoles.DELETE_USER_TYPE);
         then(userTypeGateway).should().findById(id);
         then(userTypeGateway).should().isInUse(id);
         then(userTypeGateway).should().delete(id);
@@ -58,13 +60,13 @@ class DeleteUserTypeUseCaseTest {
     @DisplayName("Deve lançar exceção quando usuário não tem permissão")
     void shouldThrowExceptionWhenUserHasNoPermission() {
         Long id = 1L;
-        given(loggedUserGateway.hasRole(DeleteUserTypeUseCase.DELETE_USER_TYPE_ROLE)).willReturn(false);
+        given(loggedUserGateway.hasRole(UserTypeRoles.DELETE_USER_TYPE)).willReturn(false);
 
         assertThatThrownBy(() -> deleteUserTypeUseCase.execute(id))
                 .isInstanceOf(OperationNotAllowedException.class)
                 .hasMessage("The current user does not have permission to delete user types.");
 
-        then(loggedUserGateway).should().hasRole(DeleteUserTypeUseCase.DELETE_USER_TYPE_ROLE);
+        then(loggedUserGateway).should().hasRole(UserTypeRoles.DELETE_USER_TYPE);
         then(userTypeGateway).should(never()).findById(any());
         then(userTypeGateway).should(never()).isInUse(any());
         then(userTypeGateway).should(never()).delete(any());
@@ -74,14 +76,14 @@ class DeleteUserTypeUseCaseTest {
     @DisplayName("Deve lançar exceção quando UserType não é encontrado")
     void shouldThrowExceptionWhenUserTypeNotFound() {
         Long id = 1L;
-        given(loggedUserGateway.hasRole(DeleteUserTypeUseCase.DELETE_USER_TYPE_ROLE)).willReturn(true);
+        given(loggedUserGateway.hasRole(UserTypeRoles.DELETE_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> deleteUserTypeUseCase.execute(id))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("User type not found.");
 
-        then(loggedUserGateway).should().hasRole(DeleteUserTypeUseCase.DELETE_USER_TYPE_ROLE);
+        then(loggedUserGateway).should().hasRole(UserTypeRoles.DELETE_USER_TYPE);
         then(userTypeGateway).should().findById(id);
         then(userTypeGateway).should(never()).isInUse(any());
         then(userTypeGateway).should(never()).delete(any());
@@ -93,14 +95,14 @@ class DeleteUserTypeUseCaseTest {
         Long id = 1L;
         UserType userType = new UserType(id, "Administrator", Set.of(new Role(1L, "ADMIN")));
 
-        given(loggedUserGateway.hasRole(DeleteUserTypeUseCase.DELETE_USER_TYPE_ROLE)).willReturn(true);
+        given(loggedUserGateway.hasRole(UserTypeRoles.DELETE_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.of(userType));
         given(userTypeGateway.isInUse(id)).willReturn(true);
 
         assertThatThrownBy(() -> deleteUserTypeUseCase.execute(id))
                 .isInstanceOf(UserTypeInUseException.class);
 
-        then(loggedUserGateway).should().hasRole(DeleteUserTypeUseCase.DELETE_USER_TYPE_ROLE);
+        then(loggedUserGateway).should().hasRole(UserTypeRoles.DELETE_USER_TYPE);
         then(userTypeGateway).should().findById(id);
         then(userTypeGateway).should().isInUse(id);
         then(userTypeGateway).should(never()).delete(any());

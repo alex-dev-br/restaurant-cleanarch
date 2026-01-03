@@ -2,11 +2,13 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.*;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RoleGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserTypeGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateUserTypeInput;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype.UpdateUserTypeUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,14 +59,14 @@ class UpdateUserTypeUseCaseTest {
         Set<Role> roles = Set.of(role);
         UserType existingUserType = new UserType(id, "Old Name", roles);
 
-        given(loggedUserGateway.hasRole(UpdateUserTypeUseCase.UPDATE_USER_TYPE_ROLE)).willReturn(true);
+        given(loggedUserGateway.hasRole(UserTypeRoles.UPDATE_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.of(existingUserType));
         given(roleGateway.getRolesByName(input.roles())).willReturn(roles);
         given(userTypeGateway.findByName(input.name())).willReturn(Optional.empty());
 
         updateUserTypeUseCase.execute(input);
 
-        then(loggedUserGateway).should().hasRole(UpdateUserTypeUseCase.UPDATE_USER_TYPE_ROLE);
+        then(loggedUserGateway).should().hasRole(UserTypeRoles.UPDATE_USER_TYPE);
         then(userTypeGateway).should().findById(id);
         then(roleGateway).should().getRolesByName(input.roles());
         then(userTypeGateway).should().findByName(input.name());
@@ -92,7 +94,7 @@ class UpdateUserTypeUseCaseTest {
         UserType existingUserType = new UserType(id, userTypeName, Set.of(oldRole));
         Set<Role> newRoles = Set.of(newRole);
 
-        given(loggedUserGateway.hasRole(UpdateUserTypeUseCase.UPDATE_USER_TYPE_ROLE)).willReturn(true);
+        given(loggedUserGateway.hasRole(UserTypeRoles.UPDATE_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.of(existingUserType));
         given(roleGateway.getRolesByName(input.roles())).willReturn(newRoles);
         given(userTypeGateway.findByName(input.name())).willReturn(Optional.of(existingUserType)); // Mesmo nome, mesmo ID
@@ -111,7 +113,7 @@ class UpdateUserTypeUseCaseTest {
     @DisplayName("Deve lançar exceção quando usuário não tem permissão")
     void shouldThrowExceptionWhenUserHasNoPermission() {
         UpdateUserTypeInput input = new UpdateUserTypeInput(1L, "Admin", Set.of("ADMIN"));
-        given(loggedUserGateway.hasRole(UpdateUserTypeUseCase.UPDATE_USER_TYPE_ROLE)).willReturn(false);
+        given(loggedUserGateway.hasRole(UserTypeRoles.UPDATE_USER_TYPE)).willReturn(false);
 
         assertThatThrownBy(() -> updateUserTypeUseCase.execute(input))
                 .isInstanceOf(OperationNotAllowedException.class)
@@ -129,7 +131,7 @@ class UpdateUserTypeUseCaseTest {
         Long id = 1L;
         UpdateUserTypeInput input = new UpdateUserTypeInput(id, "Admin", Set.of("ADMIN"));
         
-        given(loggedUserGateway.hasRole(UpdateUserTypeUseCase.UPDATE_USER_TYPE_ROLE)).willReturn(true);
+        given(loggedUserGateway.hasRole(UserTypeRoles.UPDATE_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> updateUserTypeUseCase.execute(input))
@@ -148,7 +150,7 @@ class UpdateUserTypeUseCaseTest {
         UpdateUserTypeInput input = new UpdateUserTypeInput(id, "Admin", Set.of("INVALID_ROLE"));
         UserType existingUserType = new UserType(id, "Old Name", Set.of(new Role(1L, "ADMIN")));
 
-        given(loggedUserGateway.hasRole(UpdateUserTypeUseCase.UPDATE_USER_TYPE_ROLE)).willReturn(true);
+        given(loggedUserGateway.hasRole(UserTypeRoles.UPDATE_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.of(existingUserType));
         given(roleGateway.getRolesByName(input.roles())).willReturn(Collections.emptySet());
 
@@ -169,7 +171,7 @@ class UpdateUserTypeUseCaseTest {
         Role validRole = new Role(1L, validRoleName);
         UserType existingUserType = new UserType(id, "Old Name", Set.of(validRole));
         
-        given(loggedUserGateway.hasRole(UpdateUserTypeUseCase.UPDATE_USER_TYPE_ROLE)).willReturn(true);
+        given(loggedUserGateway.hasRole(UserTypeRoles.UPDATE_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.of(existingUserType));
         given(roleGateway.getRolesByName(input.roles())).willReturn(Set.of(validRole));
 
@@ -194,7 +196,7 @@ class UpdateUserTypeUseCaseTest {
         UserType existingUserType = new UserType(id, "Old Name", roles);
         UserType otherUserType = new UserType(otherId, userTypeName, roles);
 
-        given(loggedUserGateway.hasRole(UpdateUserTypeUseCase.UPDATE_USER_TYPE_ROLE)).willReturn(true);
+        given(loggedUserGateway.hasRole(UserTypeRoles.UPDATE_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.of(existingUserType));
         given(roleGateway.getRolesByName(input.roles())).willReturn(roles);
         given(userTypeGateway.findByName(input.name())).willReturn(Optional.of(otherUserType));
@@ -216,7 +218,7 @@ class UpdateUserTypeUseCaseTest {
         Set<Role> roles = Set.of(role);
         UserType existingUserType = new UserType(id, userTypeName, roles);
 
-        given(loggedUserGateway.hasRole(UpdateUserTypeUseCase.UPDATE_USER_TYPE_ROLE)).willReturn(true);
+        given(loggedUserGateway.hasRole(UserTypeRoles.UPDATE_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.of(existingUserType));
         given(roleGateway.getRolesByName(input.roles())).willReturn(roles);
         given(userTypeGateway.findByName(input.name())).willReturn(Optional.of(existingUserType));

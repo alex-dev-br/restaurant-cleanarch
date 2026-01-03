@@ -2,6 +2,7 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.InvalidRoleException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.UserTypeNameIsAlreadyInUseException;
@@ -9,7 +10,8 @@ import br.com.techchallenge.restaurant_cleanarch.core.exception.UserTypeWithoutR
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RoleGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserTypeGateway;
-import br.com.techchallenge.restaurant_cleanarch.core.inbound.UserTypeInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateUserTypeInput;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype.CreateUserTypeUseCase;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,12 +56,12 @@ class CreateUserTypeUseCaseTest {
     void shouldCreateUserTypeSuccessfully() {
         String roleName = "ADMIN";
         String userTypeName = "Administrator";
-        UserTypeInput input = new UserTypeInput(userTypeName, Set.of(roleName));
+        CreateUserTypeInput input = new CreateUserTypeInput(userTypeName, Set.of(roleName));
         Role role = new Role(1L, roleName);
         Set<Role> roles = Set.of(role);
         UserType expectedUserType = new UserType(1L, userTypeName, roles);
 
-        given(loggedUserGateway.hasRole(CreateUserTypeUseCase.CREATE_USER_TYPE_ROLE)).willReturn(true);
+        given(loggedUserGateway.hasRole(UserTypeRoles.CREATE_USER_TYPE)).willReturn(true);
         given(roleGateway.getRolesByName(input.roles())).willReturn(roles);
         given(userTypeGateway.existsUserTypeWithName(input.name())).willReturn(false);
         given(userTypeGateway.save(any(UserType.class))).willReturn(expectedUserType);
@@ -71,7 +73,7 @@ class CreateUserTypeUseCaseTest {
         assertThat(result.getName()).isEqualTo(input.name());
         assertThat(result.getRoles()).containsExactly(role);
 
-        then(loggedUserGateway).should().hasRole(CreateUserTypeUseCase.CREATE_USER_TYPE_ROLE);
+        then(loggedUserGateway).should().hasRole(UserTypeRoles.CREATE_USER_TYPE);
         then(roleGateway).should().getRolesByName(input.roles());
         then(userTypeGateway).should().existsUserTypeWithName(input.name());
         then(userTypeGateway).should().save(userTypeCaptor.capture());
@@ -86,14 +88,14 @@ class CreateUserTypeUseCaseTest {
     @Test
     @DisplayName("Deve lançar exceção quando usuário não tem permissão")
     void shouldThrowExceptionWhenUserHasNoPermission() {
-        UserTypeInput input = new UserTypeInput("Admin", Set.of("ADMIN"));
-        given(loggedUserGateway.hasRole(CreateUserTypeUseCase.CREATE_USER_TYPE_ROLE)).willReturn(false);
+        CreateUserTypeInput input = new CreateUserTypeInput("Admin", Set.of("ADMIN"));
+        given(loggedUserGateway.hasRole(UserTypeRoles.CREATE_USER_TYPE)).willReturn(false);
 
         assertThatThrownBy(() -> createUserTypeUseCase.execute(input))
                 .isInstanceOf(OperationNotAllowedException.class)
                 .hasMessage("The current user does not have permission to create user types.");
 
-        then(loggedUserGateway).should().hasRole(CreateUserTypeUseCase.CREATE_USER_TYPE_ROLE);
+        then(loggedUserGateway).should().hasRole(UserTypeRoles.CREATE_USER_TYPE);
 
         then(roleGateway).should(never()).getRolesByName(any());
         then(userTypeGateway).should(never()).existsUserTypeWithName(any());
@@ -103,14 +105,14 @@ class CreateUserTypeUseCaseTest {
     @Test
     @DisplayName("Deve lançar exceção quando roles não são encontradas")
     void shouldThrowExceptionWhenRolesNotFound() {
-        UserTypeInput input = new UserTypeInput("Admin", Set.of("INVALID_ROLE"));
-        given(loggedUserGateway.hasRole(CreateUserTypeUseCase.CREATE_USER_TYPE_ROLE)).willReturn(true);
+        CreateUserTypeInput input = new CreateUserTypeInput("Admin", Set.of("INVALID_ROLE"));
+        given(loggedUserGateway.hasRole(UserTypeRoles.CREATE_USER_TYPE)).willReturn(true);
         given(roleGateway.getRolesByName(input.roles())).willReturn(Collections.emptySet());
 
         assertThatThrownBy(() -> createUserTypeUseCase.execute(input))
                 .isInstanceOf(UserTypeWithoutRolesException.class);
 
-        then(loggedUserGateway).should().hasRole(CreateUserTypeUseCase.CREATE_USER_TYPE_ROLE);
+        then(loggedUserGateway).should().hasRole(UserTypeRoles.CREATE_USER_TYPE);
         then(roleGateway).should().getRolesByName(input.roles());
 
         then(userTypeGateway).should(never()).existsUserTypeWithName(any());
@@ -122,10 +124,10 @@ class CreateUserTypeUseCaseTest {
     void shouldThrowExceptionWhenSomeRolesAreInvalid() {
         String validRoleName = "VALID_ROLE";
         String invalidRoleName = "INVALID_ROLE";
-        UserTypeInput input = new UserTypeInput("Admin", Set.of(validRoleName, invalidRoleName));
+        CreateUserTypeInput input = new CreateUserTypeInput("Admin", Set.of(validRoleName, invalidRoleName));
         Role validRole = new Role(1L, validRoleName);
         
-        given(loggedUserGateway.hasRole(CreateUserTypeUseCase.CREATE_USER_TYPE_ROLE)).willReturn(true);
+        given(loggedUserGateway.hasRole(UserTypeRoles.CREATE_USER_TYPE)).willReturn(true);
         given(roleGateway.getRolesByName(input.roles())).willReturn(Set.of(validRole));
 
         assertThatThrownBy(() -> createUserTypeUseCase.execute(input))
@@ -144,18 +146,18 @@ class CreateUserTypeUseCaseTest {
     @DisplayName("Deve lançar exceção quando nome do UserType já está em uso")
     void shouldThrowExceptionWhenUserTypeNameAlreadyInUse() {
         String roleName = "ADMIN";
-        UserTypeInput input = new UserTypeInput("Administrator", Set.of(roleName));
+        CreateUserTypeInput input = new CreateUserTypeInput("Administrator", Set.of(roleName));
         Role role = new Role(1L, roleName);
         Set<Role> roles = Set.of(role);
 
-        given(loggedUserGateway.hasRole(CreateUserTypeUseCase.CREATE_USER_TYPE_ROLE)).willReturn(true);
+        given(loggedUserGateway.hasRole(UserTypeRoles.CREATE_USER_TYPE)).willReturn(true);
         given(roleGateway.getRolesByName(input.roles())).willReturn(roles);
         given(userTypeGateway.existsUserTypeWithName(input.name())).willReturn(true);
 
         assertThatThrownBy(() -> createUserTypeUseCase.execute(input))
                 .isInstanceOf(UserTypeNameIsAlreadyInUseException.class);
 
-        then(loggedUserGateway).should().hasRole(CreateUserTypeUseCase.CREATE_USER_TYPE_ROLE);
+        then(loggedUserGateway).should().hasRole(UserTypeRoles.CREATE_USER_TYPE);
         then(roleGateway).should().getRolesByName(input.roles());
         then(userTypeGateway).should().existsUserTypeWithName(input.name());
 
@@ -169,7 +171,7 @@ class CreateUserTypeUseCaseTest {
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("UserTypeInput cannot be null.");
 
-        then(loggedUserGateway).should(never()).hasRole(CreateUserTypeUseCase.CREATE_USER_TYPE_ROLE);
+        then(loggedUserGateway).should(never()).hasRole(UserTypeRoles.CREATE_USER_TYPE);
         then(roleGateway).should(never()).getRolesByName(any());
         then(userTypeGateway).should(never()).existsUserTypeWithName(any());
         then(userTypeGateway).should(never()).save(any());

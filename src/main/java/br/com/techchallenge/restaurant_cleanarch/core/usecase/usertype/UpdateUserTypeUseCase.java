@@ -1,7 +1,8 @@
-package br.com.techchallenge.restaurant_cleanarch.core.usecase;
+package br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.*;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RoleGateway;
@@ -12,8 +13,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class UpdateUserTypeUseCase {
-
-    public static final String UPDATE_USER_TYPE_ROLE = "UPDATE_USER_TYPE";
 
     private final RoleGateway roleGateway;
     private final UserTypeGateway userTypeGateway;
@@ -32,7 +31,7 @@ public class UpdateUserTypeUseCase {
     public void execute(UpdateUserTypeInput input) {
         Objects.requireNonNull(input, "UpdateUserTypeInput cannot be null.");
 
-        if (!loggedUserGateway.hasRole(UPDATE_USER_TYPE_ROLE)) {
+        if (!loggedUserGateway.hasRole(UserTypeRoles.UPDATE_USER_TYPE)) {
             throw new OperationNotAllowedException("The current user does not have permission to update user types.");
         }
 
