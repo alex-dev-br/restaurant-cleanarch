@@ -5,9 +5,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateUserTypeInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UserTypeInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.UserTypeOutput;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.CreateUserTypeUseCase;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.DeleteUserTypeUseCase;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.UpdateUserTypeUseCase;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,6 +34,12 @@ class UserTypeControllerTest {
 
     @Mock
     private DeleteUserTypeUseCase deleteUserTypeUseCase;
+
+    @Mock
+    private GetByIdUserTypeUseCase getByIdUserTypeUseCase;
+
+    @Mock
+    private GetAllUserTypeUseCase getAllUserTypeUseCase;
 
     @InjectMocks
     private UserTypeController userTypeController;
@@ -143,9 +148,82 @@ class UserTypeControllerTest {
     }
 
     @Test
+    @DisplayName("Deve retornar UserType por ID com sucesso")
+    void shouldGetUserTypeByIdSuccessfully() {
+        Long id = 1L;
+        String roleName = "ADMIN";
+        String userTypeName = "Administrator";
+        Role role = new Role(1L, roleName);
+        UserType userType = new UserType(id, userTypeName, Set.of(role));
+
+        given(getByIdUserTypeUseCase.execute(id)).willReturn(userType);
+
+        UserTypeOutput result = userTypeController.getUserTypeById(id);
+
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(id);
+        assertThat(result.name()).isEqualTo(userTypeName);
+        assertThat(result.roles()).containsExactly(roleName);
+
+        then(getByIdUserTypeUseCase).should().execute(id);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando GetByIdUserTypeUseCase lança exceção")
+    void shouldThrowExceptionWhenGetByIdUseCaseThrowsException() {
+        Long id = 1L;
+        RuntimeException expectedException = new RuntimeException("User type not found");
+
+        given(getByIdUserTypeUseCase.execute(id)).willThrow(expectedException);
+
+        assertThatThrownBy(() -> userTypeController.getUserTypeById(id))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("User type not found");
+
+        then(getByIdUserTypeUseCase).should().execute(id);
+    }
+
+    @Test
+    @DisplayName("Deve retornar todos os UserTypes com sucesso")
+    void shouldGetAllUserTypesSuccessfully() {
+        String roleName1 = "ADMIN";
+        String userTypeName1 = "Administrator";
+        Role role1 = new Role(1L, roleName1);
+        UserType userType1 = new UserType(1L, userTypeName1, Set.of(role1));
+
+        String roleName2 = "USER";
+        String userTypeName2 = "User";
+        Role role2 = new Role(2L, roleName2);
+        UserType userType2 = new UserType(2L, userTypeName2, Set.of(role2));
+
+        given(getAllUserTypeUseCase.execute()).willReturn(Set.of(userType1, userType2));
+
+        List<UserTypeOutput> result = userTypeController.getAllUserTypes();
+
+        assertThat(result).isNotNull().hasSize(2);
+        assertThat(result).extracting(UserTypeOutput::name).containsExactlyInAnyOrder(userTypeName1, userTypeName2);
+
+        then(getAllUserTypeUseCase).should().execute();
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando GetAllUserTypeUseCase lança exceção")
+    void shouldThrowExceptionWhenGetAllUseCaseThrowsException() {
+        RuntimeException expectedException = new RuntimeException("Error fetching user types");
+
+        given(getAllUserTypeUseCase.execute()).willThrow(expectedException);
+
+        assertThatThrownBy(() -> userTypeController.getAllUserTypes())
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Error fetching user types");
+
+        then(getAllUserTypeUseCase).should().execute();
+    }
+
+    @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com CreateUserTypeUseCase nulo")
     void shouldThrowExceptionWhenCreateUseCaseIsNull() {
-        assertThatThrownBy(() -> new UserTypeController(null, updateUserTypeUseCase, deleteUserTypeUseCase))
+        assertThatThrownBy(() -> new UserTypeController(null, updateUserTypeUseCase, deleteUserTypeUseCase, getByIdUserTypeUseCase, getAllUserTypeUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("CreateUserTypeUseCase cannot be null.");
     }
@@ -153,7 +231,7 @@ class UserTypeControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com UpdateUserTypeUseCase nulo")
     void shouldThrowExceptionWhenUpdateUseCaseIsNull() {
-        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, null, deleteUserTypeUseCase))
+        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, null, deleteUserTypeUseCase, getByIdUserTypeUseCase, getAllUserTypeUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("UpdateUserTypeUseCase cannot be null.");
     }
@@ -161,8 +239,24 @@ class UserTypeControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com DeleteUserTypeUseCase nulo")
     void shouldThrowExceptionWhenDeleteUseCaseIsNull() {
-        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, updateUserTypeUseCase, null))
+        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, updateUserTypeUseCase, null, getByIdUserTypeUseCase, getAllUserTypeUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("DeleteUserTypeUseCase cannot be null.");
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao instanciar controller com GetByIdUserTypeUseCase nulo")
+    void shouldThrowExceptionWhenGetByIdUseCaseIsNull() {
+        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, updateUserTypeUseCase, deleteUserTypeUseCase, null, getAllUserTypeUseCase))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("GetByIdUserTypeUseCase cannot be null.");
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao instanciar controller com GetAllUserTypeUseCase nulo")
+    void shouldThrowExceptionWhenGetAllUseCaseIsNull() {
+        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, updateUserTypeUseCase, deleteUserTypeUseCase, getByIdUserTypeUseCase, null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("GetAllUserTypeUseCase cannot be null.");
     }
 }

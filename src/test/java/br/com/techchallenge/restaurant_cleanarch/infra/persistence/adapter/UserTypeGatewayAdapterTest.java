@@ -208,4 +208,26 @@ class UserTypeGatewayAdapterTest {
         // Then
         assertThat(inUse).isFalse();
     }
+
+    @Test
+    @DisplayName("Deve retornar todos os UserTypes")
+    void shouldReturnAllUserTypes() {
+        // Given
+        UserTypeEntity entity1 = new UserTypeEntity();
+        entity1.setName("Type1");
+        entity1.setRoles(Set.of(roleEntity));
+        userTypeRepository.save(entity1);
+
+        UserTypeEntity entity2 = new UserTypeEntity();
+        entity2.setName("Type2");
+        entity2.setRoles(Set.of(roleEntity));
+        userTypeRepository.save(entity2);
+
+        // When
+        Set<UserType> allUserTypes = adapter.findAll();
+
+        // Then
+        assertThat(allUserTypes).hasSizeGreaterThanOrEqualTo(2);
+        assertThat(allUserTypes).extracting(UserType::getName).contains("Type1", "Type2");
+    }
 }

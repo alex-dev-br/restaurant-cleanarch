@@ -3,6 +3,7 @@ package br.com.techchallenge.restaurant_cleanarch.core.gateway;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
 
 import java.util.Optional;
+import java.util.Set;
 
 public interface UserTypeGateway {
     UserType save(UserType userType);
@@ -11,4 +12,5 @@ public interface UserTypeGateway {
     Optional<UserType> findById(Long id);
     void delete(Long id);
     boolean isInUse(Long id);
+    Set<UserType> findAll();
 }

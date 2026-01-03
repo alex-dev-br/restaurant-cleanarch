@@ -10,6 +10,8 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component   // Cria um bean gerenciado pelo Spring
 public class UserTypeGatewayAdapter implements UserTypeGateway {
@@ -59,5 +61,10 @@ public class UserTypeGatewayAdapter implements UserTypeGateway {
     @Override
     public Optional<UserType> findById(Long id) {
         return repository.findById(id).map(mapper::toDomain);
+    }
+
+    @Override
+    public Set<UserType> findAll() {
+        return repository.findAll().stream().map(mapper::toDomain).collect(Collectors.toSet());
     }
 }
