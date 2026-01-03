@@ -10,7 +10,7 @@ public class MenuItemBuilder {
     private String name;
     private String description;
     private BigDecimal price;
-    private boolean restaurantOnly;
+    private Boolean restaurantOnly;
     private String photoPath;
 
     public MenuItemBuilder() {
@@ -47,7 +47,7 @@ public class MenuItemBuilder {
         return this;
     }
 
-    public MenuItemBuilder withRestaurantOnly(boolean restaurantOnly) {
+    public MenuItemBuilder withRestaurantOnly(Boolean restaurantOnly) {
         this.restaurantOnly = restaurantOnly;
         return this;
     }

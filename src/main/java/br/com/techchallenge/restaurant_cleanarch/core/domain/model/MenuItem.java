@@ -11,44 +11,51 @@ import java.util.Objects;
 @ToString
 public class MenuItem {
 
-    private Long id;
-    private String name;
-    private String description;
-    private BigDecimal price;
-    private Boolean restaurantOnly;
-    private String photoPath;
+    private final Long id;
+    private final String name;
+    private final String description;
+    private final BigDecimal price;
+    private final Boolean restaurantOnly;
+    private final String photoPath;
 
     public MenuItem(Long id, String name, String description, BigDecimal price, Boolean restaurantOnly, String photoPath) {
-        Objects.requireNonNull(name, "Name cannot be null.");
-        Objects.requireNonNull(price, "Price cannot be null.");
-        Objects.requireNonNull(restaurantOnly, "RestaurantOnly cannot be null.");
-        Objects.requireNonNull(photoPath, "PhotoPath cannot be null.");
+        Objects.requireNonNull(name, "O nome do item não pode ser nulo.");
+        Objects.requireNonNull(price, "O preço não pode ser nulo.");
+        Objects.requireNonNull(restaurantOnly, "A disponibilidade para restaurante apenas não pode ser nula.");
+        Objects.requireNonNull(photoPath, "O caminho da foto não pode ser nulo.");
 
-        if (name.isBlank()) {
-            throw new IllegalArgumentException("Name cannot be blank.");
+        if (name.trim().isBlank()) {
+            throw new BusinessException("O nome do item não pode ser vazio.");
         }
-
+        if (photoPath.trim().isBlank()) {
+            throw new BusinessException("O caminho da foto não pode ser vazio.");
+        }
         if (price.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new BusinessException("Price must be greater than zero.");
+            throw new BusinessException("O preço deve ser maior que zero.");
         }
 
         this.id = id;
-        this.name = name;
-        this.description = description;
+        this.name = name.trim();
+        this.description = description != null ? description.trim() : null;
         this.price = price;
         this.restaurantOnly = restaurantOnly;
-        this.photoPath = photoPath;
+        this.photoPath = photoPath.trim();
     }
 
     @Override
     public final boolean equals(Object o) {
-        if (!(o instanceof MenuItem menuItem)) return false;
+        if (this == o) return true;
+        if (!(o instanceof MenuItem that)) return false;
 
-        return Objects.equals(id, menuItem.id);
+        if (this.id != null || that.id != null) {
+            return Objects.equals(this.id, that.id);
+        }
+
+        return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return id != null ? Objects.hashCode(id) : super.hashCode();
     }
 }
