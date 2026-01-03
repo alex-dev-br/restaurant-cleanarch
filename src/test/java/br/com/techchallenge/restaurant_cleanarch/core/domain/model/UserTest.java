@@ -1,7 +1,6 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.*;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import org.junit.jupiter.api.*;
@@ -9,7 +8,6 @@ import org.junit.jupiter.api.*;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 class UserTest {
 
