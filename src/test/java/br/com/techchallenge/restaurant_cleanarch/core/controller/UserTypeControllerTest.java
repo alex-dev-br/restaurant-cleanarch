@@ -3,9 +3,9 @@ package br.com.techchallenge.restaurant_cleanarch.core.controller;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateUserTypeInput;
-import br.com.techchallenge.restaurant_cleanarch.core.inbound.UserTypeInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateUserTypeInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.UserTypeOutput;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.*;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +45,7 @@ class UserTypeControllerTest {
     private UserTypeController userTypeController;
 
     @Captor
-    private ArgumentCaptor<UserTypeInput> userTypeInputCaptor;
+    private ArgumentCaptor<CreateUserTypeInput> userTypeInputCaptor;
 
     @Captor
     private ArgumentCaptor<UpdateUserTypeInput> updateUserTypeInputCaptor;
@@ -55,7 +55,7 @@ class UserTypeControllerTest {
     void shouldCreateUserTypeSuccessfully() {
         String roleName = "ADMIN";
         String userTypeName = "Administrator";
-        UserTypeInput input = new UserTypeInput(userTypeName, Set.of(roleName));
+        CreateUserTypeInput input = new CreateUserTypeInput(userTypeName, Set.of(roleName));
         
         Role role = new Role(1L, roleName);
         UserType userType = new UserType(1L, userTypeName, Set.of(role));
@@ -70,14 +70,14 @@ class UserTypeControllerTest {
         assertThat(result.roles()).containsExactly(roleName);
 
         then(createUserTypeUseCase).should().execute(userTypeInputCaptor.capture());
-        UserTypeInput capturedInput = userTypeInputCaptor.getValue();
+        CreateUserTypeInput capturedInput = userTypeInputCaptor.getValue();
         assertThat(capturedInput).isEqualTo(input);
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando CreateUserTypeUseCase lança exceção")
     void shouldThrowExceptionWhenUseCaseThrowsException() {
-        UserTypeInput input = new UserTypeInput("Admin", Set.of("ADMIN"));
+        CreateUserTypeInput input = new CreateUserTypeInput("Admin", Set.of("ADMIN"));
         RuntimeException expectedException = new RuntimeException("Error creating user type");
         
         given(createUserTypeUseCase.execute(input)).willThrow(expectedException);

@@ -1,6 +1,7 @@
-package br.com.techchallenge.restaurant_cleanarch.core.usecase;
+package br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
@@ -10,7 +11,6 @@ import java.util.Objects;
 
 public class GetByIdUserTypeUseCase {
 
-    public static final String GET_BY_ID_USER_TYPE_ROLE = "FIND_BY_ID_USER_TYPE";
 
     private final UserTypeGateway userTypeGateway;
     private final LoggedUserGateway loggedUserGateway;
@@ -25,7 +25,7 @@ public class GetByIdUserTypeUseCase {
     public UserType execute(Long id) {
         Objects.requireNonNull(id, "Id of user type cannot be null.");
 
-        if (!loggedUserGateway.hasRole(GET_BY_ID_USER_TYPE_ROLE)) {
+        if (!loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)) {
             throw new OperationNotAllowedException("The current user does not have permission to get user types.");
         }
 

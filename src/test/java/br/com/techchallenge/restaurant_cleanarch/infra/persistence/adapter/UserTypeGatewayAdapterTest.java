@@ -2,7 +2,7 @@ package br.com.techchallenge.restaurant_cleanarch.infra.persistence.adapter;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.CreateUserTypeUseCase;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.RoleMapper;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.UserTypeMapper;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.RoleEntity;
@@ -19,6 +19,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Optional;
 import java.util.Set;
@@ -29,6 +30,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @Import({UserTypeGatewayAdapter.class})
 @ComponentScan(basePackageClasses = {UserTypeMapper.class, RoleMapper.class})
+@Sql(scripts = {"/roles/CREATE_ROLES.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(scripts = {"/roles/CLEAR_ROLES.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 @DisplayName("Testes de Integração para UserTypeGatewayAdapter")
 class UserTypeGatewayAdapterTest {
 
@@ -48,9 +51,7 @@ class UserTypeGatewayAdapterTest {
 
     @BeforeEach
     void setUp() {
-        roleEntity = new RoleEntity();
-        roleEntity.setName(CreateUserTypeUseCase.CREATE_USER_TYPE_ROLE);
-        roleEntity = roleRepository.save(roleEntity);
+        roleEntity = roleRepository.findByName(UserTypeRoles.CREATE_USER_TYPE.getRoleName()).orElseThrow(() -> new RuntimeException("Roles não foram criadas"));
     }
 
     @Test
@@ -68,7 +69,7 @@ class UserTypeGatewayAdapterTest {
         assertThat(savedUserType.getId()).isNotNull();
         assertThat(savedUserType.getName()).isEqualTo("Administrator");
         assertThat(savedUserType.getRoles()).hasSize(1);
-        assertThat(savedUserType.getRoles().iterator().next().name()).isEqualTo(CreateUserTypeUseCase.CREATE_USER_TYPE_ROLE);
+        assertThat(savedUserType.getRoles().iterator().next().name()).isEqualTo(UserTypeRoles.CREATE_USER_TYPE.getRoleName());
         
         // Verify in repository
         UserTypeEntity savedEntity = userTypeRepository.findById(savedUserType.getId()).orElseThrow();

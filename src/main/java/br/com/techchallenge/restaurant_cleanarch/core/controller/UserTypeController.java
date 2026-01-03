@@ -1,10 +1,10 @@
 package br.com.techchallenge.restaurant_cleanarch.core.controller;
 
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateUserTypeInput;
-import br.com.techchallenge.restaurant_cleanarch.core.inbound.UserTypeInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateUserTypeInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.UserTypeOutput;
 import br.com.techchallenge.restaurant_cleanarch.core.presenter.UserTypePresenter;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.*;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -36,7 +36,7 @@ public class UserTypeController {
         this.getAllUserTypeUseCase = getAllUserTypeUseCase;
     }
 
-    public UserTypeOutput createUserType(UserTypeInput input) {
+    public UserTypeOutput createUserType(CreateUserTypeInput input) {
         var userType = createUserTypeUseCase.execute(input);
         return UserTypePresenter.toOutput(userType);
     }

@@ -1,5 +1,6 @@
-package br.com.techchallenge.restaurant_cleanarch.core.usecase;
+package br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype;
 
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.UserTypeInUseException;
@@ -9,8 +10,6 @@ import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserTypeGateway;
 import java.util.Objects;
 
 public class DeleteUserTypeUseCase {
-
-    public static final String DELETE_USER_TYPE_ROLE = "DELETE_USER_TYPE";
 
     private final UserTypeGateway userTypeGateway;
     private final LoggedUserGateway loggedUserGateway;
@@ -25,7 +24,7 @@ public class DeleteUserTypeUseCase {
     public void execute(Long id) {
         Objects.requireNonNull(id, "Id of user type cannot be null.");
 
-        if (!loggedUserGateway.hasRole(DELETE_USER_TYPE_ROLE)) {
+        if (!loggedUserGateway.hasRole(UserTypeRoles.DELETE_USER_TYPE)) {
             throw new OperationNotAllowedException("The current user does not have permission to delete user types.");
         }
 

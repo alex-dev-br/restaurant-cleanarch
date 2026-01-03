@@ -2,9 +2,11 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserTypeGateway;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype.GetAllUserTypeUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,41 +43,41 @@ class GetAllUserTypeUseCaseTest {
         UserType userType2 = new UserType(2L, "User", Set.of(new Role(2L, "USER")));
         Set<UserType> expectedUserTypes = Set.of(userType1, userType2);
 
-        given(loggedUserGateway.hasRole(GetAllUserTypeUseCase.GET_ALL_USER_TYPE_ROLE)).willReturn(true);
+        given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findAll()).willReturn(expectedUserTypes);
 
         Set<UserType> result = getAllUserTypeUseCase.execute();
 
         assertThat(result).isNotNull().hasSize(2).containsExactlyInAnyOrder(userType1, userType2);
 
-        then(loggedUserGateway).should().hasRole(GetAllUserTypeUseCase.GET_ALL_USER_TYPE_ROLE);
+        then(loggedUserGateway).should().hasRole(UserTypeRoles.VIEW_USER_TYPE);
         then(userTypeGateway).should().findAll();
     }
 
     @Test
     @DisplayName("Deve retornar conjunto vazio quando não houver UserTypes")
     void shouldReturnEmptySetWhenNoUserTypesFound() {
-        given(loggedUserGateway.hasRole(GetAllUserTypeUseCase.GET_ALL_USER_TYPE_ROLE)).willReturn(true);
+        given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findAll()).willReturn(Collections.emptySet());
 
         Set<UserType> result = getAllUserTypeUseCase.execute();
 
         assertThat(result).isNotNull().isEmpty();
 
-        then(loggedUserGateway).should().hasRole(GetAllUserTypeUseCase.GET_ALL_USER_TYPE_ROLE);
+        then(loggedUserGateway).should().hasRole(UserTypeRoles.VIEW_USER_TYPE);
         then(userTypeGateway).should().findAll();
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando usuário não tem permissão")
     void shouldThrowExceptionWhenUserHasNoPermission() {
-        given(loggedUserGateway.hasRole(GetAllUserTypeUseCase.GET_ALL_USER_TYPE_ROLE)).willReturn(false);
+        given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(false);
 
         assertThatThrownBy(() -> getAllUserTypeUseCase.execute())
                 .isInstanceOf(OperationNotAllowedException.class)
                 .hasMessage("The current user does not have permission to get all user types.");
 
-        then(loggedUserGateway).should().hasRole(GetAllUserTypeUseCase.GET_ALL_USER_TYPE_ROLE);
+        then(loggedUserGateway).should().hasRole(UserTypeRoles.VIEW_USER_TYPE);
         then(userTypeGateway).should(never()).findAll();
     }
 }
