@@ -15,25 +15,25 @@ public class UserTypeController {
     private final UpdateUserTypeUseCase updateUserTypeUseCase;
     private final DeleteUserTypeUseCase deleteUserTypeUseCase;
     private final GetByIdUserTypeUseCase getByIdUserTypeUseCase;
-    private final GetAllUserTypeUseCase getAllUserTypeUseCase;
+    private final GetAllUserTypesUseCase getAllUserTypesUseCase;
 
     public UserTypeController (
             CreateUserTypeUseCase createUserTypeUseCase,
             UpdateUserTypeUseCase updateUserTypeUseCase,
             DeleteUserTypeUseCase deleteUserTypeUseCase,
             GetByIdUserTypeUseCase getByIdUserTypeUseCase,
-            GetAllUserTypeUseCase getAllUserTypeUseCase
+            GetAllUserTypesUseCase getAllUserTypesUseCase
     ) {
         Objects.requireNonNull(createUserTypeUseCase, "CreateUserTypeUseCase cannot be null.");
         Objects.requireNonNull(updateUserTypeUseCase, "UpdateUserTypeUseCase cannot be null.");
         Objects.requireNonNull(deleteUserTypeUseCase, "DeleteUserTypeUseCase cannot be null.");
         Objects.requireNonNull(getByIdUserTypeUseCase, "GetByIdUserTypeUseCase cannot be null.");
-        Objects.requireNonNull(getAllUserTypeUseCase, "GetAllUserTypeUseCase cannot be null.");
+        Objects.requireNonNull(getAllUserTypesUseCase, "GetAllUserTypesUseCase cannot be null.");
         this.createUserTypeUseCase = createUserTypeUseCase;
         this.updateUserTypeUseCase = updateUserTypeUseCase;
         this.deleteUserTypeUseCase = deleteUserTypeUseCase;
         this.getByIdUserTypeUseCase = getByIdUserTypeUseCase;
-        this.getAllUserTypeUseCase = getAllUserTypeUseCase;
+        this.getAllUserTypesUseCase = getAllUserTypesUseCase;
     }
 
     public UserTypeOutput createUserType(CreateUserTypeInput input) {
@@ -55,7 +55,7 @@ public class UserTypeController {
     }
 
     public List<UserTypeOutput> getAllUserTypes() {
-        var userTypes = getAllUserTypeUseCase.execute();
+        var userTypes = getAllUserTypesUseCase.execute();
         return userTypes.stream().map(UserTypePresenter::toOutput).toList();
     }
 }

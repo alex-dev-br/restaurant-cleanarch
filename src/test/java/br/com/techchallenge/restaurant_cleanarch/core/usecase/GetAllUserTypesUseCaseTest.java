@@ -6,7 +6,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserTypeGateway;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype.GetAllUserTypeUseCase;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype.GetAllUserTypesUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para GetAllUserTypeUseCase")
-class GetAllUserTypeUseCaseTest {
+class GetAllUserTypesUseCaseTest {
 
     @Mock
     private UserTypeGateway userTypeGateway;
@@ -34,7 +34,7 @@ class GetAllUserTypeUseCaseTest {
     private LoggedUserGateway loggedUserGateway;
 
     @InjectMocks
-    private GetAllUserTypeUseCase getAllUserTypeUseCase;
+    private GetAllUserTypesUseCase getAllUserTypesUseCase;
 
     @Test
     @DisplayName("Deve retornar todos os UserTypes com sucesso")
@@ -46,7 +46,7 @@ class GetAllUserTypeUseCaseTest {
         given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findAll()).willReturn(expectedUserTypes);
 
-        Set<UserType> result = getAllUserTypeUseCase.execute();
+        Set<UserType> result = getAllUserTypesUseCase.execute();
 
         assertThat(result).isNotNull().hasSize(2).containsExactlyInAnyOrder(userType1, userType2);
 
@@ -60,7 +60,7 @@ class GetAllUserTypeUseCaseTest {
         given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findAll()).willReturn(Collections.emptySet());
 
-        Set<UserType> result = getAllUserTypeUseCase.execute();
+        Set<UserType> result = getAllUserTypesUseCase.execute();
 
         assertThat(result).isNotNull().isEmpty();
 
@@ -73,7 +73,7 @@ class GetAllUserTypeUseCaseTest {
     void shouldThrowExceptionWhenUserHasNoPermission() {
         given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(false);
 
-        assertThatThrownBy(() -> getAllUserTypeUseCase.execute())
+        assertThatThrownBy(() -> getAllUserTypesUseCase.execute())
                 .isInstanceOf(OperationNotAllowedException.class)
                 .hasMessage("The current user does not have permission to get all user types.");
 
