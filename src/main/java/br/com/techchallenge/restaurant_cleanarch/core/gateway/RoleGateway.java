@@ -6,4 +6,5 @@ import java.util.Set;
 
 public interface RoleGateway {
     Set<Role> getRolesByName(Set<String> rolesName);
+    Set<Role> findAll();
 }
