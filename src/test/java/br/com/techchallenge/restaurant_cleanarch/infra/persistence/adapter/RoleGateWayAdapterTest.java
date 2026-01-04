@@ -18,15 +18,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import({RoleAdapter.class})
+@Import({RoleGateWayAdapter.class})
 @ComponentScan(basePackageClasses = {RoleMapper.class})
 @DisplayName("Testes de Integração para RoleAdapter")
 @Sql(scripts = "/roles/CREATE_ROLES.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(scripts = "/roles/CLEAR_ROLES.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-class RoleAdapterTest {
+class RoleGateWayAdapterTest {
 
     @Autowired
-    private RoleAdapter adapter;
+    private RoleGateWayAdapter adapter;
 
     @Test
     @DisplayName("Deve retornar roles pelos nomes fornecidos")

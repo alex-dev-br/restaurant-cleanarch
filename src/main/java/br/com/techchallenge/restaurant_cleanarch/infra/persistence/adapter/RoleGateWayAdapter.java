@@ -11,12 +11,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
-public class RoleAdapter implements RoleGateway {
+public class RoleGateWayAdapter implements RoleGateway {
 
     private final RoleRepository repository;
     private final RoleMapper roleMapper;
 
-    public RoleAdapter(RoleRepository repository, RoleMapper roleMapper) {
+    public RoleGateWayAdapter(RoleRepository repository, RoleMapper roleMapper) {
         this.repository = repository;
         this.roleMapper = roleMapper;
     }
