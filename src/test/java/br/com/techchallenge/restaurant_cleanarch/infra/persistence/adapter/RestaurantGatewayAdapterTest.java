@@ -71,7 +71,7 @@ class RestaurantGatewayAdapterTest {
         ownerEntity = new UserEntity();
         ownerEntity.setUserType(userTypeEntity);
         ownerEntity.setName("Owner");
-        ownerEntity.setEmail("owner@email.com");
+        ownerEntity.setEmail("ownerId@email.com");
         ownerEntity.setUserType(userTypeEntity);
         ownerEntity = userRepository.save(ownerEntity);
 

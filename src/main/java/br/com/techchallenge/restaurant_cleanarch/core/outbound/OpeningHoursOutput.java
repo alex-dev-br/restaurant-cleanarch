@@ -5,7 +5,7 @@ import java.time.LocalTime;
 
 public record OpeningHoursOutput(
     Long id,
-    DayOfWeek dayOfDay,
+    DayOfWeek dayOfWeek,
     LocalTime openHour,
     LocalTime closeHour
 ) {}
