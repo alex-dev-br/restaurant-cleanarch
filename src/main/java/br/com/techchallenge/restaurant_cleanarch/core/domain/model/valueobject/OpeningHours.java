@@ -13,20 +13,20 @@ import java.time.LocalTime;
 @EqualsAndHashCode
 public class OpeningHours {
     private final Long id;
-    private final DayOfWeek dayOfDay;
+    private final DayOfWeek dayOfWeek;
     private final LocalTime openHour;
     private final LocalTime closeHour;
 
-    public OpeningHours(Long id, DayOfWeek dayOfDay, LocalTime openHour, LocalTime closeHour) {
+    public OpeningHours(Long id, DayOfWeek dayOfWeek, LocalTime openHour, LocalTime closeHour) {
         this.id = id;
-        this.dayOfDay = dayOfDay;
+        this.dayOfWeek = dayOfWeek;
         this.openHour = openHour;
         this.closeHour = closeHour;
         validate();
     }
 
     public void validate() {
-        if (dayOfDay == null) {
+        if (dayOfWeek == null) {
             throw new BusinessException("Dia da semana é obrigatório.");
         }
         if (openHour == null) {

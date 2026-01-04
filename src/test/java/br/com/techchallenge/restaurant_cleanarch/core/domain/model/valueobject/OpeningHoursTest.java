@@ -24,7 +24,7 @@ public class OpeningHoursTest {
         // Assert
         assertThat(openingHours).isNotNull();
         assertThat(openingHours.getId()).isEqualTo(ID);
-        assertThat(openingHours.getDayOfDay()).isEqualTo(DAY);
+        assertThat(openingHours.getDayOfWeek()).isEqualTo(DAY);
         assertThat(openingHours.getOpenHour()).isEqualTo(OPEN);
         assertThat(openingHours.getCloseHour()).isEqualTo(CLOSE);
 
@@ -98,7 +98,7 @@ public class OpeningHoursTest {
         // Assert
         assertThat(openingHours.toString())
                 .contains("id=" + ID)
-                .contains("dayOfDay=" + DAY)
+                .contains("dayOfWeek=" + DAY)
                 .contains("openHour=" + OPEN)
                 .contains("closeHour=" + CLOSE);
     }
