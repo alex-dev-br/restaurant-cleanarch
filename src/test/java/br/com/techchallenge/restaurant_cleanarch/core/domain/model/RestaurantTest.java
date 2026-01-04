@@ -1,13 +1,21 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.*;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressBuilder;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.RestaurantBuilder;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
-import org.junit.jupiter.api.*;
+import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Testes para Restaurant")
 class RestaurantTest {
@@ -16,22 +24,24 @@ class RestaurantTest {
     @DisplayName("Deve criar Restaurant válido com campos preenchidos")
     void deveCriarRestaurantValido() {
         // Arrange
-        User owner = criarDonoValido();
+        var owner = new UserBuilder().build();
+        var address = new AddressBuilder().build();
+        var openingHours = getOpeningHours();
 
-        var builder = new RestaurantBuilder()
-                .withName("Restaurante Teste")
-                .withAddress(new Address("Rua Teste", "123", "Cidade", "SP", "00000-000", null))
-                .withCuisineType("Italiana")
-                .withOwner(owner);
+        var menu = getMenuItems();
+        var macarronada = menu.stream().findFirst().orElseThrow(() -> new RuntimeException("Cade a macarronada ?"));
 
         // Act
-        Restaurant restaurant = builder.build();
+        Restaurant restaurant = new Restaurant(1L, "Restaurante Teste", address, "Italiana", openingHours, menu, owner);
 
         // Assert
         assertThat(restaurant).isNotNull();
         assertThat(restaurant.getName()).isEqualTo("Restaurante Teste");
         assertThat(restaurant.getCuisineType()).isEqualTo("Italiana");
-        assertThat(restaurant.getOwner()).isEqualTo(owner);
+        assertThat(restaurant.getOwner()).isNotNull().isEqualTo(owner);
+        assertThat(restaurant.getOwner().getId()).isNotNull().isEqualTo(owner.getId());
+        assertThat(restaurant.getOpeningHours()).isNotNull().hasSize(6).containsExactlyInAnyOrderElementsOf(openingHours);
+        assertThat(restaurant.getMenu()).hasSize(1).containsExactlyInAnyOrder(macarronada);
     }
 
     @Test
@@ -65,14 +75,13 @@ class RestaurantTest {
     @DisplayName("Deve lançar exceção quando name for nulo")
     void deveLancarExcecaoQuandoNameForNulo() {
         // Arrange
-        User owner = criarDonoValido();
-
-        var builder = new RestaurantBuilder()
-                .withName(null)
-                .withOwner(owner);
+        var owner = new UserBuilder().build();
+        var address = new AddressBuilder().build();
+        var openingHours = getOpeningHours();
+        var menu = getMenuItems();
 
         // Act & Assert
-        assertThatThrownBy(builder::build)
+        assertThatThrownBy(() -> new Restaurant(1L, null, address, "Italiana", openingHours, menu, owner))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("O nome do restaurante não pode ser nulo.");
     }
@@ -81,14 +90,13 @@ class RestaurantTest {
     @DisplayName("Deve lançar exceção quando name for blank")
     void deveLancarExcecaoQuandoNameForBlank() {
         // Arrange
-        User owner = criarDonoValido();
-
-        var builder = new RestaurantBuilder()
-                .withName("   ")
-                .withOwner(owner);
+        var owner = new UserBuilder().build();
+        var address = new AddressBuilder().build();
+        var openingHours = getOpeningHours();
+        var menu = getMenuItems();
 
         // Act & Assert
-        assertThatThrownBy(builder::build)
+        assertThatThrownBy(() -> new Restaurant(1L, "  ", address, "Italiana", openingHours, menu, owner))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("O nome do restaurante não pode ser vazio.");
     }
@@ -97,39 +105,43 @@ class RestaurantTest {
     @DisplayName("Deve lançar exceção quando address for nulo")
     void deveLancarExcecaoQuandoAddressForNulo() {
         // Arrange
-        User owner = criarDonoValido();
-
-        var builder = new RestaurantBuilder()
-                .withAddress(null)
-                .withOwner(owner);
+        var owner = new UserBuilder().build();
+        var openingHours = getOpeningHours();
+        var menu = getMenuItems();
 
         // Act & Assert
-        assertThatThrownBy(builder::build)
+        assertThatThrownBy(() -> new Restaurant(1L, "Macarronada com massa da casa", null, "Italiana", openingHours, menu, owner))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("O endereço não pode ser nulo.");
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando cuisineType for nulo ou blank")
-    void deveLancarExcecaoQuandoCuisineTypeInvalido() {
+    @DisplayName("Deve lançar exceção quando cuisineType for nulo")
+    void deveLancarExcecaoQuandoCuisineTypeNull() {
         // Arrange - caso nulo
-        User owner = criarDonoValido();
-        var builderNulo = new RestaurantBuilder()
-                .withCuisineType(null)
-                .withOwner(owner);
+        var owner = new UserBuilder().build();
+        var address = new AddressBuilder().build();
+        var openingHours = getOpeningHours();
+
+        var menu = getMenuItems();
 
         // Act & Assert - caso nulo
-        assertThatThrownBy(builderNulo::build)
+        assertThatThrownBy(() -> new Restaurant(1L, "Restaurante Teste", address, null, openingHours, menu, owner))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("O tipo de cozinha não pode ser nulo.");
+    }
 
-        // Arrange - caso blank
-        var builderBlank = new RestaurantBuilder()
-                .withCuisineType("   ")
-                .withOwner(owner);
+    @Test
+    @DisplayName("Deve lançar exceção quando cuisineType for nulo ou blank")
+    void deveLancarExcecaoQuandoCuisineTypeEspacoEmBranco() {
+        // Arrange - caso nulo
+        var owner = new UserBuilder().build();
+        var address = new AddressBuilder().build();
+        var openingHours = getOpeningHours();
+        var menu = getMenuItems();
 
         // Act & Assert - caso blank
-        assertThatThrownBy(builderBlank::build)
+        assertThatThrownBy(() -> new Restaurant(1L, "Restaurante Teste", address, " ", openingHours, menu, owner))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("O tipo de cozinha não pode ser vazio.");
     }
@@ -138,107 +150,109 @@ class RestaurantTest {
     @DisplayName("Deve permitir coleções nulas ou vazias")
     void devePermitirColecoesNulasOuVazias() {
         // Arrange
-        User owner = criarDonoValido();
-        var builder = new RestaurantBuilder()
-                .withName("Teste")
-                .withAddress(new Address("Rua Teste", "123", "Cidade", "SP", "00000-000", null))
-                .withCuisineType("Italiana")
-                .withOpeningHours(null)
-                .withMenu(Set.of())
-                .withOwner(owner);
+        var owner = new UserBuilder().build();
+        var address = new AddressBuilder().build();
 
         // Act
-        Restaurant restaurant = builder.build();
+        Restaurant restaurant = new Restaurant(1L, "Restaurante Teste", address, "Italiana", Set.of(), Set.of(), owner);
 
         // Assert
-        assertThat(restaurant.getOpeningHours()).isNull();
-        assertThat(restaurant.getMenu()).isEmpty();
+        assertThat(restaurant.getOpeningHours()).isNotNull().isEmpty();
+        assertThat(restaurant.getMenu()).isNotNull().isEmpty();
     }
 
     @Test
     @DisplayName("Deve retornar true para equals com mesmo objeto")
     void deveSerIgualParaMesmoObjeto() {
         // Arrange
-        Restaurant restaurant = criarRestaurantValido();
+        var owner = new UserBuilder().build();
+        var address = new AddressBuilder().build();
+
+        // Act
+        Restaurant restaurant = new Restaurant(1L, "Restaurante Teste", address, "Italiana", Set.of(), Set.of(), owner);
 
         // Act & Assert
-        assertThat(restaurant.equals(restaurant)).isTrue();
+        assertThat(restaurant).isEqualTo(restaurant);
     }
 
     @Test
     @DisplayName("Deve retornar false para equals com objeto de outra classe")
     void deveSerDiferenteParaOutraClasse() {
         // Arrange
-        Restaurant restaurant = criarRestaurantValido();
+        var owner = new UserBuilder().build();
+        var address = new AddressBuilder().build();
+        var openingHours = getOpeningHours();
+        var menu = getMenuItems();
+
+        Restaurant restaurant = new Restaurant(1L, "Restaurante Teste", address, "Italiana", openingHours, menu, owner);
 
         // Act & Assert
-        assertThat(restaurant.equals("Outra coisa")).isFalse();
-        assertThat(restaurant.equals(null)).isFalse();
+        assertThat(restaurant)
+                .isNotEqualTo("Outra coisa")
+                .isNotEqualTo(null);
     }
 
     @Test
     @DisplayName("Deve retornar true para equals quando ids são iguais")
     void deveSerIgualQuandoIdsIguais() {
         // Arrange
-        User owner = criarDonoValido();
-        Restaurant r1 = new RestaurantBuilder().withId(1L).withOwner(owner).build();
-        Restaurant r2 = new RestaurantBuilder().withId(1L).withOwner(owner).build();
+        var owner = new UserBuilder().build();
+        var address = new AddressBuilder().build();
+        var openingHours = getOpeningHours();
+        var menu = getMenuItems();
+
+        var r1 = new Restaurant(1L, "Restaurante Teste", address, "Italiana", openingHours, menu, owner);
+        var r2 = new Restaurant(1L, "Restaurante Teste Renomeado", address, "Italiana", openingHours, menu, owner);
 
         // Act & Assert
-        assertThat(r1).isEqualTo(r2);
-        assertThat(r1.hashCode()).isEqualTo(r2.hashCode());
+        assertThat(r1).isEqualTo(r2).hasSameHashCodeAs(r2);
     }
 
     @Test
     @DisplayName("Deve retornar false para equals quando ids diferentes ou mistos")
     void deveSerDiferenteQuandoIdsDiferentesOuMistos() {
         // Arrange
-        User owner = criarDonoValido();
-        Restaurant r1 = new RestaurantBuilder().withId(1L).withOwner(owner).build();
-        Restaurant r2 = new RestaurantBuilder().withId(null).withOwner(owner).build();
-        Restaurant r3 = new RestaurantBuilder().withId(2L).withOwner(owner).build();
+        var owner = new UserBuilder().build();
+        var address = new AddressBuilder().build();
+        var openingHours = getOpeningHours();
+        var menu = getMenuItems();
+
+        var r1 = new Restaurant(1L, "Restaurante Teste", address, "Italiana", openingHours, menu, owner);
+        var r2 = new Restaurant(2L, "Restaurante Teste II", address, "Italiana", openingHours, menu, owner);
+        var r3 = new Restaurant(null,"Restaurante Salvo ainda", address, "Italiana", openingHours, menu, owner);
 
         // Act & Assert
-        assertThat(r1).isNotEqualTo(r2);
-        assertThat(r1).isNotEqualTo(r3);
-        assertThat(r2).isNotEqualTo(r3);
+        assertThat(r1).isNotEqualTo(r2).isNotEqualTo(r3);
+        assertThat(r2).isNotEqualTo(r1).isNotEqualTo(r3);
     }
 
     @Test
     @DisplayName("Deve respeitar contrato equals com id nulo")
     void deveRespeitarContratoComIdNulo() {
         // Arrange
-        User owner = criarDonoValido();
-        Restaurant r1 = new RestaurantBuilder().withId(null).withOwner(owner).build();
-        Restaurant r2 = new RestaurantBuilder().withId(null).withOwner(owner).build();
+        var owner = new UserBuilder().build();
+        var address = new AddressBuilder().build();
+        var openingHours = getOpeningHours();
+        var menu = getMenuItems();
+
+        var r1 = new Restaurant(null, "Restaurante Teste", address, "Italiana", openingHours, menu, owner);
+        var r2 = new Restaurant(null, "Restaurante Teste II", address, "Italiana", openingHours, menu, owner);
 
         // Act & Assert
-        assertThat(r1).isNotEqualTo(r2); // diferentes instâncias
-        assertThat(r1.equals(r1)).isTrue(); // reflexividade
+        assertThat(r1).isNotEqualTo(r2).isEqualTo(r1);
     }
 
     @Test
     @DisplayName("Deve considerar diferentes quando um tem id nulo e outro não")
     void deveSerDiferenteQuandoUmIdNuloEOutroNao() {
         // Arrange
-        User owner = criarDonoValido();
+        var owner = new UserBuilder().build();
+        var address = new AddressBuilder().build();
+        var openingHours = getOpeningHours();
+        var menu = getMenuItems();
 
-        Restaurant restaurantWithId = new RestaurantBuilder()
-                .withId(1L)
-                .withName("Restaurante com ID")
-                .withAddress(new Address("Rua Teste", "123", "Cidade", "SP", "00000-000", null))
-                .withCuisineType("Italiana")
-                .withOwner(owner)
-                .build();
-
-        Restaurant restaurantWithoutId = new RestaurantBuilder()
-                .withId(null)
-                .withName("Restaurante sem ID")
-                .withAddress(new Address("Rua Teste", "123", "Cidade", "SP", "00000-000", null))
-                .withCuisineType("Italiana")
-                .withOwner(owner)
-                .build();
-
+        var restaurantWithId = new Restaurant(1L, "Restaurante Teste", address, "Italiana", openingHours, menu, owner);
+        var restaurantWithoutId = new Restaurant(null, "Restaurante Teste II", address, "Italiana", openingHours, menu, owner);
         // Act & Assert
         assertThat(restaurantWithId).isNotEqualTo(restaurantWithoutId);
         assertThat(restaurantWithoutId).isNotEqualTo(restaurantWithId);
@@ -247,13 +261,18 @@ class RestaurantTest {
         assertThat(restaurantWithId.hashCode()).isNotEqualTo(restaurantWithoutId.hashCode());
     }
 
-    private User criarDonoValido() {
-        UserType ownerType = new UserType(null, "Dono de Restaurante", Set.of(new Role(null, "ADMIN")));
-        return new UserBuilder().withUserType(ownerType).build();
+    private static @NonNull Set<MenuItem> getMenuItems() {
+        return Set.of(new MenuItem(1L, "Macarronada", "Macarronada com massa da casa", new BigDecimal("95"), false, "/macarronada-casa.jpg"));
     }
 
-    private Restaurant criarRestaurantValido() {
-        User owner = criarDonoValido();
-        return new RestaurantBuilder().withName("Teste").withAddress(new Address("Rua Teste", "123", "Cidade", "SP", "00000-000", null)).withCuisineType("Italiana").withOwner(owner).build();
+    private static @NonNull Set<OpeningHours> getOpeningHours() {
+        return Set.of(
+                new OpeningHours(1L, DayOfWeek.MONDAY, LocalTime.of(11, 0), LocalTime.of(20, 30)),
+                new OpeningHours(2L, DayOfWeek.TUESDAY, LocalTime.of(11, 0), LocalTime.of(20, 0)),
+                new OpeningHours(3L, DayOfWeek.WEDNESDAY, LocalTime.of(11, 0), LocalTime.of(20, 0)),
+                new OpeningHours(4L, DayOfWeek.THURSDAY, LocalTime.of(11, 0), LocalTime.of(20, 0)),
+                new OpeningHours(5L, DayOfWeek.FRIDAY, LocalTime.of(11, 0), LocalTime.of(22, 0)),
+                new OpeningHours(6L, DayOfWeek.SATURDAY, LocalTime.of(11, 0), LocalTime.of(22, 0))
+        );
     }
 }

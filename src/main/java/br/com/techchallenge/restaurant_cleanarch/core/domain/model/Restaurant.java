@@ -26,13 +26,13 @@ public class Restaurant {
         Objects.requireNonNull(cuisineType, "O tipo de cozinha não pode ser nulo.");
         Objects.requireNonNull(owner, "O dono do restaurante não pode ser nulo.");
 
-        if (name.trim().isBlank()) {
+        if (name.isBlank()) {
             throw new BusinessException("O nome do restaurante não pode ser vazio.");
         }
-        if (cuisineType.trim().isBlank()) {
+        if (cuisineType.isBlank()) {
             throw new BusinessException("O tipo de cozinha não pode ser vazio.");
         }
-        if (!owner.isRestaurantOwner()) {
+        if (!owner.canOwnRestaurant()) {
             throw new BusinessException("O restaurante deve ter um dono válido do tipo 'Dono de Restaurante'.");
         }
 
@@ -40,8 +40,8 @@ public class Restaurant {
         this.name = name.trim();
         this.address = address;
         this.cuisineType = cuisineType.trim();
-        this.openingHours = openingHours == null ? null : Set.copyOf(openingHours);
-        this.menu = menu == null ? null : Set.copyOf(menu);
+        this.openingHours = openingHours == null ? Set.of() : Set.copyOf(openingHours);
+        this.menu = menu == null ? Set.of() : Set.copyOf(menu);
         this.owner = owner;
     }
 
