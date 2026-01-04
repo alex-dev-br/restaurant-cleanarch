@@ -1,6 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import lombok.*;
 
@@ -37,6 +38,12 @@ public class User {
 
     public boolean isRestaurantOwner() {
         return "Dono de Restaurante".equalsIgnoreCase(this.userType.getName());
+    }
+
+    public boolean canOwnRestaurant() {
+        return this.userType.getRoles()
+                .stream().map(Role::name)
+                .anyMatch(UserRoles.RESTAURANT_OWNER.getRoleName()::equals);
     }
 
     @Override

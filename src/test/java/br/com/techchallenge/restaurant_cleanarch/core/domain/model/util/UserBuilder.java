@@ -16,7 +16,7 @@ public class UserBuilder {
     private UserType userType;
 
     public UserBuilder() {
-        this.id = null;
+        this.id = UUID.randomUUID();
         this.name = "João Silva";
         this.email = "joao@example.com";
         this.address = new AddressBuilder().build();
