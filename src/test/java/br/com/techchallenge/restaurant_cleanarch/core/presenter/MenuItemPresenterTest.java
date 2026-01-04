@@ -1,6 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.core.presenter;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.MenuItemBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.MenuItemOutput;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,24 +15,28 @@ class MenuItemPresenterTest {
 
     @Test
     @DisplayName("Deve converter MenuItem para MenuItemOutput corretamente")
-    void shouldConvertMenuItemToMenuItemOutput() {
-        Long id = 1L;
-        String name = "Pizza Margherita";
-        String description = "Molho de tomate, mussarela e manjericão";
-        BigDecimal price = new BigDecimal("45.00");
-        Boolean restaurantOnly = false;
-        String photoPath = "/images/pizza.jpg";
+    void shouldConvertMenuItemToOutput() {
+        // Arrange - Usa o MenuItemBuilder para criar o MenuItem com associação ao Restaurant
+        MenuItem menuItem = new MenuItemBuilder()
+                .withId(1L)
+                .withName("Pizza Margherita")
+                .withDescription("Clássica italiana")
+                .withPrice(new BigDecimal("45.90"))
+                .withRestaurantOnly(false)
+                .withPhotoPath("/photos/pizza.jpg")
+                .build();  // O builder fornece um Restaurant padrão
 
-        MenuItem menuItem = new MenuItem(id, name, description, price, restaurantOnly, photoPath);
-
+        // Act
         MenuItemOutput output = MenuItemPresenter.toOutput(menuItem);
 
+        // Assert
         assertThat(output).isNotNull();
-        assertThat(output.id()).isEqualTo(id);
-        assertThat(output.name()).isEqualTo(name);
-        assertThat(output.description()).isEqualTo(description);
-        assertThat(output.price()).isEqualByComparingTo("45");
-        assertThat(output.restaurantOnly()).isEqualTo(restaurantOnly);
-        assertThat(output.photoPath()).isEqualTo(photoPath);
+        assertThat(output.id()).isEqualTo(1L);
+        assertThat(output.name()).isEqualTo("Pizza Margherita");
+        assertThat(output.description()).isEqualTo("Clássica italiana");
+        assertThat(output.price()).isEqualTo(new BigDecimal("45.90"));
+        assertThat(output.restaurantOnly()).isFalse();
+        assertThat(output.photoPath()).isEqualTo("/photos/pizza.jpg");
+        assertThat(output.restaurantId()).isEqualTo(menuItem.getRestaurant().getId());  // ← Valida o novo campo
     }
 }

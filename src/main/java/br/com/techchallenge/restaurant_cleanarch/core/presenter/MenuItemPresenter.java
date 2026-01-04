@@ -4,9 +4,18 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.MenuItemOutput;
 
 public class MenuItemPresenter {
-    private MenuItemPresenter(){}
+
+    private MenuItemPresenter() {}  // Construtor privado para utilitária
 
     public static MenuItemOutput toOutput(MenuItem menuItem) {
-        return new MenuItemOutput(menuItem.getId(), menuItem.getName(), menuItem.getDescription(), menuItem.getPrice(), menuItem.getRestaurantOnly(), menuItem.getPhotoPath());
+        return new MenuItemOutput(
+                menuItem.getId(),
+                menuItem.getName(),
+                menuItem.getDescription(),
+                menuItem.getPrice(),
+                menuItem.getRestaurantOnly(),
+                menuItem.getPhotoPath(),
+                menuItem.getRestaurant().getId()  // ← ID do restaurante
+        );
     }
 }

@@ -8,5 +8,6 @@ public record MenuItemOutput(
     String description,
     BigDecimal price,
     Boolean restaurantOnly,
-    String photoPath
+    String photoPath,
+    Long restaurantId
 ) {}

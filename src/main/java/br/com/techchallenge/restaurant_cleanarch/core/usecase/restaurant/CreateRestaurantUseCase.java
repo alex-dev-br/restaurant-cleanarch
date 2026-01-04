@@ -54,24 +54,76 @@ public class CreateRestaurantUseCase {
 
         var address = buildAddress(input.address());
         var openingHours = buildOpeningHours(input.openingHours());
-        var menuItemsInput = buildMenu(input.menu());
 
-        var restaurant = new Restaurant (null, input.name(), address, input.cuisineType(), openingHours, menuItemsInput, owner);
+        // Passo 1: Criar restaurante sem menu
+        Restaurant restaurantWithoutMenu = new Restaurant(
+                null,
+                input.name(),
+                address,
+                input.cuisineType(),
+                openingHours,
+                Set.of(),  // menu vazio inicialmente
+                owner
+        );
 
-        return restaurantGateway.save(restaurant);
+        // Passo 2: Salvar para gerar o ID
+        Restaurant savedRestaurant = restaurantGateway.save(restaurantWithoutMenu);
+
+        // Passo 3: Criar os itens do menu com associação ao restaurante persistido
+        Set<MenuItem> menuItems = buildMenu(input.menu(), savedRestaurant);
+
+        // Passo 4: Criar versão final do restaurante com menu
+        Restaurant finalRestaurant = new Restaurant(
+                savedRestaurant.getId(),
+                savedRestaurant.getName(),
+                savedRestaurant.getAddress(),
+                savedRestaurant.getCuisineType(),
+                savedRestaurant.getOpeningHours(),
+                menuItems,
+                savedRestaurant.getOwner()
+        );
+
+        // Passo 5: Salvar versão final
+        return restaurantGateway.save(finalRestaurant);
     }
 
-    private Set<MenuItem> buildMenu(Set<MenuItemInput> menuItemsInput) {
-        if (menuItemsInput == null) return Set.of();
-        return menuItemsInput.stream().map(m -> new MenuItem(null, m.name(), m.description(), m.price(), m.restaurantOnly(), m.photoPath())).collect(Collectors.toSet());
+    private Set<MenuItem> buildMenu(Set<MenuItemInput> menuItemsInput, Restaurant restaurant) {
+        if (menuItemsInput == null || menuItemsInput.isEmpty()) {
+            return Set.of();
+        }
+
+        return menuItemsInput.stream()
+                .map(m -> new MenuItem(
+                        null,
+                        m.name().trim(),
+                        m.description() != null ? m.description().trim() : null,
+                        m.price(),
+                        m.restaurantOnly(),
+                        m.photoPath().trim(),
+                        restaurant  // ← Associação correta com restaurante persistido
+                ))
+                .collect(Collectors.toSet());
     }
 
     private Set<OpeningHours> buildOpeningHours(Set<OpeningHoursInput> openingHours) {
-        if (openingHours == null) return Set.of();
-        return openingHours.stream().map(o -> new OpeningHours(null, o.dayOfDay(), o.openHour(), o.closeHour())).collect(Collectors.toSet());
+        if (openingHours == null || openingHours.isEmpty()) {
+            return Set.of();
+        }
+        return openingHours.stream()
+                .map(o -> new OpeningHours(null, o.dayOfDay(), o.openHour(), o.closeHour()))
+                .collect(Collectors.toSet());
     }
 
     private Address buildAddress(AddressInput addressInput) {
-        return addressInput == null ? null : new Address(addressInput.street(), addressInput.number(), addressInput.city(), addressInput.state(), addressInput.zipCode(), addressInput.complement());
+        return addressInput == null
+                ? null
+                : new Address(
+                addressInput.street(),
+                addressInput.number(),
+                addressInput.city(),
+                addressInput.state(),
+                addressInput.zipCode(),
+                addressInput.complement()
+        );
     }
 }

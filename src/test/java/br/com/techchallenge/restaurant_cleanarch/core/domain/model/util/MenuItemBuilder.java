@@ -1,6 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model.util;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.MenuItemInput;
 
 import java.math.BigDecimal;
@@ -13,6 +14,7 @@ public class MenuItemBuilder {
     private BigDecimal price;
     private Boolean restaurantOnly;
     private String photoPath;
+    private Restaurant restaurant;  // ← campo obrigatório
 
     public MenuItemBuilder() {
         this.id = 1L;
@@ -21,6 +23,8 @@ public class MenuItemBuilder {
         this.price = new BigDecimal("30");
         this.restaurantOnly = false;
         this.photoPath = "/photos/pizza.jpg";
+        // Valor padrão: usa o RestaurantBuilder existente (assumindo que ele tem valores padrão válidos)
+        this.restaurant = new RestaurantBuilder().build();
     }
 
     public MenuItemBuilder withoutId() {
@@ -58,8 +62,24 @@ public class MenuItemBuilder {
         return this;
     }
 
+    /**
+     * Permite sobrescrever o restaurante padrão nos testes
+     */
+    public MenuItemBuilder withRestaurant(Restaurant restaurant) {
+        this.restaurant = restaurant;
+        return this;
+    }
+
     public MenuItem build() {
-        return new MenuItem(id, name, description, price, restaurantOnly, photoPath);
+        return new MenuItem(
+                id,
+                name,
+                description,
+                price,
+                restaurantOnly,
+                photoPath,
+                restaurant  // ← Agora passamos o restaurante
+        );
     }
 
     public MenuItemInput buildInput() {

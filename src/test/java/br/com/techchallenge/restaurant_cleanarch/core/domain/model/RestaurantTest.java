@@ -1,8 +1,6 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.RestaurantBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.*;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
@@ -264,7 +262,16 @@ class RestaurantTest {
     }
 
     private static @NonNull Set<MenuItem> getMenuItems() {
-        return Set.of(new MenuItem(1L, "Macarronada", "Macarronada com massa da casa", new BigDecimal("95"), false, "/macarronada-casa.jpg"));
+        return Set.of(
+                new MenuItemBuilder()
+                        .withId(1L)
+                        .withName("Macarronada")
+                        .withDescription("Macarronada com massa da casa")
+                        .withPrice(new BigDecimal("95"))
+                        .withRestaurantOnly(false)
+                        .withPhotoPath("/macarronada-casa.jpg")
+                        .build()
+        );
     }
 
     private static @NonNull Set<OpeningHours> getOpeningHours() {

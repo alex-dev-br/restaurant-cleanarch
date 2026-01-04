@@ -12,6 +12,8 @@ import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.Re
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 
+import java.util.Optional;
+
 public class RestaurantGatewayAdapter implements RestaurantGateway {
 
     private final RestaurantRepository restaurantRepository;
@@ -34,11 +36,31 @@ public class RestaurantGatewayAdapter implements RestaurantGateway {
     }
 
     @Override
+    public Optional<Restaurant> findById(Long id) {
+        return restaurantRepository.findById(id)
+                .map(restaurantMapper::toDomain);
+    }
+
+    @Override
     public boolean existsRestaurantWithName(String name) {
         var probe = new RestaurantEntity();
         probe.setName(name);
         ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreCase().withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
 
         return restaurantRepository.exists(Example.of(probe, matcher));
+    }
+
+    @Override
+    public boolean existsRestaurantWithNameExcludingId(String name, Long excludingId) {
+        RestaurantEntity probe = new RestaurantEntity();
+        probe.setName(name);
+
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withIgnorePaths("id")
+                .withMatcher("name", ExampleMatcher.GenericPropertyMatchers.exact().ignoreCase());
+
+        return restaurantRepository.findAll(Example.of(probe, matcher))
+                .stream()
+                .anyMatch(entity -> !entity.getId().equals(excludingId));
     }
 }

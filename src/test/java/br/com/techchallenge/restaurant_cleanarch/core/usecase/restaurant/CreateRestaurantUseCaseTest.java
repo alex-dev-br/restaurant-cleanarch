@@ -3,9 +3,7 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.MenuItemBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.OpeningHoursBuilder;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.*;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
@@ -36,8 +34,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para CreateRestaurantUseCase")
@@ -80,39 +77,84 @@ class CreateRestaurantUseCaseTest {
         User owner = mock(User.class);
         given(owner.canOwnRestaurant()).willReturn(true);
 
-        Restaurant expectedRestaurant = new Restaurant (
-                1L,
-                input.name(),
-                new Address(addressInput.street(), addressInput.number(), addressInput.city(), addressInput.state(), addressInput.zipCode(), addressInput.complement()),
-                input.cuisineType(),
-                Set.of(
-                    new OpeningHours(1L, openingHoursTuesday.dayOfDay(), openingHoursTuesday.openHour(), openingHoursTuesday.closeHour()),
-                    new OpeningHours(2L, openingHoursFriday.dayOfDay(), openingHoursFriday.openHour(), openingHoursFriday.closeHour())
-                ),
-                Set.of(new MenuItem(1L, menuItem.name(), menuItem.description(), menuItem.price(), menuItem.restaurantOnly(), menuItem.photoPath())),
-                owner
-        );
+        // Restaurante sem menu (primeiro save) — ID ainda null
+        Restaurant restaurantWithoutMenu = new RestaurantBuilder()
+                .withName(input.name())
+                .withAddress(new Address(
+                        addressInput.street(), addressInput.number(), addressInput.city(), addressInput.state(), addressInput.zipCode(), addressInput.complement()
+                ))
+                .withCuisineType(input.cuisineType())
+                .withOpeningHours(Set.of(
+                        new OpeningHours(null, openingHoursTuesday.dayOfDay(), openingHoursTuesday.openHour(), openingHoursTuesday.closeHour()),
+                        new OpeningHours(null, openingHoursFriday.dayOfDay(), openingHoursFriday.openHour(), openingHoursFriday.closeHour())
+                ))
+                .withMenu(Set.of())
+                .withOwner(owner)
+                .build();
+
+// Restaurante com ID 1L (retorno do primeiro save)
+        Restaurant restaurantWithId = new RestaurantBuilder()
+                .withId(1L)  // Agora com ID
+                .withName(input.name())
+                .withAddress(new Address(
+                        addressInput.street(), addressInput.number(), addressInput.city(), addressInput.state(), addressInput.zipCode(), addressInput.complement()
+                ))
+                .withCuisineType(input.cuisineType())
+                .withOpeningHours(Set.of(
+                        new OpeningHours(null, openingHoursTuesday.dayOfDay(), openingHoursTuesday.openHour(), openingHoursTuesday.closeHour()),
+                        new OpeningHours(null, openingHoursFriday.dayOfDay(), openingHoursFriday.openHour(), openingHoursFriday.closeHour())
+                ))
+                .withMenu(Set.of())
+                .withOwner(owner)
+                .build();
+
+// Restaurante final com menu (segundo save)
+        Restaurant finalRestaurant = new RestaurantBuilder()
+                .withId(1L)
+                .withName(input.name())
+                .withAddress(new Address(
+                        addressInput.street(), addressInput.number(), addressInput.city(), addressInput.state(), addressInput.zipCode(), addressInput.complement()
+                ))
+                .withCuisineType(input.cuisineType())
+                .withOpeningHours(Set.of(
+                        new OpeningHours(null, openingHoursTuesday.dayOfDay(), openingHoursTuesday.openHour(), openingHoursTuesday.closeHour()),
+                        new OpeningHours(null, openingHoursFriday.dayOfDay(), openingHoursFriday.openHour(), openingHoursFriday.closeHour())
+                ))
+                .withMenu(Set.of(
+                        new MenuItemBuilder()
+                                .withId(1L)
+                                .withName(menuItem.name())
+                                .withDescription(menuItem.description())
+                                .withPrice(menuItem.price())
+                                .withRestaurantOnly(menuItem.restaurantOnly())
+                                .withPhotoPath(menuItem.photoPath())
+                                .build()
+                ))
+                .withOwner(owner)
+                .build();
+
+// Mock das duas chamadas ao save (ordem importa)
+        given(restaurantGateway.save(any(Restaurant.class)))
+                .willReturn(restaurantWithId)   // primeira chamada: retorna com ID
+                .willReturn(finalRestaurant);   // segunda chamada: retorna com menu
 
         given(loggedUserGateway.hasRole(RestaurantRoles.CREATE_RESTAURANT)).willReturn(true);
         given(userGateway.findByUuid(ownerId)).willReturn(Optional.of(owner));
         given(restaurantGateway.existsRestaurantWithName(input.name())).willReturn(false);
-        given(restaurantGateway.save(any(Restaurant.class))).willReturn(expectedRestaurant);
 
+        // When
         Restaurant result = createRestaurantUseCase.execute(input);
 
+        // Then
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(expectedRestaurant.getId());
+        assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getName()).isEqualTo(input.name());
+        assertThat(result.getMenu()).hasSize(1);
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.CREATE_RESTAURANT);
         then(userGateway).should().findByUuid(ownerId);
         then(restaurantGateway).should().existsRestaurantWithName(input.name());
-        then(restaurantGateway).should().save(restaurantCaptor.capture());
-
-        Restaurant capturedRestaurant = restaurantCaptor.getValue();
-        assertThat(capturedRestaurant.getId()).isNull();
-        assertThat(capturedRestaurant.getName()).isEqualTo(input.name());
-        assertThat(capturedRestaurant.getOwner()).isEqualTo(owner);
+        then(restaurantGateway).should(times(2)).save(any(Restaurant.class));  // ← Agora espera 2 chamadas
     }
 
     @Test

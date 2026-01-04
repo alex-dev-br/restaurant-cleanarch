@@ -1,6 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.core.presenter;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.*;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.MenuItemBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
@@ -29,7 +30,15 @@ class RestaurantPresenterTest {
         Set<OpeningHours> openingHoursSet = Set.of(openingHours);
 
         // MenuItem
-        MenuItem menuItem = new MenuItem(1L, "Item 1", "Desc", new BigDecimal("20.00"), false, "/img.jpg");
+        MenuItem menuItem = new MenuItemBuilder()
+                .withId(1L)
+                .withName("Item 1")
+                .withDescription("Desc")
+                .withPrice(new BigDecimal("20.00"))
+                .withRestaurantOnly(false)
+                .withPhotoPath("/img.jpg")
+                .build();
+
         Set<MenuItem> menu = Set.of(menuItem);
 
         // Owner (User)

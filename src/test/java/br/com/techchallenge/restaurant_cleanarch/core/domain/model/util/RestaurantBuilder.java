@@ -5,6 +5,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -31,7 +32,15 @@ public class RestaurantBuilder {
             new OpeningHours(5L, DayOfWeek.FRIDAY, LocalTime.of(11, 0), LocalTime.of(22, 0)),
             new OpeningHours(6L, DayOfWeek.SATURDAY, LocalTime.of(11, 0), LocalTime.of(22, 0))
         );
-        this.owner = new UserBuilder().build();
+
+        this.menu = Set.of();
+
+        //Owner padrão com permissão de dono de restaurante
+        this.owner = new UserBuilder()
+                .withRole(UserRoles.RESTAURANT_OWNER)
+                .withName("Dono do Restaurante")
+                .withEmail("dono@exemplo.com")
+                .build();
     }
 
     public RestaurantBuilder withoutId() {
