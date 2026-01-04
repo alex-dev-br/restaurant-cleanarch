@@ -16,12 +16,13 @@ public class UserBuilder {
     private UserType userType;
 
     public UserBuilder() {
-        this.id = UUID.randomUUID();
+        this.id = null; // o ID de uma entidade só deve ser gerado na camada de infraestrutura (entidade nova não tem id até ser persistida)
         this.name = "João Silva";
         this.email = "joao@example.com";
         this.address = new AddressBuilder().build();
-        Set<Role> roles = Set.of(new Role(null, "ADMIN"));
-        this.userType = new UserType(1L, "Dono de Restaurante", roles);
+//        Set<Role> roles = Set.of(new Role(null, "ADMIN"));
+        Set<Role> ownerRoles = Set.of(new Role(null, "RESTAURANT_OWNER"));
+        this.userType = new UserType(null, "Dono de Restaurante", ownerRoles);
     }
 
     public UserBuilder withoutId() {

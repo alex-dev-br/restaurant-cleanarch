@@ -33,7 +33,7 @@ public class Restaurant {
             throw new BusinessException("O tipo de cozinha não pode ser vazio.");
         }
         if (!owner.canOwnRestaurant()) {
-            throw new BusinessException("O restaurante deve ter um dono válido do tipo 'Dono de Restaurante'.");
+            throw new BusinessException("O restaurante deve ter um dono com permissão de proprietário.");
         }
 
         this.id = id;

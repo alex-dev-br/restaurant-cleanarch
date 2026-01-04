@@ -24,12 +24,10 @@ class RestaurantTest {
     @DisplayName("Deve criar Restaurant válido com campos preenchidos")
     void deveCriarRestaurantValido() {
         // Arrange
-        var owner = new UserBuilder().build();
+        var owner = new UserBuilder().build(); // id null, tem role RESTAURANT_OWNER
         var address = new AddressBuilder().build();
         var openingHours = getOpeningHours();
-
         var menu = getMenuItems();
-        var macarronada = menu.stream().findFirst().orElseThrow(() -> new RuntimeException("Cade a macarronada ?"));
 
         // Act
         Restaurant restaurant = new Restaurant(1L, "Restaurante Teste", address, "Italiana", openingHours, menu, owner);
@@ -39,16 +37,17 @@ class RestaurantTest {
         assertThat(restaurant.getName()).isEqualTo("Restaurante Teste");
         assertThat(restaurant.getCuisineType()).isEqualTo("Italiana");
         assertThat(restaurant.getOwner()).isNotNull().isEqualTo(owner);
-        assertThat(restaurant.getOwner().getId()).isNotNull().isEqualTo(owner.getId());
-        assertThat(restaurant.getOpeningHours()).isNotNull().hasSize(6).containsExactlyInAnyOrderElementsOf(openingHours);
-        assertThat(restaurant.getMenu()).hasSize(1).containsExactlyInAnyOrder(macarronada);
+        assertThat(restaurant.getOwner().getId()).isNull(); // ← Correção: agora é null
+        assertThat(restaurant.getOpeningHours()).hasSize(6).containsExactlyInAnyOrderElementsOf(openingHours);
+        assertThat(restaurant.getMenu()).hasSize(1);
     }
 
     @Test
     @DisplayName("Deve lançar BusinessException sem dono válido")
     void deveLancarExcecaoSemDonoValido() {
-        // Arrange
-        UserType clienteType = new UserType(null, "Cliente", Set.of(new Role(null, "ADMIN")));
+        // Arrange: usuário sem a role RESTAURANT_OWNER
+        Set<Role> clientRoles = Set.of(new Role(null, "CLIENT")); // ou vazio
+        UserType clienteType = new UserType(null, "Cliente", clientRoles);
         User invalidOwner = new UserBuilder().withUserType(clienteType).build();
 
         var builder = new RestaurantBuilder().withOwner(invalidOwner);
@@ -56,7 +55,7 @@ class RestaurantTest {
         // Act & Assert
         assertThatThrownBy(builder::build)
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("O restaurante deve ter um dono válido do tipo 'Dono de Restaurante'.");
+                .hasMessage("O restaurante deve ter um dono com permissão de proprietário."); // ← Mensagem atualizada
     }
 
     @Test

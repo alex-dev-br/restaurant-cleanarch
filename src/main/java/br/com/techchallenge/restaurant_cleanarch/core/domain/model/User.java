@@ -37,13 +37,14 @@ public class User {
     }
 
     public boolean isRestaurantOwner() {
-        return "Dono de Restaurante".equalsIgnoreCase(this.userType.getName());
+        return userType != null  && "Dono de Restaurante".equalsIgnoreCase(this.userType.getName());
     }
 
     public boolean canOwnRestaurant() {
         return this.userType.getRoles()
-                .stream().map(Role::name)
-                .anyMatch(UserRoles.RESTAURANT_OWNER.getRoleName()::equals);
+                .stream()
+                .map(Role::name)
+                .anyMatch("RESTAURANT_OWNER"::equals);
     }
 
     @Override
