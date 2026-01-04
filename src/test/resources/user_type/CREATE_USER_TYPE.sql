@@ -1,0 +1,2 @@
+insert into user_types (name, id) values ('RESTAURANT_OWNER', default);
+insert into user_types_roles (user_type_id, role_id) values ((select id from user_types where name = 'RESTAURANT_OWNER'), (select id from roles where name = 'RESTAURANT_OWNER'));

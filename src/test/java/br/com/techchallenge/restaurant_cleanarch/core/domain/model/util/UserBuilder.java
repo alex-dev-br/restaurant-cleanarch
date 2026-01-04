@@ -4,11 +4,14 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 public class UserBuilder {
+    private final Set<Role> roles;
     private UUID id;
     private String name;
     private String email;
@@ -16,13 +19,18 @@ public class UserBuilder {
     private UserType userType;
 
     public UserBuilder() {
-        this.id = null; // o ID de uma entidade só deve ser gerado na camada de infraestrutura (entidade nova não tem id até ser persistida)
+        this.id = UUID.randomUUID();
         this.name = "João Silva";
         this.email = "joao@example.com";
         this.address = new AddressBuilder().build();
-//        Set<Role> roles = Set.of(new Role(null, "ADMIN"));
-        Set<Role> ownerRoles = Set.of(new Role(null, "RESTAURANT_OWNER"));
-        this.userType = new UserType(null, "Dono de Restaurante", ownerRoles);
+        this.roles = new HashSet<>();
+        this.roles.add(new Role(null, "ADMIN"));
+        this.userType = new UserType(1L, "Dono de Restaurante", this.roles);
+    }
+
+    public UserBuilder withRole(ForGettingRoleName forGettingRoleName) {
+        this.roles.add(new Role(null, forGettingRoleName.getRoleName()));
+        return this;
     }
 
     public UserBuilder withoutId() {
@@ -52,10 +60,13 @@ public class UserBuilder {
 
     public UserBuilder withUserType(UserType userType) {
         this.userType = userType;
+        if (userType != null && userType.getRoles() != null) {
+            this.roles.addAll(userType.getRoles());
+        }
         return this;
     }
 
     public User build() {
-        return new User(id, name, email, address, userType);
+        return new User(id, name, email, address, userType == null ? null : new UserType(this.userType.getId(), this.userType.getName(), this.roles));
     }
 }

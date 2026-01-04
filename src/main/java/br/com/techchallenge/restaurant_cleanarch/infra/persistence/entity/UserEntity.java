@@ -18,5 +18,14 @@ public class UserEntity {
     @JoinColumn(name = "user_type_id")
     private UserTypeEntity userType;
 
+    @Column
+    private String name;
+
+    @Column
+    private String email;
+
+    @Embedded
+    private AddressEmbeddableEntity address;
+
     //TODO implementar o resto, primeira implementação apenas para teste do user type
 }

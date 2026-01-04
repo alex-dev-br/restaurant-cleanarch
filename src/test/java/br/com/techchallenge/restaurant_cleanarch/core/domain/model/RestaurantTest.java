@@ -4,6 +4,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressB
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.RestaurantBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +25,7 @@ class RestaurantTest {
     @DisplayName("Deve criar Restaurant válido com campos preenchidos")
     void deveCriarRestaurantValido() {
         // Arrange
-        var owner = new UserBuilder().build(); // id null, tem role RESTAURANT_OWNER
+        var owner = new UserBuilder().withRole(UserRoles.RESTAURANT_OWNER).build(); // id null, tem role RESTAURANT_OWNER
         var address = new AddressBuilder().build();
         var openingHours = getOpeningHours();
         var menu = getMenuItems();
@@ -37,7 +38,9 @@ class RestaurantTest {
         assertThat(restaurant.getName()).isEqualTo("Restaurante Teste");
         assertThat(restaurant.getCuisineType()).isEqualTo("Italiana");
         assertThat(restaurant.getOwner()).isNotNull().isEqualTo(owner);
-        assertThat(restaurant.getOwner().getId()).isNull(); // ← Correção: agora é null
+        assertThat(restaurant.getOwner().getId()).isNotNull();
+        assertThat(restaurant.getOwner().getName()).isNotNull().isEqualTo(owner.getName());
+        assertThat(restaurant.getOwner().getEmail()).isNotNull().isEqualTo(owner.getEmail());
         assertThat(restaurant.getOpeningHours()).hasSize(6).containsExactlyInAnyOrderElementsOf(openingHours);
         assertThat(restaurant.getMenu()).hasSize(1);
     }
@@ -74,7 +77,7 @@ class RestaurantTest {
     @DisplayName("Deve lançar exceção quando name for nulo")
     void deveLancarExcecaoQuandoNameForNulo() {
         // Arrange
-        var owner = new UserBuilder().build();
+        var owner = new UserBuilder().withRole(UserRoles.RESTAURANT_OWNER).build();
         var address = new AddressBuilder().build();
         var openingHours = getOpeningHours();
         var menu = getMenuItems();
@@ -149,7 +152,7 @@ class RestaurantTest {
     @DisplayName("Deve permitir coleções nulas ou vazias")
     void devePermitirColecoesNulasOuVazias() {
         // Arrange
-        var owner = new UserBuilder().build();
+        var owner = new UserBuilder().withRole(UserRoles.RESTAURANT_OWNER).build();
         var address = new AddressBuilder().build();
 
         // Act
@@ -164,7 +167,7 @@ class RestaurantTest {
     @DisplayName("Deve retornar true para equals com mesmo objeto")
     void deveSerIgualParaMesmoObjeto() {
         // Arrange
-        var owner = new UserBuilder().build();
+        var owner = new UserBuilder().withRole(UserRoles.RESTAURANT_OWNER).build();
         var address = new AddressBuilder().build();
 
         // Act
@@ -178,7 +181,7 @@ class RestaurantTest {
     @DisplayName("Deve retornar false para equals com objeto de outra classe")
     void deveSerDiferenteParaOutraClasse() {
         // Arrange
-        var owner = new UserBuilder().build();
+        var owner = new UserBuilder().withRole(UserRoles.RESTAURANT_OWNER).build();
         var address = new AddressBuilder().build();
         var openingHours = getOpeningHours();
         var menu = getMenuItems();
@@ -195,7 +198,7 @@ class RestaurantTest {
     @DisplayName("Deve retornar true para equals quando ids são iguais")
     void deveSerIgualQuandoIdsIguais() {
         // Arrange
-        var owner = new UserBuilder().build();
+        var owner = new UserBuilder().withRole(UserRoles.RESTAURANT_OWNER).build();
         var address = new AddressBuilder().build();
         var openingHours = getOpeningHours();
         var menu = getMenuItems();
@@ -211,7 +214,7 @@ class RestaurantTest {
     @DisplayName("Deve retornar false para equals quando ids diferentes ou mistos")
     void deveSerDiferenteQuandoIdsDiferentesOuMistos() {
         // Arrange
-        var owner = new UserBuilder().build();
+        var owner = new UserBuilder().withRole(UserRoles.RESTAURANT_OWNER).build();
         var address = new AddressBuilder().build();
         var openingHours = getOpeningHours();
         var menu = getMenuItems();
@@ -229,7 +232,7 @@ class RestaurantTest {
     @DisplayName("Deve respeitar contrato equals com id nulo")
     void deveRespeitarContratoComIdNulo() {
         // Arrange
-        var owner = new UserBuilder().build();
+        var owner = new UserBuilder().withRole(UserRoles.RESTAURANT_OWNER).build();
         var address = new AddressBuilder().build();
         var openingHours = getOpeningHours();
         var menu = getMenuItems();
@@ -245,7 +248,7 @@ class RestaurantTest {
     @DisplayName("Deve considerar diferentes quando um tem id nulo e outro não")
     void deveSerDiferenteQuandoUmIdNuloEOutroNao() {
         // Arrange
-        var owner = new UserBuilder().build();
+        var owner = new UserBuilder().withRole(UserRoles.RESTAURANT_OWNER).build();
         var address = new AddressBuilder().build();
         var openingHours = getOpeningHours();
         var menu = getMenuItems();

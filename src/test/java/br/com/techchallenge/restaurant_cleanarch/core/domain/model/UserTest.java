@@ -3,6 +3,7 @@ package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,7 @@ class UserTest {
         Address address = new AddressBuilder().build();
 
         var userBuilder = new UserBuilder()
+                .withoutId()
                 .withName("Maria Oliveira")
                 .withEmail("maria@restaurante.com")
                 .withAddress(address)
@@ -215,7 +217,7 @@ class UserTest {
     @Test
     @DisplayName("Deve verificar canOwnRestaurant baseado em role")
     void deveVerificarCanOwnRestaurant() {
-        Set<Role> rolesWithOwner = Set.of(new Role(null, "RESTAURANT_OWNER"));
+        Set<Role> rolesWithOwner = Set.of(new Role(null, UserRoles.RESTAURANT_OWNER.getRoleName()));
         UserType ownerType = new UserType(null, "Dono de Restaurante", rolesWithOwner);
 
         User userWithRole = new UserBuilder().withUserType(ownerType).build();
