@@ -4,6 +4,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateRestaurantIn
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
 import br.com.techchallenge.restaurant_cleanarch.core.presenter.RestaurantPresenter;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.CreateRestaurantUseCase;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.DeleteRestaurantUseCase;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.GetAllRestaurantUseCase;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.GetByIdRestaurantUseCase;
 
@@ -15,14 +16,20 @@ public class RestaurantController {
     private final CreateRestaurantUseCase createRestaurantUseCase;
     private final GetByIdRestaurantUseCase getByIdRestaurantUseCase;
     private final GetAllRestaurantUseCase getAllRestaurantUseCase;
+    private final DeleteRestaurantUseCase deleteRestaurantUseCase;
 
-    public RestaurantController(CreateRestaurantUseCase createRestaurantUseCase, GetByIdRestaurantUseCase getByIdRestaurantUseCase, GetAllRestaurantUseCase getAllRestaurantUseCase) {
+    public RestaurantController(CreateRestaurantUseCase createRestaurantUseCase,
+                                GetByIdRestaurantUseCase getByIdRestaurantUseCase,
+                                GetAllRestaurantUseCase getAllRestaurantUseCase,
+                                DeleteRestaurantUseCase deleteRestaurantUseCase) {
         Objects.requireNonNull(createRestaurantUseCase, "CreateRestaurantUseCase cannot be null.");
         Objects.requireNonNull(getByIdRestaurantUseCase, "GetByIdRestaurantUseCase cannot be null.");
         Objects.requireNonNull(getAllRestaurantUseCase, "GetAllRestaurantUseCase cannot be null.");
+        Objects.requireNonNull(deleteRestaurantUseCase, "DeleteRestaurantUseCase cannot be null.");
         this.createRestaurantUseCase = createRestaurantUseCase;
         this.getByIdRestaurantUseCase = getByIdRestaurantUseCase;
         this.getAllRestaurantUseCase = getAllRestaurantUseCase;
+        this.deleteRestaurantUseCase = deleteRestaurantUseCase;
     }
 
     public RestaurantOutput createRestaurant(CreateRestaurantInput createRestaurantInput) {
@@ -42,5 +49,10 @@ public class RestaurantController {
                 .stream()
                 .map(RestaurantPresenter::toOutput)
                 .toList();
+    }
+
+    public void deleteById(Long id) {
+        Objects.requireNonNull(id, "Restaurant Id cannot be null.");
+        deleteRestaurantUseCase.execute(id);
     }
 }

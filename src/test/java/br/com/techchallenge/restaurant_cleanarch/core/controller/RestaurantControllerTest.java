@@ -11,6 +11,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateRestaurantInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.CreateRestaurantUseCase;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.DeleteRestaurantUseCase;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.GetAllRestaurantUseCase;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.GetByIdRestaurantUseCase;
 import org.junit.jupiter.api.DisplayName;
@@ -29,8 +30,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para RestaurantController")
@@ -44,6 +44,9 @@ class RestaurantControllerTest {
 
     @Mock
     private GetAllRestaurantUseCase getAllRestaurantUseCase;
+
+    @Mock
+    private DeleteRestaurantUseCase deleteRestaurantUseCase;
 
     @InjectMocks
     private RestaurantController restaurantController;
@@ -124,7 +127,7 @@ class RestaurantControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com CreateRestaurantUseCase nulo")
     void shouldThrowExceptionWhenCreateUseCaseIsNull() {
-        assertThatThrownBy(() -> new RestaurantController(null, getByIdRestaurantUseCase, getAllRestaurantUseCase))
+        assertThatThrownBy(() -> new RestaurantController(null, getByIdRestaurantUseCase, getAllRestaurantUseCase, deleteRestaurantUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("CreateRestaurantUseCase cannot be null.");
     }
@@ -132,7 +135,7 @@ class RestaurantControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com GetByIdRestaurantUseCase nulo")
     void shouldThrowExceptionWhenGetByIdUseCaseIsNull() {
-        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, null, getAllRestaurantUseCase))
+        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, null, getAllRestaurantUseCase, deleteRestaurantUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("GetByIdRestaurantUseCase cannot be null.");
     }
@@ -140,9 +143,17 @@ class RestaurantControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com GetAllRestaurantUseCase nulo")
     void shouldThrowExceptionWhenGetAllUseCaseIsNull() {
-        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, getByIdRestaurantUseCase, null))
+        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, getByIdRestaurantUseCase, null, deleteRestaurantUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("GetAllRestaurantUseCase cannot be null.");
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao instanciar controller com DeleteRestaurantUseCase nulo")
+    void shouldThrowExceptionWhenDeleteUseCaseIsNull() {
+        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, getByIdRestaurantUseCase, getAllRestaurantUseCase, null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("DeleteRestaurantUseCase cannot be null.");
     }
     
     @Test
@@ -264,5 +275,43 @@ class RestaurantControllerTest {
         assertThat(result).isNotNull().isEmpty();
 
         then(getAllRestaurantUseCase).should().execute();
+    }
+
+    @Test
+    @DisplayName("Deve deletar restaurante com sucesso")
+    void shouldDeleteRestaurantSuccessfully() {
+        // Arrange
+        Long id = 1L;
+
+        // Act
+        restaurantController.deleteById(id);
+
+        // Assert
+        then(deleteRestaurantUseCase).should().execute(id);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao chamar deleteById com ID nulo")
+    void shouldThrowExceptionWhenDeleteByIdWithNullId() {
+        assertThatThrownBy(() -> restaurantController.deleteById(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("Restaurant Id cannot be null.");
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando DeleteRestaurantUseCase lança exceção")
+    void shouldThrowExceptionWhenDeleteUseCaseThrowsException() {
+        // Arrange
+        Long id = 1L;
+        RuntimeException expectedException = new RuntimeException("Error deleting restaurant");
+
+        willThrow(expectedException).given(deleteRestaurantUseCase).execute(id);
+
+        // Act & Assert
+        assertThatThrownBy(() -> restaurantController.deleteById(id))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Error deleting restaurant");
+
+        then(deleteRestaurantUseCase).should().execute(id);
     }
 }
