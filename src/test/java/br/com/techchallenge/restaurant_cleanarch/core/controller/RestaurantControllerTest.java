@@ -11,6 +11,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateRestaurantInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.CreateRestaurantUseCase;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.GetByIdRestaurantUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +36,9 @@ class RestaurantControllerTest {
 
     @Mock
     private CreateRestaurantUseCase createRestaurantUseCase;
+
+    @Mock
+    private GetByIdRestaurantUseCase getByIdRestaurantUseCase;
 
     @InjectMocks
     private RestaurantController restaurantController;
@@ -115,9 +119,17 @@ class RestaurantControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com CreateRestaurantUseCase nulo")
     void shouldThrowExceptionWhenCreateUseCaseIsNull() {
-        assertThatThrownBy(() -> new RestaurantController(null))
+        assertThatThrownBy(() -> new RestaurantController(null, getByIdRestaurantUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("CreateRestaurantUseCase cannot be null.");
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao instanciar controller com GetByIdRestaurantUseCase nulo")
+    void shouldThrowExceptionWhenGetByIdUseCaseIsNull() {
+        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("GetByIdRestaurantUseCase cannot be null.");
     }
     
     @Test
@@ -126,5 +138,66 @@ class RestaurantControllerTest {
         assertThatThrownBy(() -> restaurantController.createRestaurant(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("CreateRestaurantInput cannot be null.");
+    }
+
+    @Test
+    @DisplayName("Deve buscar Restaurant por ID com sucesso e retornar RestaurantOutput")
+    void shouldFindRestaurantByIdSuccessfully() {
+        // Arrange
+        Long id = 1L;
+        UUID ownerId = UUID.randomUUID();
+        Address address = new AddressBuilder().build();
+        User owner = new UserBuilder().withId(ownerId).withRole(UserRoles.RESTAURANT_OWNER).build();
+
+        Restaurant restaurant = new Restaurant(
+                id,
+                "Restaurante Teste",
+                address,
+                "Italiana",
+                Set.of(new OpeningHoursBuilder().build()),
+                Set.of(new MenuItemBuilder().build()),
+                owner
+        );
+
+        given(getByIdRestaurantUseCase.execute(id)).willReturn(restaurant);
+
+        // Act
+        RestaurantOutput result = restaurantController.findById(id);
+
+        // Assert
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(restaurant.getId());
+        assertThat(result.name()).isEqualTo(restaurant.getName());
+        assertThat(result.cuisineType()).isEqualTo(restaurant.getCuisineType());
+        assertThat(result.openingHours()).isNotNull().hasSize(1);
+        assertThat(result.menuItems()).isNotNull().hasSize(1);
+        assertThat(result.ownerId()).isEqualTo(ownerId);
+
+        then(getByIdRestaurantUseCase).should().execute(id);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando GetByIdRestaurantUseCase lança exceção")
+    void shouldThrowExceptionWhenGetByIdUseCaseThrowsException() {
+        // Arrange
+        Long id = 1L;
+        RuntimeException expectedException = new RuntimeException("Restaurant not found");
+
+        given(getByIdRestaurantUseCase.execute(id)).willThrow(expectedException);
+
+        // Act & Assert
+        assertThatThrownBy(() -> restaurantController.findById(id))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Restaurant not found");
+
+        then(getByIdRestaurantUseCase).should().execute(id);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao chamar findById com ID nulo")
+    void shouldThrowExceptionWhenFindByIdWithNullId() {
+        assertThatThrownBy(() -> restaurantController.findById(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("Restaurant Id cannot be null.");
     }
 }
