@@ -12,6 +12,7 @@ import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.Re
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 
+import java.util.List;
 import java.util.Optional;
 
 public class RestaurantGatewayAdapter implements RestaurantGateway {
@@ -62,5 +63,13 @@ public class RestaurantGatewayAdapter implements RestaurantGateway {
         return restaurantRepository.findAll(Example.of(probe, matcher))
                 .stream()
                 .anyMatch(entity -> !entity.getId().equals(excludingId));
+    }
+
+    @Override
+    public List<Restaurant> findAll() {
+        return restaurantRepository.findAll()
+                .stream()
+                .map(restaurantMapper::toDomain)
+                .toList();
     }
 }
