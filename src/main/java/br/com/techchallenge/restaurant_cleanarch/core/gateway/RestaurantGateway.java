@@ -1,7 +1,9 @@
 package br.com.techchallenge.restaurant_cleanarch.core.gateway;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface RestaurantGateway {
@@ -20,4 +22,6 @@ public interface RestaurantGateway {
      * Verifica se já existe um restaurante com o mesmo nome, exceto o próprio (para update)
      */
     boolean existsRestaurantWithNameExcludingId(String name, Long excludingId);
+
+    List<Restaurant> findAll();
 }

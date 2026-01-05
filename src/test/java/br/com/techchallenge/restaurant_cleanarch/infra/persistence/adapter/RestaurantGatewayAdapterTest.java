@@ -26,6 +26,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -134,5 +135,52 @@ class RestaurantGatewayAdapterTest {
 
         // Then
         assertThat(exists).isFalse();
+    }
+
+    @Test
+    @DisplayName("Deve retornar todos os restaurantes")
+    void shouldReturnAllRestaurants() {
+        // Given
+        Restaurant restaurant1 = new Restaurant(
+                null,
+                "Restaurant 1",
+                new AddressBuilder().build(),
+                "Italian",
+                Collections.emptySet(),
+                Collections.emptySet(),
+                ownerDomain
+        );
+        Restaurant restaurant2 = new Restaurant(
+                null,
+                "Restaurant 2",
+                new AddressBuilder().build(),
+                "Japanese",
+                Collections.emptySet(),
+                Collections.emptySet(),
+                ownerDomain
+        );
+        adapter.save(restaurant1);
+        adapter.save(restaurant2);
+
+        // When
+        List<Restaurant> restaurants = adapter.findAll();
+
+        // Then
+        assertThat(restaurants).hasSizeGreaterThanOrEqualTo(2);
+        assertThat(restaurants).extracting(Restaurant::getName)
+                .contains("Restaurant 1", "Restaurant 2");
+    }
+
+    @Test
+    @DisplayName("Deve retornar lista vazia quando não houver restaurantes")
+    void shouldReturnEmptyListWhenNoRestaurants() {
+        // Given
+        restaurantRepository.deleteAll();
+
+        // When
+        List<Restaurant> restaurants = adapter.findAll();
+
+        // Then
+        assertThat(restaurants).isEmpty();
     }
 }
