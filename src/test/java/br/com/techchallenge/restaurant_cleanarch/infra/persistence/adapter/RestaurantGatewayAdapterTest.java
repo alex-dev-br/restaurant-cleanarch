@@ -183,4 +183,40 @@ class RestaurantGatewayAdapterTest {
         // Then
         assertThat(restaurants).isEmpty();
     }
+
+    @Test
+    @DisplayName("Deve deletar restaurante com sucesso")
+    void shouldDeleteRestaurantSuccessfully() {
+        // Given
+        Restaurant restaurant = new Restaurant(
+                null,
+                "Restaurant to Delete",
+                new AddressBuilder().build(),
+                "Mexican",
+                Collections.emptySet(),
+                Collections.emptySet(),
+                ownerDomain
+        );
+        Restaurant savedRestaurant = adapter.save(restaurant);
+        Long id = savedRestaurant.getId();
+
+        // When
+        adapter.delete(id);
+
+        // Then
+        assertThat(restaurantRepository.findById(id)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deve não lançar exceção ao deletar restaurante inexistente")
+    void shouldNotThrowExceptionWhenDeletingNonExistentRestaurant() {
+        // Given
+        Long nonExistentId = 999L;
+
+        // When
+        adapter.delete(nonExistentId);
+
+        // Then
+        assertThat(restaurantRepository.findById(nonExistentId)).isEmpty();
+    }
 }

@@ -72,4 +72,9 @@ public class RestaurantGatewayAdapter implements RestaurantGateway {
                 .map(restaurantMapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public void delete(Long id) {
+        restaurantRepository.deleteById(id);
+    }
 }

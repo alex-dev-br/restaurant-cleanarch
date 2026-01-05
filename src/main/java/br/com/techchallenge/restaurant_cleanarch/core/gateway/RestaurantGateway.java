@@ -24,4 +24,6 @@ public interface RestaurantGateway {
     boolean existsRestaurantWithNameExcludingId(String name, Long excludingId);
 
     List<Restaurant> findAll();
+
+    void delete(Long id);
 }
