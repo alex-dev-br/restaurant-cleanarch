@@ -2,8 +2,8 @@ package br.com.techchallenge.restaurant_cleanarch.core.presenter;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.*;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.MenuItemBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

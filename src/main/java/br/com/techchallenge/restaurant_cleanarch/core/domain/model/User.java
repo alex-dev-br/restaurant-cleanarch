@@ -1,6 +1,5 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import lombok.*;
@@ -13,25 +12,22 @@ import java.util.UUID;
 public class User {
     private UUID id;
     private String name;
-    private String email;
+    private EmailAddress emailAddress;
     private Address address;
     private UserType userType;
 
-    public User(UUID id, String name, String email, Address address, UserType userType) {
+    public User(UUID id, String name, EmailAddress emailAddress, Address address, UserType userType) {
         Objects.requireNonNull(name, "Name cannot be null.");
-        Objects.requireNonNull(email, "Email cannot be null.");
+        Objects.requireNonNull(emailAddress, "Email cannot be null.");
         Objects.requireNonNull(userType, "User type cannot be null.");
 
-        if(name.trim().isBlank()) {
+        if(name.isBlank()) {
             throw new BusinessException("Name cannot be blank.");
-        }
-        if(!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            throw new BusinessException("Email inválido.");
         }
 
         this.id = id;
         this.name = name;
-        this.email = email;
+        this.emailAddress = emailAddress;
         this.address = address;
         this.userType = userType;
     }
@@ -44,7 +40,7 @@ public class User {
         return this.userType.getRoles()
                 .stream()
                 .map(Role::name)
-                .anyMatch("RESTAURANT_OWNER"::equals);
+                .anyMatch(UserRoles.RESTAURANT_OWNER.getRoleName()::equals);
     }
 
     @Override

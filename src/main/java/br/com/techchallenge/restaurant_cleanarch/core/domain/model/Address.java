@@ -1,4 +1,4 @@
-package br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject;
+package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import lombok.*;

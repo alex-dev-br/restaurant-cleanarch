@@ -1,6 +1,6 @@
 package br.com.techchallenge.restaurant_cleanarch.core.presenter;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.OpeningHoursOutput;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

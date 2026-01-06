@@ -6,7 +6,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.MenuItemBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.OpeningHoursBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para GetAllRestaurantUseCase")
-class GetAllRestaurantUseCaseTest {
+class GetAllRestaurantsUseCaseTest {
 
     @Mock
     private RestaurantGateway restaurantGateway;
@@ -41,7 +41,7 @@ class GetAllRestaurantUseCaseTest {
     private LoggedUserGateway loggedUserGateway;
 
     @InjectMocks
-    private GetAllRestaurantUseCase getAllRestaurantUseCase;
+    private GetAllRestaurantsUseCase getAllRestaurantsUseCase;
 
     @Test
     @DisplayName("Deve retornar lista de Restaurant com sucesso")
@@ -62,7 +62,7 @@ class GetAllRestaurantUseCaseTest {
         given(restaurantGateway.findAll()).willReturn(List.of(restaurant));
 
         // Act
-        List<Restaurant> result = getAllRestaurantUseCase.execute();
+        List<Restaurant> result = getAllRestaurantsUseCase.execute();
 
         // Assert
         assertThat(result).isNotNull().hasSize(1);
@@ -86,7 +86,7 @@ class GetAllRestaurantUseCaseTest {
         given(restaurantGateway.findAll()).willReturn(Collections.emptyList());
 
         // Act
-        List<Restaurant> result = getAllRestaurantUseCase.execute();
+        List<Restaurant> result = getAllRestaurantsUseCase.execute();
 
         // Assert
         assertThat(result).isNotNull().isEmpty();
@@ -102,7 +102,7 @@ class GetAllRestaurantUseCaseTest {
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(false);
 
         // Act & Assert
-        assertThatThrownBy(() -> getAllRestaurantUseCase.execute())
+        assertThatThrownBy(() -> getAllRestaurantsUseCase.execute())
                 .isInstanceOf(OperationNotAllowedException.class)
                 .hasMessage("The current user does not have permission to view restaurants.");
 

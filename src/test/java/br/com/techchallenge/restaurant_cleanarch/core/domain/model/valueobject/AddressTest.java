@@ -1,7 +1,6 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import org.junit.jupiter.api.*;
 

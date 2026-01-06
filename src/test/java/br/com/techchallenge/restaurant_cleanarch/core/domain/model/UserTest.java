@@ -2,7 +2,6 @@ package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import org.junit.jupiter.api.DisplayName;
@@ -58,7 +57,7 @@ class UserTest {
         assertThat(user).isNotNull();
         assertThat(user.getId()).isNull(); // Ainda não persistido
         assertThat(user.getName()).isEqualTo("Maria Oliveira");
-        assertThat(user.getEmail()).isEqualTo("maria@restaurante.com");
+        assertThat(user.getEmailAddress()).isEqualTo("maria@restaurante.com");
         assertThat(user.getAddress()).isEqualTo(address);
         assertThat(user.getUserType()).isEqualTo(ownerType);
         assertThat(user.isRestaurantOwner()).isTrue();

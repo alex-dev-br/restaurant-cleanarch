@@ -11,15 +11,16 @@ import java.util.Objects;
 public class CreateMenuItemUseCase {
 
     private final MenuItemGateway menuItemGateway;
-    private final RestaurantGateway restaurantGateway;
+    private RestaurantGateway restaurantGateway;
+    private final MenuGateway menuGateway;
     private final LoggedUserGateway loggedUserGateway;
 
-    public CreateMenuItemUseCase(MenuItemGateway menuItemGateway, RestaurantGateway restaurantGateway, LoggedUserGateway loggedUserGateway) {
+    public CreateMenuItemUseCase(MenuItemGateway menuItemGateway, MenuGateway menuGateway, LoggedUserGateway loggedUserGateway) {
         Objects.requireNonNull(menuItemGateway, "MenuItemGateway cannot be null");
-        Objects.requireNonNull(restaurantGateway, "RestaurantGateway cannot be null");
+        Objects.requireNonNull(menuGateway, "MenuGateway cannot be null");
         Objects.requireNonNull(loggedUserGateway, "LoggedUserGateway cannot be null");
         this.menuItemGateway = menuItemGateway;
-        this.restaurantGateway = restaurantGateway;
+        this.menuGateway = menuGateway;
         this.loggedUserGateway = loggedUserGateway;
     }
 

@@ -6,13 +6,13 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressB
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.MenuItemBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.OpeningHoursBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateRestaurantInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.CreateRestaurantUseCase;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.DeleteRestaurantUseCase;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.GetAllRestaurantUseCase;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.GetAllRestaurantsUseCase;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.GetByIdRestaurantUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class RestaurantControllerTest {
     private GetByIdRestaurantUseCase getByIdRestaurantUseCase;
 
     @Mock
-    private GetAllRestaurantUseCase getAllRestaurantUseCase;
+    private GetAllRestaurantsUseCase getAllRestaurantsUseCase;
 
     @Mock
     private DeleteRestaurantUseCase deleteRestaurantUseCase;
@@ -127,7 +127,7 @@ class RestaurantControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com CreateRestaurantUseCase nulo")
     void shouldThrowExceptionWhenCreateUseCaseIsNull() {
-        assertThatThrownBy(() -> new RestaurantController(null, getByIdRestaurantUseCase, getAllRestaurantUseCase, deleteRestaurantUseCase))
+        assertThatThrownBy(() -> new RestaurantController(null, getByIdRestaurantUseCase, getAllRestaurantsUseCase, deleteRestaurantUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("CreateRestaurantUseCase cannot be null.");
     }
@@ -135,7 +135,7 @@ class RestaurantControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com GetByIdRestaurantUseCase nulo")
     void shouldThrowExceptionWhenGetByIdUseCaseIsNull() {
-        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, null, getAllRestaurantUseCase, deleteRestaurantUseCase))
+        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, null, getAllRestaurantsUseCase, deleteRestaurantUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("GetByIdRestaurantUseCase cannot be null.");
     }
@@ -151,7 +151,7 @@ class RestaurantControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com DeleteRestaurantUseCase nulo")
     void shouldThrowExceptionWhenDeleteUseCaseIsNull() {
-        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, getByIdRestaurantUseCase, getAllRestaurantUseCase, null))
+        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, getByIdRestaurantUseCase, getAllRestaurantsUseCase, null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("DeleteRestaurantUseCase cannot be null.");
     }
@@ -244,7 +244,7 @@ class RestaurantControllerTest {
                 owner
         );
 
-        given(getAllRestaurantUseCase.execute()).willReturn(List.of(restaurant));
+        given(getAllRestaurantsUseCase.execute()).willReturn(List.of(restaurant));
 
         // Act
         List<RestaurantOutput> result = restaurantController.findAll();
@@ -259,14 +259,14 @@ class RestaurantControllerTest {
         assertThat(output.menuItems()).isNotNull().hasSize(1);
         assertThat(output.ownerId()).isEqualTo(ownerId);
 
-        then(getAllRestaurantUseCase).should().execute();
+        then(getAllRestaurantsUseCase).should().execute();
     }
 
     @Test
     @DisplayName("Deve retornar lista vazia quando não houver restaurantes")
     void shouldReturnEmptyListWhenNoRestaurantsFound() {
         // Arrange
-        given(getAllRestaurantUseCase.execute()).willReturn(Collections.emptyList());
+        given(getAllRestaurantsUseCase.execute()).willReturn(Collections.emptyList());
 
         // Act
         List<RestaurantOutput> result = restaurantController.findAll();
@@ -274,7 +274,7 @@ class RestaurantControllerTest {
         // Assert
         assertThat(result).isNotNull().isEmpty();
 
-        then(getAllRestaurantUseCase).should().execute();
+        then(getAllRestaurantsUseCase).should().execute();
     }
 
     @Test

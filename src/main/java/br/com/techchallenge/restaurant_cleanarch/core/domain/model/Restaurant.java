@@ -1,7 +1,5 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import lombok.Getter;
 import lombok.ToString;
@@ -17,10 +15,10 @@ public class Restaurant {
     private final Address address;
     private final String cuisineType;
     private final Set<OpeningHours> openingHours;
-    private final Set<MenuItem> menu;
+    private final Menu menu;
     private final User owner;
 
-    public Restaurant(Long id, String name, Address address, String cuisineType, Set<OpeningHours> openingHours, Set<MenuItem> menu, User owner) {
+    public Restaurant(Long id, String name, Address address, String cuisineType, Set<OpeningHours> openingHours, Menu menu, User owner) {
         Objects.requireNonNull(name, "O nome do restaurante não pode ser nulo.");
         Objects.requireNonNull(address, "O endereço não pode ser nulo.");
         Objects.requireNonNull(cuisineType, "O tipo de cozinha não pode ser nulo.");
@@ -41,7 +39,7 @@ public class Restaurant {
         this.address = address;
         this.cuisineType = cuisineType.trim();
         this.openingHours = openingHours == null ? Set.of() : Set.copyOf(openingHours);
-        this.menu = menu == null ? Set.of() : Set.copyOf(menu);
+        this.menu = menu;
         this.owner = owner;
     }
 

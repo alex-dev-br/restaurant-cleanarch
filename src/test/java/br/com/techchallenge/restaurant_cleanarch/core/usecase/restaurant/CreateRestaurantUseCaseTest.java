@@ -1,11 +1,10 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.*;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;

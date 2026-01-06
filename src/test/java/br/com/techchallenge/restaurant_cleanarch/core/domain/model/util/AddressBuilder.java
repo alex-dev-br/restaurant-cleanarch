@@ -1,6 +1,6 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model.util;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.AddressInput;
 
 public class AddressBuilder {

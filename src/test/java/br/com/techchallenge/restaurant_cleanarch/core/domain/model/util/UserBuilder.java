@@ -3,7 +3,7 @@ package br.com.techchallenge.restaurant_cleanarch.core.domain.model.util;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 
 import java.util.HashSet;

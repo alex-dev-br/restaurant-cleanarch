@@ -1,7 +1,6 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.*;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import org.jspecify.annotations.NonNull;
@@ -38,7 +37,7 @@ class RestaurantTest {
         assertThat(restaurant.getOwner()).isNotNull().isEqualTo(owner);
         assertThat(restaurant.getOwner().getId()).isNotNull();
         assertThat(restaurant.getOwner().getName()).isNotNull().isEqualTo(owner.getName());
-        assertThat(restaurant.getOwner().getEmail()).isNotNull().isEqualTo(owner.getEmail());
+        assertThat(restaurant.getOwner().getEmailAddress()).isNotNull().isEqualTo(owner.getEmailAddress());
         assertThat(restaurant.getOpeningHours()).hasSize(6).containsExactlyInAnyOrderElementsOf(openingHours);
         assertThat(restaurant.getMenu()).hasSize(1);
     }

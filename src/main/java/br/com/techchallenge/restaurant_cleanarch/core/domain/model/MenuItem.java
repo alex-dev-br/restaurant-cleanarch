@@ -18,19 +18,16 @@ public class MenuItem {
     private final Boolean restaurantOnly;
     private final String photoPath;
 
-    private final Restaurant restaurant;
-
-    public MenuItem(Long id, String name, String description, BigDecimal price, Boolean restaurantOnly, String photoPath, Restaurant restaurant) {
+    public MenuItem(Long id, String name, String description, BigDecimal price, Boolean restaurantOnly, String photoPath) {
         Objects.requireNonNull(name, "O nome do item não pode ser nulo.");
         Objects.requireNonNull(price, "O preço não pode ser nulo.");
         Objects.requireNonNull(restaurantOnly, "A disponibilidade para restaurante apenas não pode ser nula.");
         Objects.requireNonNull(photoPath, "O caminho da foto não pode ser nulo.");
-        Objects.requireNonNull(restaurant, "O restaurante não pode ser nulo.");
 
-        if (name.trim().isBlank()) {
+        if (name.isBlank()) {
             throw new BusinessException("O nome do item não pode ser vazio.");
         }
-        if (photoPath.trim().isBlank()) {
+        if (photoPath.isBlank()) {
             throw new BusinessException("O caminho da foto não pode ser vazio.");
         }
         if (price.compareTo(BigDecimal.ZERO) <= 0) {
@@ -43,7 +40,6 @@ public class MenuItem {
         this.price = price;
         this.restaurantOnly = restaurantOnly;
         this.photoPath = photoPath.trim();
-        this.restaurant = restaurant;
     }
 
     @Override

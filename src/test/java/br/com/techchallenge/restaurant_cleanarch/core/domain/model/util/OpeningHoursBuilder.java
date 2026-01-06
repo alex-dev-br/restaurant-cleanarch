@@ -1,6 +1,6 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model.util;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.OpeningHoursInput;
 
 import java.time.DayOfWeek;

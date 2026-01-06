@@ -5,7 +5,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
 import br.com.techchallenge.restaurant_cleanarch.core.presenter.RestaurantPresenter;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.CreateRestaurantUseCase;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.DeleteRestaurantUseCase;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.GetAllRestaurantUseCase;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.GetAllRestaurantsUseCase;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.GetByIdRestaurantUseCase;
 
 import java.util.List;
@@ -15,20 +15,20 @@ public class RestaurantController {
 
     private final CreateRestaurantUseCase createRestaurantUseCase;
     private final GetByIdRestaurantUseCase getByIdRestaurantUseCase;
-    private final GetAllRestaurantUseCase getAllRestaurantUseCase;
+    private final GetAllRestaurantsUseCase getAllRestaurantsUseCase;
     private final DeleteRestaurantUseCase deleteRestaurantUseCase;
 
     public RestaurantController(CreateRestaurantUseCase createRestaurantUseCase,
                                 GetByIdRestaurantUseCase getByIdRestaurantUseCase,
-                                GetAllRestaurantUseCase getAllRestaurantUseCase,
+                                GetAllRestaurantsUseCase getAllRestaurantsUseCase,
                                 DeleteRestaurantUseCase deleteRestaurantUseCase) {
         Objects.requireNonNull(createRestaurantUseCase, "CreateRestaurantUseCase cannot be null.");
         Objects.requireNonNull(getByIdRestaurantUseCase, "GetByIdRestaurantUseCase cannot be null.");
-        Objects.requireNonNull(getAllRestaurantUseCase, "GetAllRestaurantUseCase cannot be null.");
+        Objects.requireNonNull(getAllRestaurantsUseCase, "GetAllRestaurantUseCase cannot be null.");
         Objects.requireNonNull(deleteRestaurantUseCase, "DeleteRestaurantUseCase cannot be null.");
         this.createRestaurantUseCase = createRestaurantUseCase;
         this.getByIdRestaurantUseCase = getByIdRestaurantUseCase;
-        this.getAllRestaurantUseCase = getAllRestaurantUseCase;
+        this.getAllRestaurantsUseCase = getAllRestaurantsUseCase;
         this.deleteRestaurantUseCase = deleteRestaurantUseCase;
     }
 
@@ -45,7 +45,7 @@ public class RestaurantController {
     }
 
     public List<RestaurantOutput> findAll() {
-        return getAllRestaurantUseCase.execute()
+        return getAllRestaurantsUseCase.execute()
                 .stream()
                 .map(RestaurantPresenter::toOutput)
                 .toList();

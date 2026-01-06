@@ -13,34 +13,41 @@ import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.AddressInput;
-import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateRestaurantInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.MenuItemInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.OpeningHoursInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateRestaurantInput;
 
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class CreateRestaurantUseCase {
+public class UpdateRestaurantUseCase {
 
-    private final LoggedUserGateway loggedUserGateway;
     private final RestaurantGateway restaurantGateway;
+    private final LoggedUserGateway loggedUserGateway;
     private final UserGateway userGateway;
 
-    public CreateRestaurantUseCase(RestaurantGateway restaurantGateway, UserGateway userGateway, LoggedUserGateway loggedUserGateway) {
-        Objects.requireNonNull(loggedUserGateway, "LoggerUserGateway cannot be null");
-        Objects.requireNonNull(restaurantGateway, "RestaurantGateway cannot be null");
-        Objects.requireNonNull(userGateway, "UserGateway cannot be null");
-        this.loggedUserGateway = loggedUserGateway;
+    public UpdateRestaurantUseCase(RestaurantGateway restaurantGateway, UserGateway userGateway, LoggedUserGateway loggedUserGateway) {
+        Objects.requireNonNull(restaurantGateway, "RestaurantGateway cannot be null.");
+        Objects.requireNonNull(loggedUserGateway, "LoggedUserGateway cannot be null.");
+        Objects.requireNonNull(userGateway, "UserGateway cannot be null.");
         this.restaurantGateway = restaurantGateway;
+        this.loggedUserGateway = loggedUserGateway;
         this.userGateway = userGateway;
     }
 
-    public Restaurant execute(CreateRestaurantInput input) {
-        Objects.requireNonNull(input, "CreateRestaurantInput cannot be null");
 
-        if (!loggedUserGateway.hasRole(RestaurantRoles.CREATE_RESTAURANT))
-            throw new OperationNotAllowedException("The current user does not have permission to create restaurants.");
+    public void execute(UpdateRestaurantInput input) {
+        Objects.requireNonNull(input, "UpdateRestaurantInput cannot be null.");
+
+        if (!loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT))
+            throw new OperationNotAllowedException("The current user does not have permission to update restaurants.");
+
+        var restaurant = restaurantGateway.findById(input.id()).orElseThrow(() -> new BusinessException("Restaurant not found."));
+
+        if (!restaurant.getName().equals(input.name()) && restaurantGateway.existsRestaurantWithName(input.name())) {
+            throw new RestaurantNameIsAlreadyInUseException();
+        }
 
         var owner = userGateway.findByUuid(input.owner()).orElseThrow(() -> new BusinessException("Owner not found."));
 
@@ -48,43 +55,19 @@ public class CreateRestaurantUseCase {
             throw new UserCannotBeRestaurantOwnerException();
         }
 
-        if (restaurantGateway.existsRestaurantWithName(input.name())) {
-            throw new RestaurantNameIsAlreadyInUseException();
-        }
+        AddressInput addressInput = input.address();
 
-        var address = buildAddress(input.address());
-        var openingHours = buildOpeningHours(input.openingHours());
-
-        // Passo 1: Criar restaurante sem menu
-        Restaurant restaurantWithoutMenu = new Restaurant(
-                null,
-                input.name(),
-                address,
-                input.cuisineType(),
-                openingHours,
-                Set.of(),  // menu vazio inicialmente
-                owner
+        var updatedRestaurant = new Restaurant (
+            input.id(),
+            input.name(),
+            addressInput != null ? buildAddress(addressInput) : null,
+            input.cuisineType(),
+            buildOpeningHours(input.openingHours()),
+            buildMenu(input.menu(), restaurant),
+            owner
         );
 
-        // Passo 2: Salvar para gerar o ID
-        Restaurant savedRestaurant = restaurantGateway.save(restaurantWithoutMenu);
-
-        // Passo 3: Criar os itens do menu com associação ao restaurante persistido
-        Set<MenuItem> menuItems = buildMenu(input.menu(), savedRestaurant);
-
-        // Passo 4: Criar versão final do restaurante com menu
-        Restaurant finalRestaurant = new Restaurant(
-                savedRestaurant.getId(),
-                savedRestaurant.getName(),
-                savedRestaurant.getAddress(),
-                savedRestaurant.getCuisineType(),
-                savedRestaurant.getOpeningHours(),
-                menuItems,
-                savedRestaurant.getOwner()
-        );
-
-        // Passo 5: Salvar versão final
-        return restaurantGateway.save(finalRestaurant);
+        restaurantGateway.save(updatedRestaurant);
     }
 
     private Set<MenuItem> buildMenu(Set<MenuItemInput> menuItemsInput, Restaurant restaurant) {

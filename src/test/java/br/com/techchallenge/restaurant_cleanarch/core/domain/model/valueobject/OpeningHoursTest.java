@@ -1,5 +1,6 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject;
 
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import org.junit.jupiter.api.*;
 
