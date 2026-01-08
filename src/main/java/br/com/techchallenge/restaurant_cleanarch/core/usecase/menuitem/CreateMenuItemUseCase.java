@@ -30,29 +30,34 @@ public class CreateMenuItemUseCase {
             throw new OperationNotAllowedException("Você não tem permissão para criar itens de menu.");
         }
 
-        // Valida se restaurante existe e já carrega o objeto completo
-        Restaurant restaurant = restaurantGateway.findById(input.restaurantId())
-                .orElseThrow(() -> new BusinessException("Restaurante não encontrado com ID: " + input.restaurantId()));
+        Long restaurantId = Objects.requireNonNull(input.restaurantId(), "restaurantId cannot be null");
+
+        // Valida se restaurante existe (você usa o nome no erro de duplicidade)
+        Restaurant restaurant = restaurantGateway.findById(restaurantId)
+                .orElseThrow(() -> new BusinessException("Restaurante não encontrado com ID: " + restaurantId));
+
+        String name = Objects.requireNonNull(input.name(), "name cannot be null").trim();
+        String description = input.description() != null ? input.description().trim() : null;
+        String photoPath = input.photoPath() != null ? input.photoPath().trim() : null;
 
         // Verifica duplicata de nome no mesmo restaurante
-        if (menuItemGateway.existsByNameAndRestaurant(input.name(), restaurant.getId())) {
+        if (menuItemGateway.existsByNameAndRestaurantId(name, restaurantId)) {
             throw new BusinessException(
                     "Já existe um item de cardápio com o nome '%s' no restaurante '%s'."
-                            .formatted(input.name().trim(), restaurant.getName())
+                            .formatted(name, restaurant.getName())
             );
         }
 
-        // Cria o domínio com a associação correta
         MenuItem menuItem = new MenuItem(
                 null,
-                input.name(),
-                input.description(),
+                name,
+                description,
                 input.price(),
                 input.restaurantOnly(),
-                input.photoPath(),
-                restaurant  // <-- Associação forte com o restaurante existente
+                photoPath
         );
 
-        return menuItemGateway.save(menuItem);
+        // passar restaurantId para o gateway
+        return menuItemGateway.save(menuItem, restaurantId);
     }
 }

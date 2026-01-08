@@ -8,5 +8,5 @@ public record CreateMenuItemInput (
         BigDecimal price,
         Boolean restaurantOnly,
         String photoPath,
-        Long restaurantId  // <-- Adicionado temporariamente
+        Long restaurantId  // <-- Associar o item ao restaurante
 ) {}

@@ -1,24 +1,13 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.*;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.*;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.RestaurantNameIsAlreadyInUseException;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.UserCannotBeRestaurantOwnerException;
-import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
-import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
-import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
-import br.com.techchallenge.restaurant_cleanarch.core.inbound.AddressInput;
-import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateRestaurantInput;
-import br.com.techchallenge.restaurant_cleanarch.core.inbound.MenuItemInput;
-import br.com.techchallenge.restaurant_cleanarch.core.inbound.OpeningHoursInput;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.*;
+import br.com.techchallenge.restaurant_cleanarch.core.gateway.*;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.*;
 
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CreateRestaurantUseCase {
@@ -54,53 +43,31 @@ public class CreateRestaurantUseCase {
 
         var address = buildAddress(input.address());
         var openingHours = buildOpeningHours(input.openingHours());
+        var menuItems = buildMenu(input.menu());
 
-        // Passo 1: Criar restaurante sem menu
-        Restaurant restaurantWithoutMenu = new Restaurant(
+        var restaurant = new Restaurant(
                 null,
-                input.name(),
+                input.name().trim(),
                 address,
-                input.cuisineType(),
+                input.cuisineType().trim(),
                 openingHours,
-                Set.of(),  // menu vazio inicialmente
+                menuItems,
                 owner
         );
 
-        // Passo 2: Salvar para gerar o ID
-        Restaurant savedRestaurant = restaurantGateway.save(restaurantWithoutMenu);
-
-        // Passo 3: Criar os itens do menu com associação ao restaurante persistido
-        Set<MenuItem> menuItems = buildMenu(input.menu(), savedRestaurant);
-
-        // Passo 4: Criar versão final do restaurante com menu
-        Restaurant finalRestaurant = new Restaurant(
-                savedRestaurant.getId(),
-                savedRestaurant.getName(),
-                savedRestaurant.getAddress(),
-                savedRestaurant.getCuisineType(),
-                savedRestaurant.getOpeningHours(),
-                menuItems,
-                savedRestaurant.getOwner()
-        );
-
-        // Passo 5: Salvar versão final
-        return restaurantGateway.save(finalRestaurant);
+        return restaurantGateway.save(restaurant);
     }
 
-    private Set<MenuItem> buildMenu(Set<MenuItemInput> menuItemsInput, Restaurant restaurant) {
-        if (menuItemsInput == null || menuItemsInput.isEmpty()) {
-            return Set.of();
-        }
-
+    private Set<MenuItem> buildMenu(Set<MenuItemInput> menuItemsInput) {
+        if (menuItemsInput == null) return Set.of();
         return menuItemsInput.stream()
                 .map(m -> new MenuItem(
                         null,
-                        m.name().trim(),
+                        m.name() != null ? m.name().trim() : null,
                         m.description() != null ? m.description().trim() : null,
                         m.price(),
                         m.restaurantOnly(),
-                        m.photoPath().trim(),
-                        restaurant  // ← Associação correta com restaurante persistido
+                        m.photoPath().trim()
                 ))
                 .collect(Collectors.toSet());
     }

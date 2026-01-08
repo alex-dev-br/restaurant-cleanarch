@@ -7,7 +7,7 @@ public class MenuItemPresenter {
 
     private MenuItemPresenter() {}  // Construtor privado para utilitária
 
-    public static MenuItemOutput toOutput(MenuItem menuItem) {
+    public static MenuItemOutput toOutput(MenuItem menuItem, Long restantId) {
         return new MenuItemOutput(
                 menuItem.getId(),
                 menuItem.getName(),
@@ -15,7 +15,7 @@ public class MenuItemPresenter {
                 menuItem.getPrice(),
                 menuItem.getRestaurantOnly(),
                 menuItem.getPhotoPath(),
-                menuItem.getRestaurant().getId()  // ← ID do restaurante
+                restantId
         );
     }
 }

@@ -8,6 +8,5 @@ public record UpdateMenuItemInput(
         String description,
         BigDecimal price,
         Boolean restaurantOnly,
-        String photoPath,
-        Long restaurantId
+        String photoPath
 ) {}
