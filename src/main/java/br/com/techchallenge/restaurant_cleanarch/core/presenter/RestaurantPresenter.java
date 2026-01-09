@@ -10,10 +10,20 @@ public class RestaurantPresenter {
     private RestaurantPresenter() {}
 
     public static RestaurantOutput toOutput(Restaurant restaurant) {
+
+        Long restaurantId = restaurant.getId();
+
         return new RestaurantOutput (
-            restaurant.getId(), restaurant.getName(), AddressPresenter.toOutput(restaurant.getAddress()),
-            restaurant.getCuisineType(), restaurant.getOpeningHours().stream().map(OpeningHoursPresenter::toOutput).collect(Collectors.toSet()),
-            restaurant.getMenu().stream().map(MenuItemPresenter::toOutput).collect(Collectors.toSet()),
+                restaurant.getId(),
+                restaurant.getName(),
+                AddressPresenter.toOutput(restaurant.getAddress()),
+                restaurant.getCuisineType(),
+                restaurant.getOpeningHours().stream()
+                        .map(OpeningHoursPresenter::toOutput)
+                        .collect(Collectors.toSet()),
+                restaurant.getMenu().stream()
+                        .map(menuItem -> MenuItemPresenter.toOutput(menuItem, restaurantId))
+                        .collect(Collectors.toSet()),
             restaurant.getOwner().getId()
         );
     }

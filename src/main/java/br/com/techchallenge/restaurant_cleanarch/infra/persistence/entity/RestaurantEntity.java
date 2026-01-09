@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "restaurants")
@@ -28,8 +28,8 @@ public class RestaurantEntity {
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private Set<OpeningHoursEntity> openingHours;
 
-    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
-    private Set<MenuItemEntity> menu;
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)   // `orphanRemoval = true` garante que itens removidos do menu sejam deletados do banco.
+    private Set<MenuItemEntity> menu = new HashSet<>();  // inicializa para evitar NPE;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")

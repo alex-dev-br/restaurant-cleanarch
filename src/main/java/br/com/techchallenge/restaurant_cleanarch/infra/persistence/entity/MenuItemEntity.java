@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "menu_items")
 @Getter
-@Setter
 @NoArgsConstructor
 public class MenuItemEntity {
 
@@ -36,4 +35,18 @@ public class MenuItemEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id", nullable = false)
     private RestaurantEntity restaurant;
+
+    // Setter apenas para restaurant (necessário para JPA)
+    public void setRestaurant(RestaurantEntity restaurant) {
+        this.restaurant = restaurant;
+    }
+
+    public MenuItemEntity(String name, String description, BigDecimal price, Boolean restaurantOnly, String photoPath, RestaurantEntity restaurant) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.restaurantOnly = restaurantOnly;
+        this.photoPath = photoPath;
+        this.restaurant = restaurant;
+    }
 }
