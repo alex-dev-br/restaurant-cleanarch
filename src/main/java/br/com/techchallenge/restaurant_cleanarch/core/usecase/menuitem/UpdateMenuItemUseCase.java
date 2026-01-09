@@ -44,7 +44,8 @@ public class UpdateMenuItemUseCase {
                 .orElseThrow(() -> new BusinessException("Restaurante não encontrado"));
 
         // Valida se é o dono
-        if (!restaurant.getOwner().equals(loggedUserGateway.getCurrentUser())) {
+        User currentUser = loggedUserGateway.requireCurrentUser();
+        if (!restaurant.getOwner().equals(currentUser)) {
             throw new OperationNotAllowedException("Apenas o dono do restaurante pode atualizar itens do cardápio.");
         }
 

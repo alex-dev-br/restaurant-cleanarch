@@ -1,10 +1,12 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.persistence.adapter;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.*;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.MenuItemGateway;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.MenuItemMapper;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.*;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.*;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -26,7 +28,7 @@ public class MenuItemGatewayAdapter implements MenuItemGateway {
     public MenuItem save(MenuItem menuItem, Long restaurantId) {
         RestaurantEntity restaurantEntity = restaurantRepository
                 .findById(restaurantId)
-                .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + restaurantId));
+                .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + restaurantId));
         MenuItemEntity entity = mapper.toEntity(menuItem, restaurantEntity);
         entity = menuItemRepository.save(entity);
         return mapper.toDomain(entity);
@@ -48,7 +50,11 @@ public class MenuItemGatewayAdapter implements MenuItemGateway {
 
     @Override
     public void deleteById(Long id) {
-        menuItemRepository.deleteById(id);
+        try {
+            menuItemRepository.deleteById(id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new BusinessException("Item de cardápio não encontrado com ID: " + id);
+        }
     }
 
     @Override

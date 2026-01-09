@@ -40,6 +40,12 @@ public class CreateMenuItemUseCase {
         String description = input.description() != null ? input.description().trim() : null;
         String photoPath = input.photoPath() != null ? input.photoPath().trim() : null;
 
+        // Valida se é o dono
+        User currentUser = loggedUserGateway.requireCurrentUser();
+        if (!restaurant.getOwner().equals(currentUser)) {
+            throw new OperationNotAllowedException("Apenas o dono do restaurante pode criar itens do cardápio.");
+        }
+
         // Verifica duplicata de nome no mesmo restaurante
         if (menuItemGateway.existsByNameAndRestaurantId(name, restaurantId)) {
             throw new BusinessException(

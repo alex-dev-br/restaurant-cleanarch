@@ -1,6 +1,6 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.*;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.MenuItemRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.*;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.*;
@@ -25,6 +25,9 @@ public class DeleteMenuItemUseCase {
     }
 
     public void execute(Long id) {
+
+        Objects.requireNonNull(id, "id cannot be null");
+
         if (!loggedUserGateway.hasRole(MenuItemRoles.DELETE_MENU_ITEM)) {
             throw new OperationNotAllowedException("Você não tem permissão para deletar itens de menu.");
         }
@@ -33,10 +36,11 @@ public class DeleteMenuItemUseCase {
                 .orElseThrow(() -> new BusinessException("Restaurante associado não encontrado"));
 
         Restaurant restaurant = restaurantGateway.findById(restaurantId)
-                .orElseThrow(() -> new BusinessException("Restaurante não encontrado."));
+                .orElseThrow(() -> new BusinessException("Restaurante não encontrado com ID: " + restaurantId));
 
         // Valida se é o dono
-        if (!restaurant.getOwner().equals(loggedUserGateway.getCurrentUser())) {
+        User currentUser = loggedUserGateway.requireCurrentUser();
+        if (!restaurant.getOwner().equals(currentUser)) {
             throw new OperationNotAllowedException("Apenas o dono do restaurante pode deletar itens do cardápio.");
         }
 
