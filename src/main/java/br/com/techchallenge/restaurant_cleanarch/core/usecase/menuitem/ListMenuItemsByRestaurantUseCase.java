@@ -2,6 +2,7 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.MenuItemRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
@@ -12,7 +13,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
 
 import java.util.Objects;
 
-public class ListMenuItemsByRestaurantUseCase extends UseCaseBase<Long, Page<MenuItem>> {
+public class ListMenuItemsByRestaurantUseCase extends UseCaseBase<PagedQuery<Long>, Page<MenuItem>> {
 
     private final MenuItemGateway menuItemGateway;
     private final RestaurantGateway restaurantGateway;
@@ -26,9 +27,9 @@ public class ListMenuItemsByRestaurantUseCase extends UseCaseBase<Long, Page<Men
     }
 
     @Override
-    protected Page<MenuItem> doExecute(Long restaurantId) {
-        var restaurant = restaurantGateway.findById(restaurantId).orElseThrow(() -> new BusinessException("Restaurante not found"));
-        return menuItemGateway.findByRestaurant(restaurant.getId());
+    protected Page<MenuItem> doExecute(PagedQuery<Long> filter) {
+        restaurantGateway.findById(filter.filter()).orElseThrow(() -> new BusinessException("Restaurante not found"));
+        return menuItemGateway.findByRestaurant(filter);
     }
 
     @Override

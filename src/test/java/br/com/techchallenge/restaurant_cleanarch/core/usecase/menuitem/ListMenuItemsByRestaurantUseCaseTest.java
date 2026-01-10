@@ -5,6 +5,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.MenuItemBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.RestaurantBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.MenuItemGateway;
@@ -12,6 +13,8 @@ import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -39,6 +42,9 @@ class ListMenuItemsByRestaurantUseCaseTest {
     @Mock
     private LoggedUserGateway loggedUserGateway;
 
+    @Captor
+    private ArgumentCaptor<PagedQuery<Long>> restaurantIdCaptor;
+
     @InjectMocks
     private ListMenuItemsByRestaurantUseCase listMenuItemsByRestaurantUseCase;
 
@@ -53,13 +59,14 @@ class ListMenuItemsByRestaurantUseCaseTest {
         int pageSize = 1;
         int totalElements = 10;
         int totalPages = 1;
+        var pagedQuery = new PagedQuery<>(restaurantId, currentPage, pageSize);
         Page<MenuItem> expectedPage = new Page<>(currentPage, pageSize, totalElements, totalPages, List.of(menuItem));
 
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(restaurant));
-        given(menuItemGateway.findByRestaurant(restaurantId)).willReturn(expectedPage);
+        given(menuItemGateway.findByRestaurant(pagedQuery)).willReturn(expectedPage);
 
         // Act
-        Page<MenuItem> result = listMenuItemsByRestaurantUseCase.execute(restaurantId);
+        Page<MenuItem> result = listMenuItemsByRestaurantUseCase.execute(pagedQuery);
 
         // Assert
         assertThat(result).isNotNull();
@@ -71,8 +78,11 @@ class ListMenuItemsByRestaurantUseCaseTest {
         assertThat(result.content().getFirst()).isEqualTo(menuItem);
 
         then(restaurantGateway).should().findById(restaurantId);
-        then(menuItemGateway).should().findByRestaurant(restaurantId);
+        then(menuItemGateway).should().findByRestaurant(restaurantIdCaptor.capture());
         then(loggedUserGateway).should(never()).hasRole(any());
+
+        assertThat(restaurantIdCaptor.getValue().filter()).isNotNull().isEqualTo(pagedQuery.filter());
+
     }
 
     @Test
@@ -86,12 +96,13 @@ class ListMenuItemsByRestaurantUseCaseTest {
         int totalElements = 10;
         int totalPages = 1;
         Page<MenuItem> expectedPage = new Page<>(currentPage, pageSize, totalElements, totalPages, List.of());
+        var pagedQuery = new PagedQuery<>(restaurantId, currentPage, pageSize);
 
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(restaurant));
-        given(menuItemGateway.findByRestaurant(restaurantId)).willReturn(expectedPage);
+        given(menuItemGateway.findByRestaurant(pagedQuery)).willReturn(expectedPage);
 
         // Act
-        Page<MenuItem> result = listMenuItemsByRestaurantUseCase.execute(restaurantId);
+        Page<MenuItem> result = listMenuItemsByRestaurantUseCase.execute(pagedQuery);
 
         // Assert
         assertThat(result).isNotNull();
@@ -102,8 +113,11 @@ class ListMenuItemsByRestaurantUseCaseTest {
         assertThat(result.content()).isEmpty();
 
         then(restaurantGateway).should().findById(restaurantId);
-        then(menuItemGateway).should().findByRestaurant(restaurantId);
+        then(menuItemGateway).should().findByRestaurant(restaurantIdCaptor.capture());
         then(loggedUserGateway).should(never()).hasRole(any());
+
+        assertThat(restaurantIdCaptor.getValue().filter()).isNotNull().isEqualTo(pagedQuery.filter());
+
     }
 
     @Test
@@ -112,14 +126,15 @@ class ListMenuItemsByRestaurantUseCaseTest {
         // Arrange
         Long restaurantId = 1L;
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.empty());
+        var pagedQuery = new PagedQuery<>(restaurantId, 0, 10);
 
         // Act & Assert
-        assertThatThrownBy(() -> listMenuItemsByRestaurantUseCase.execute(restaurantId))
+        assertThatThrownBy(() -> listMenuItemsByRestaurantUseCase.execute(pagedQuery))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Restaurante not found");
 
         then(restaurantGateway).should().findById(restaurantId);
-        then(menuItemGateway).should(never()).findByRestaurant(restaurantId);
+        then(menuItemGateway).should(never()).findByRestaurant(pagedQuery);
         then(loggedUserGateway).should(never()).hasRole(any());
     }
 

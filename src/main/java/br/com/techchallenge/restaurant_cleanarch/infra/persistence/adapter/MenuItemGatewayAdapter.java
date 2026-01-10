@@ -2,6 +2,7 @@ package br.com.techchallenge.restaurant_cleanarch.infra.persistence.adapter;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.*;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.MenuItemGateway;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.MenuItemMapper;
@@ -70,7 +71,7 @@ public class MenuItemGatewayAdapter implements MenuItemGateway {
     }
 
     @Override
-    public Page<MenuItem> findByRestaurant(Long restaurantId) {
+    public Page<MenuItem> findByRestaurant(PagedQuery<Long> restaurantId) {
         return null;
     }
 }
