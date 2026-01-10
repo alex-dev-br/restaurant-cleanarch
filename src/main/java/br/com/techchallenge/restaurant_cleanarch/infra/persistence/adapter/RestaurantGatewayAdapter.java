@@ -1,6 +1,8 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.persistence.adapter;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.RestaurantMapper;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.RestaurantEntity;
@@ -72,5 +74,10 @@ public class RestaurantGatewayAdapter implements RestaurantGateway {
     @Override
     public void delete(Long id) {
         restaurantRepository.deleteById(id);
+    }
+
+    @Override
+    public Page<Restaurant> findByCuisineType(PagedQuery<String> query) {
+        return null;
     }
 }

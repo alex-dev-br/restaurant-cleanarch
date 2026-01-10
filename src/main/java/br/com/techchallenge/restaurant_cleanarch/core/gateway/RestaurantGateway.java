@@ -1,7 +1,8 @@
 package br.com.techchallenge.restaurant_cleanarch.core.gateway;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
-import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,4 +27,6 @@ public interface RestaurantGateway {
     List<Restaurant> findAll();
 
     void delete(Long id);
+
+    Page<Restaurant> findByCuisineType(PagedQuery<String> query);
 }
