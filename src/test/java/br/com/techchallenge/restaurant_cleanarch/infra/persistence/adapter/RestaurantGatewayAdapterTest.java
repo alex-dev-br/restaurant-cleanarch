@@ -3,6 +3,8 @@ package br.com.techchallenge.restaurant_cleanarch.infra.persistence.adapter;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressBuilder;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.*;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.RestaurantEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserEntity;
@@ -66,7 +68,6 @@ class RestaurantGatewayAdapterTest {
         ownerEntity.setUserType(userTypeEntity);
         ownerEntity.setName("Owner");
         ownerEntity.setEmail("ownerId@email.com");
-//        ownerEntity.setAddress(new AddressBuilder().buildEmbeddableEntity());
         ownerEntity.setPasswordHash("HASHED_TEST");
 
         ownerEntity = userRepository.save(ownerEntity);
@@ -254,5 +255,79 @@ class RestaurantGatewayAdapterTest {
 
         // Then
         assertThat(restaurantRepository.findById(nonExistentId)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deve encontrar restaurantes por tipo de cozinha")
+    void shouldFindRestaurantsByCuisineType() {
+        // Given
+        adapter.save(new Restaurant(null, "Italian Place", new AddressBuilder().build(), "Italian", Collections.emptySet(), Collections.emptySet(), ownerDomain));
+        adapter.save(new Restaurant(null, "Super Italian", new AddressBuilder().build(), "Italian", Collections.emptySet(), Collections.emptySet(), ownerDomain));
+        adapter.save(new Restaurant(null, "Japanese Place", new AddressBuilder().build(), "Japanese", Collections.emptySet(), Collections.emptySet(), ownerDomain));
+
+        PagedQuery<String> query = new PagedQuery<>("Italian", 0, 10);
+
+        // When
+        Page<Restaurant> result = adapter.findByCuisineType(query);
+
+        // Then
+        assertThat(result.content()).hasSize(2);
+        assertThat(result.content()).extracting(Restaurant::getCuisineType).containsOnly("Italian");
+    }
+
+    @Test
+    @DisplayName("Deve retornar página vazia se nenhum restaurante corresponder ao tipo de cozinha")
+    void shouldReturnEmptyPageWhenNoRestaurantMatchesCuisineType() {
+        // Given
+        adapter.save(new Restaurant(null, "Japanese Place", new AddressBuilder().build(), "Japanese", Collections.emptySet(), Collections.emptySet(), ownerDomain));
+        PagedQuery<String> query = new PagedQuery<>("Mexican", 0, 10);
+
+        // When
+        Page<Restaurant> result = adapter.findByCuisineType(query);
+
+        // Then
+        assertThat(result.content()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deve encontrar restaurantes por tipo de cozinha ignorando case")
+    void shouldFindRestaurantsByCuisineTypeIgnoringCase() {
+        // Given
+        adapter.save(new Restaurant(null, "Italian Place", new AddressBuilder().build(), "Italian", Collections.emptySet(), Collections.emptySet(), ownerDomain));
+        PagedQuery<String> query = new PagedQuery<>("italian", 0, 10);
+
+        // When
+        Page<Restaurant> result = adapter.findByCuisineType(query);
+
+        // Then
+        assertThat(result.content()).hasSize(1);
+        assertThat(result.content().getFirst().getCuisineType()).isEqualTo("Italian");
+    }
+
+    @Test
+    @DisplayName("Deve paginar os resultados corretamente")
+    void shouldPaginateResultsCorrectly() {
+        // Given
+        adapter.save(new Restaurant(null, "Italian 1", new AddressBuilder().build(), "Italian", Collections.emptySet(), Collections.emptySet(), ownerDomain));
+        adapter.save(new Restaurant(null, "Italian 2", new AddressBuilder().build(), "Italian", Collections.emptySet(), Collections.emptySet(), ownerDomain));
+        adapter.save(new Restaurant(null, "Italian 3", new AddressBuilder().build(), "Italian", Collections.emptySet(), Collections.emptySet(), ownerDomain));
+
+        PagedQuery<String> firstPageQuery = new PagedQuery<>("Italian", 0, 2);
+        PagedQuery<String> secondPageQuery = new PagedQuery<>("Italian", 1, 2);
+
+        // When
+        Page<Restaurant> firstPage = adapter.findByCuisineType(firstPageQuery);
+        Page<Restaurant> secondPage = adapter.findByCuisineType(secondPageQuery);
+
+        // Then
+        assertThat(firstPage.content()).hasSize(2);
+        assertThat(firstPage.totalElements()).isEqualTo(3);
+        assertThat(firstPage.totalPages()).isEqualTo(2);
+        assertThat(firstPage.currentPage()).isZero();
+
+        assertThat(secondPage.content()).hasSize(1);
+        assertThat(secondPage.totalElements()).isEqualTo(3);
+        assertThat(secondPage.totalPages()).isEqualTo(2);
+        assertThat(secondPage.currentPage()).isOne();
     }
 }
