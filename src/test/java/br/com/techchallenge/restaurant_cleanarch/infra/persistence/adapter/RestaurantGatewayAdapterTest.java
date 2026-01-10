@@ -1,20 +1,14 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.persistence.adapter;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.*;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.RoleEntity;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.RestaurantEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserEntity;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserTypeEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.RestaurantRepository;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.RoleRepository;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserRepository;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserTypeRepository;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +22,6 @@ import org.springframework.test.context.jdbc.Sql;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -62,14 +55,13 @@ class RestaurantGatewayAdapterTest {
     @Autowired
     private UserMapper userMapper;
 
-    private UserEntity ownerEntity;
     private User ownerDomain;
 
     @BeforeEach
     void setUp() {
         var userTypeEntity = userTypeRepository.findByName("RESTAURANT_OWNER").orElseThrow(() -> new RuntimeException("UserType not found"));
         // Setup UserEntity
-        ownerEntity = new UserEntity();
+        var ownerEntity = new UserEntity();
         ownerEntity.setUserType(userTypeEntity);
         ownerEntity.setName("Owner");
         ownerEntity.setEmail("ownerId@email.com");
@@ -103,6 +95,47 @@ class RestaurantGatewayAdapterTest {
         
         // Verify persistence
         assertThat(restaurantRepository.findById(savedRestaurant.getId())).isPresent();
+    }
+
+    @Test
+    @DisplayName("Deve atualizar restaurante com sucesso")
+    void shouldUpdateRestaurantSuccessfully() {
+        // Given
+        Restaurant restaurant = new Restaurant(
+                null,
+                "Original Name",
+                new AddressBuilder().build(),
+                "Original Cuisine",
+                Collections.emptySet(),
+                Collections.emptySet(),
+                ownerDomain
+        );
+        Restaurant savedRestaurant = adapter.save(restaurant);
+        Long restaurantId = savedRestaurant.getId();
+
+        Restaurant updatedRestaurantDomain = new Restaurant(
+                restaurantId,
+                "Updated Name",
+                savedRestaurant.getAddress(),
+                "Updated Cuisine",
+                savedRestaurant.getOpeningHours(),
+                savedRestaurant.getMenu(),
+                savedRestaurant.getOwner()
+        );
+
+        // When
+        Restaurant result = adapter.save(updatedRestaurantDomain);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(restaurantId);
+        assertThat(result.getName()).isEqualTo("Updated Name");
+        assertThat(result.getCuisineType()).isEqualTo("Updated Cuisine");
+
+        Optional<RestaurantEntity> persistedEntity = restaurantRepository.findById(restaurantId);
+        assertThat(persistedEntity).isPresent();
+        assertThat(persistedEntity.get().getName()).isEqualTo("Updated Name");
+        assertThat(persistedEntity.get().getCuisineType()).isEqualTo("Updated Cuisine");
     }
 
     @Test
