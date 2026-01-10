@@ -53,10 +53,10 @@ public class UpdateRestaurantUseCase {
 
         var address = buildAddress(input.address());
         var openingHours = input.openingHours() == null ? null : input.openingHours().stream()
-                .map(oh -> new OpeningHours(null, oh.dayOfDay(), oh.openHour(), oh.closeHour()))
+                .map(oh -> new OpeningHours(oh.id(), oh.dayOfDay(), oh.openHour(), oh.closeHour()))
                         .collect(Collectors.toSet());
         var menu = input.menu() == null ? null : input.menu().stream()
-                .map(i -> new MenuItem(null, i.name(), i.description(), i.price(), i.restaurantOnly(), i.photoPath()))
+                .map(i -> new MenuItem(i.id(), i.name(), i.description(), i.price(), i.restaurantOnly(), i.photoPath()))
                 .collect(Collectors.toSet());
 
         var restaurantToUpdate = new Restaurant(input.id(), input.name(), address, input.cuisineType(), openingHours, menu, owner);

@@ -1,7 +1,6 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.*;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
@@ -52,8 +51,8 @@ class UpdateRestaurantUseCaseTest {
         // Given
         var address = new AddressBuilder().build();
         var owner = new UserBuilder().withId(UUID.randomUUID()).withRole(UserRoles.RESTAURANT_OWNER).build();
-        var openingHoursInput = new OpeningHoursBuilder().buildInput();
-        var menu = new MenuItemBuilder().buildInput();
+        var openingHoursInput = new OpeningHoursBuilder().buildUpdateInput();
+        var menu = new MenuItemBuilder().buildUpdateInput();
 
         var restaurant = new RestaurantBuilder()
                 .withName("Old Name")

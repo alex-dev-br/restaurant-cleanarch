@@ -8,7 +8,7 @@ public record UpdateRestaurantInput (
     String name,
     AddressInput address,
     String cuisineType,
-    Set<OpeningHoursInput> openingHours,
-    Set<MenuItemInput> menu,
+    Set<UpdateOpeningHoursInput> openingHours,
+    Set<UpdateMenuItemInput> menu,
     UUID owner
 ){}
