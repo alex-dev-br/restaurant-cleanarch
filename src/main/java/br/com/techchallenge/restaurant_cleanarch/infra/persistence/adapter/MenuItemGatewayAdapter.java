@@ -3,15 +3,18 @@ package br.com.techchallenge.restaurant_cleanarch.infra.persistence.adapter;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.*;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.MenuItemGateway;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.MenuItemMapper;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.*;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.*;
-import org.springframework.dao.EmptyResultDataAccessException;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.MenuItemEntity;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.RestaurantEntity;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.MenuItemRepository;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.RestaurantRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Component
 public class MenuItemGatewayAdapter implements MenuItemGateway {
@@ -52,11 +55,7 @@ public class MenuItemGatewayAdapter implements MenuItemGateway {
 
     @Override
     public void deleteById(Long id) {
-        try {
-            menuItemRepository.deleteById(id);
-        } catch (EmptyResultDataAccessException e) {
-            throw new BusinessException("Item de cardápio não encontrado com ID: " + id);
-        }
+        menuItemRepository.deleteById(id);
     }
 
     @Override
@@ -71,7 +70,15 @@ public class MenuItemGatewayAdapter implements MenuItemGateway {
     }
 
     @Override
-    public Page<MenuItem> findByRestaurant(PagedQuery<Long> restaurantId) {
-        return null;
+    public Page<MenuItem> findByRestaurant(PagedQuery<Long> query) {
+        var page = PageRequest.of(query.pageNumber(), query.pageSize());
+        var pagedResult = menuItemRepository.findByRestaurantId(query.filter(), page);
+        return new Page<> (
+                pagedResult.getNumber(),
+                pagedResult.getSize(),
+                pagedResult.getTotalElements(),
+                pagedResult.getTotalPages(),
+                pagedResult.getContent().stream().map(mapper::toDomain).toList()
+        );
     }
 }
