@@ -34,11 +34,11 @@ public class UpdateUserUseCase {
         Objects.requireNonNull(input, "UpdateUserInput must not be null");
 
         if(!loggedUserGateway.hasRole(UserManagementRoles.UPDATE_USER)) {
-            throw new BusinessException("The current user does not have permission to update users.");
+            throw new OperationNotAllowedException("The current user does not have permission to update users.");
         }
 
         User currentUser = userGateway.findById(id)
-                .orElseThrow(() -> new IdNotFoundException("User with ID " + id + " not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("User with ID " + id + " not found."));
 
         String newName = input.name() == null ? currentUser.getName() : input.name().trim();
         String newEmail = input.email() == null ? currentUser.getEmail() : input.email().trim();
