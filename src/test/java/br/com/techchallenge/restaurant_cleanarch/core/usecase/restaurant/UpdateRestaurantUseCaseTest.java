@@ -73,7 +73,7 @@ class UpdateRestaurantUseCaseTest {
 
         when(loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT)).thenReturn(true);
         when(restaurantGateway.findById(1L)).thenReturn(Optional.of(restaurant));
-        when(userGateway.findByUuid(any(UUID.class))).thenReturn(Optional.of(owner));
+        when(userGateway.findById(any(UUID.class))).thenReturn(Optional.of(owner));
 
         // When
         updateRestaurantUseCase.execute(input);
@@ -81,7 +81,7 @@ class UpdateRestaurantUseCaseTest {
         // Then
         then(loggedUserGateway).should().hasRole(RestaurantRoles.UPDATE_RESTAURANT);
         then(restaurantGateway).should().findById(anyLong());
-        then(userGateway).should().findByUuid(any(UUID.class));
+        then(userGateway).should().findById(any(UUID.class));
         then(restaurantGateway).should().save(any(Restaurant.class));
     }
 
@@ -97,7 +97,7 @@ class UpdateRestaurantUseCaseTest {
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.UPDATE_RESTAURANT);
         then(restaurantGateway).should(never()).findById(anyLong());
-        then(userGateway).should(never()).findByUuid(any(UUID.class));
+        then(userGateway).should(never()).findById(any(UUID.class));
         then(restaurantGateway).should(never()).existsRestaurantWithName(anyString());
         then(restaurantGateway).should(never()).save(any());
     }
@@ -115,7 +115,7 @@ class UpdateRestaurantUseCaseTest {
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.UPDATE_RESTAURANT);
         then(restaurantGateway).should().findById(anyLong());
-        then(userGateway).should(never()).findByUuid(any(UUID.class));
+        then(userGateway).should(never()).findById(any(UUID.class));
         then(restaurantGateway).should(never()).existsRestaurantWithName(anyString());
         then(restaurantGateway).should(never()).save(any());
     }
@@ -145,7 +145,7 @@ class UpdateRestaurantUseCaseTest {
 
 
         given(loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT)).willReturn(true);
-        given(userGateway.findByUuid(any(UUID.class))).willReturn(Optional.of(owner));
+        given(userGateway.findById(any(UUID.class))).willReturn(Optional.of(owner));
         given(restaurantGateway.findById(anyLong())).willReturn(Optional.of(restaurant));
         given(restaurantGateway.existsRestaurantWithName(anyString())).willReturn(true);
 
@@ -156,7 +156,7 @@ class UpdateRestaurantUseCaseTest {
         then(loggedUserGateway).should().hasRole(RestaurantRoles.UPDATE_RESTAURANT);
         then(restaurantGateway).should().findById(anyLong());
         then(restaurantGateway).should().existsRestaurantWithName(anyString());
-        then(userGateway).should().findByUuid(any(UUID.class));
+        then(userGateway).should().findById(any(UUID.class));
         then(restaurantGateway).should(never()).save(any());
     }
 
@@ -181,7 +181,7 @@ class UpdateRestaurantUseCaseTest {
         when(loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT)).thenReturn(true);
         when(restaurantGateway.findById(anyLong())).thenReturn(Optional.of(restaurant));
         when(restaurantGateway.existsRestaurantWithName(anyString())).thenReturn(false);
-        when(userGateway.findByUuid(newOwnerUuid)).thenReturn(Optional.of(newOwner));
+        when(userGateway.findById(newOwnerUuid)).thenReturn(Optional.of(newOwner));
 
         assertThatThrownBy(() -> updateRestaurantUseCase.execute(input))
                 .isInstanceOf(UserCannotBeRestaurantOwnerException.class)
@@ -190,7 +190,7 @@ class UpdateRestaurantUseCaseTest {
         then(loggedUserGateway).should().hasRole(RestaurantRoles.UPDATE_RESTAURANT);
         then(restaurantGateway).should().findById(anyLong());
         then(restaurantGateway).should().existsRestaurantWithName(anyString());
-        then(userGateway).should().findByUuid(newOwnerUuid);
+        then(userGateway).should().findById(newOwnerUuid);
         then(restaurantGateway).should(never()).save(any());
     }
 
@@ -203,7 +203,7 @@ class UpdateRestaurantUseCaseTest {
 
         then(loggedUserGateway).should(never()).hasRole(any());
         then(restaurantGateway).should(never()).findById(anyLong());
-        then(userGateway).should(never()).findByUuid(any(UUID.class));
+        then(userGateway).should(never()).findById(any(UUID.class));
         then(restaurantGateway).should(never()).existsRestaurantWithName(anyString());
         then(restaurantGateway).should(never()).save(any());
     }

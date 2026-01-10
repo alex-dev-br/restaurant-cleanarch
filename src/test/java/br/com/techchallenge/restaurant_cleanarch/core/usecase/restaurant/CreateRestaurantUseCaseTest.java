@@ -94,7 +94,7 @@ class CreateRestaurantUseCaseTest {
                 .build();
 
         given(loggedUserGateway.hasRole(RestaurantRoles.CREATE_RESTAURANT)).willReturn(true);
-        given(userGateway.findByUuid(ownerId)).willReturn(Optional.of(owner));
+        given(userGateway.findById(ownerId)).willReturn(Optional.of(owner));
         given(restaurantGateway.existsRestaurantWithName(input.name())).willReturn(false);
         given(restaurantGateway.save(any(Restaurant.class))).willReturn(expectedRestaurant);  // Única chamada, retorna com ID e menu
 
@@ -108,7 +108,7 @@ class CreateRestaurantUseCaseTest {
         assertThat(result.getMenu()).hasSize(1);
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.CREATE_RESTAURANT);
-        then(userGateway).should().findByUuid(ownerId);
+        then(userGateway).should().findById(ownerId);
         then(restaurantGateway).should().existsRestaurantWithName(input.name());
         then(restaurantGateway).should(times(1)).save(any(Restaurant.class));
     }
@@ -124,7 +124,7 @@ class CreateRestaurantUseCaseTest {
                 .hasMessage("The current user does not have permission to create restaurants.");
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.CREATE_RESTAURANT);
-        then(userGateway).should(never()).findByUuid(any());
+        then(userGateway).should(never()).findById(any());
         then(restaurantGateway).should(never()).save(any());
     }
 
@@ -136,13 +136,13 @@ class CreateRestaurantUseCaseTest {
         CreateRestaurantInput input = createValidRestaurantInput(ownerId);
 
         given(loggedUserGateway.hasRole(RestaurantRoles.CREATE_RESTAURANT)).willReturn(true);
-        given(userGateway.findByUuid(ownerId)).willReturn(Optional.empty());
+        given(userGateway.findById(ownerId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> createRestaurantUseCase.execute(input))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Owner not found.");
 
-        then(userGateway).should().findByUuid(ownerId);
+        then(userGateway).should().findById(ownerId);
         then(restaurantGateway).should(never()).save(any());
     }
 
@@ -155,13 +155,13 @@ class CreateRestaurantUseCaseTest {
         User owner = mock(User.class);
 
         given(loggedUserGateway.hasRole(RestaurantRoles.CREATE_RESTAURANT)).willReturn(true);
-        given(userGateway.findByUuid(ownerId)).willReturn(Optional.of(owner));
+        given(userGateway.findById(ownerId)).willReturn(Optional.of(owner));
         given(owner.canOwnRestaurant()).willReturn(false);
 
         assertThatThrownBy(() -> createRestaurantUseCase.execute(input))
                 .isInstanceOf(UserCannotBeRestaurantOwnerException.class);
 
-        then(userGateway).should().findByUuid(ownerId);
+        then(userGateway).should().findById(ownerId);
         then(restaurantGateway).should(never()).save(any());
     }
 
@@ -174,7 +174,7 @@ class CreateRestaurantUseCaseTest {
         User owner = mock(User.class);
 
         given(loggedUserGateway.hasRole(RestaurantRoles.CREATE_RESTAURANT)).willReturn(true);
-        given(userGateway.findByUuid(ownerId)).willReturn(Optional.of(owner));
+        given(userGateway.findById(ownerId)).willReturn(Optional.of(owner));
         given(owner.canOwnRestaurant()).willReturn(true);
         given(restaurantGateway.existsRestaurantWithName(input.name())).willReturn(true);
 

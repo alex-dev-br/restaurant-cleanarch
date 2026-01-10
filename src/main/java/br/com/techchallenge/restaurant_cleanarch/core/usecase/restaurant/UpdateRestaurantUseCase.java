@@ -41,7 +41,7 @@ public class UpdateRestaurantUseCase {
             throw new OperationNotAllowedException("The current user does not have permission to update restaurants.");
 
         var restaurant = restaurantGateway.findById(input.id()).orElseThrow(() -> new BusinessException("Restaurant not found."));
-        User owner = userGateway.findByUuid(input.owner()).orElseThrow(() -> new BusinessException("Owner not found."));
+        User owner = userGateway.findById(input.owner()).orElseThrow(() -> new BusinessException("Owner not found."));
 
         if (!restaurant.getName().equals(owner.getName()) && restaurantGateway.existsRestaurantWithName(restaurant.getName())) {
             throw new RestaurantNameIsAlreadyInUseException();

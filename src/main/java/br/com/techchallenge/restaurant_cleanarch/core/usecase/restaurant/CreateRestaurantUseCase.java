@@ -31,7 +31,7 @@ public class CreateRestaurantUseCase {
         if (!loggedUserGateway.hasRole(RestaurantRoles.CREATE_RESTAURANT))
             throw new OperationNotAllowedException("The current user does not have permission to create restaurants.");
 
-        var owner = userGateway.findByUuid(input.owner()).orElseThrow(() -> new BusinessException("Owner not found."));
+        var owner = userGateway.findById(input.owner()).orElseThrow(() -> new BusinessException("Owner not found."));
 
         if (!owner.canOwnRestaurant()) {
             throw new UserCannotBeRestaurantOwnerException();
