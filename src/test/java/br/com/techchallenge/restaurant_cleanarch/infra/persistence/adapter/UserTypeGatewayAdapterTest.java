@@ -185,6 +185,9 @@ class UserTypeGatewayAdapterTest {
 
         UserEntity userEntity = new UserEntity();
         userEntity.setUserType(userTypeEntity);
+        userEntity.setName("User In Use");
+        userEntity.setEmail("inuse+" + java.util.UUID.randomUUID() + "@email.com");  // Prevenir conflito de email único
+        userEntity.setPasswordHash("HASHED_TEST");
         userRepository.save(userEntity);
 
         // When

@@ -1,7 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.core.presenter;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.*;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.MenuItemBuilder;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.*;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
@@ -44,7 +44,14 @@ class RestaurantPresenterTest {
         // Owner (User)
         Role role = new Role(1L, "RESTAURANT_OWNER");
         UserType userType = new UserType(1L, "Dono", Set.of(role));
-        User owner = new User(UUID.randomUUID(), "Owner Name", "ownerId@test.com", address, userType);
+        User owner = new UserBuilder()
+                .withId(UUID.randomUUID())
+                .withName("Owner Name")
+                .withEmail("ownerId@test.com")
+                .withAddress(address)
+                .withUserType(userType)
+                .withPasswordHash("HASHED_DEFAULT")
+                .build();
 
         // Restaurant
         Long restaurantId = 100L;

@@ -18,14 +18,16 @@ public class UserEntity {
     @JoinColumn(name = "user_type_id")
     private UserTypeEntity userType;
 
-    @Column
+    @Column(nullable = false)
     private String name;
 
-    @Column
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
 
     @Embedded
     private AddressEmbeddableEntity address;
 
-    //TODO implementar o resto, primeira implementação apenas para teste do user type
 }

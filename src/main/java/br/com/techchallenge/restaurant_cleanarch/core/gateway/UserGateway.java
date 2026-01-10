@@ -7,4 +7,8 @@ import java.util.UUID;
 
 public interface UserGateway {
     Optional<User> findByUuid(UUID uuid);
+
+    boolean existsUserWithEmail(String email);
+
+    User save(User user);
 }

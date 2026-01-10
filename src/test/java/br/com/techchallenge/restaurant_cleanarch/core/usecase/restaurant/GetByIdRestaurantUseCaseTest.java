@@ -1,8 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.*;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.MenuItemBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.OpeningHoursBuilder;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.*;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
@@ -47,7 +46,15 @@ class GetByIdRestaurantUseCaseTest {
         Long id = 1L;
         Address address = new Address("Street", "123", "City", "State", "12345678", "Complement");
         UserType userType = new UserType(1L, "Owner", Set.of(new Role(1L, "RESTAURANT_OWNER")));
-        User owner = new User(UUID.randomUUID(), "Owner Name", "owner@email.com", address, userType);
+        User owner = new UserBuilder()
+                .withId(UUID.randomUUID())
+                .withName("Owner Name")
+                .withEmail("owner@email.com")
+                .withAddress(address)
+                .withUserType(userType)
+                .withPasswordHash("HASHED_DEFAULT") // opcional (builder já tem default)
+                .build();
+
         var tuesday = new OpeningHoursBuilder().withDayOfDay(DayOfWeek.TUESDAY).build();
         var friday = new OpeningHoursBuilder().build();
         var menuItem = new MenuItemBuilder().build();

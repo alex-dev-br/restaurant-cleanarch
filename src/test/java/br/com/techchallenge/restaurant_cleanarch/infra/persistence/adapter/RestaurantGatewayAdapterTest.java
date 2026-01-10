@@ -67,13 +67,16 @@ class RestaurantGatewayAdapterTest {
 
     @BeforeEach
     void setUp() {
-        var userTypeEntity = userTypeRepository.findByName("RESTAURANT_OWNER").orElseThrow(() -> new RuntimeException("UserType not found"));
+        var userTypeEntity = userTypeRepository.findByName("RESTAURANT_OWNER")
+                .orElseThrow(() -> new RuntimeException("UserType not found"));
         // Setup UserEntity
         ownerEntity = new UserEntity();
         ownerEntity.setUserType(userTypeEntity);
         ownerEntity.setName("Owner");
         ownerEntity.setEmail("ownerId@email.com");
-        ownerEntity.setUserType(userTypeEntity);
+//        ownerEntity.setAddress(new AddressBuilder().buildEmbeddableEntity());
+        ownerEntity.setPasswordHash("HASHED_TEST");
+
         ownerEntity = userRepository.save(ownerEntity);
 
         ownerDomain = userMapper.toDomain(ownerEntity);

@@ -17,6 +17,7 @@ public class UserBuilder {
     private String email;
     private Address address;
     private UserType userType;
+    private String passwordHash;
 
     public UserBuilder() {
         this.id = UUID.randomUUID();
@@ -26,6 +27,7 @@ public class UserBuilder {
         this.roles = new HashSet<>();
         this.roles.add(new Role(null, "ADMIN"));
         this.userType = new UserType(1L, "Dono de Restaurante", this.roles);
+        this.passwordHash = "HASHED_DEFAULT";
     }
 
     public UserBuilder withRole(ForGettingRoleName forGettingRoleName) {
@@ -66,7 +68,12 @@ public class UserBuilder {
         return this;
     }
 
+    public UserBuilder withPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+        return this;
+    }
+
     public User build() {
-        return new User(id, name, email, address, userType == null ? null : new UserType(this.userType.getId(), this.userType.getName(), this.roles));
+        return new User(id, name, email, address, userType == null ? null : new UserType(this.userType.getId(), this.userType.getName(), this.roles), passwordHash);
     }
 }
