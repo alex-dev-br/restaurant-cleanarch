@@ -2,6 +2,7 @@ package br.com.techchallenge.restaurant_cleanarch.core.domain.model.util;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.OpeningHoursInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateOpeningHoursInput;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -51,5 +52,9 @@ public class OpeningHoursBuilder {
 
     public OpeningHoursInput buildInput() {
         return new OpeningHoursInput(dayOfDay, openHour, closeHour);
+    }
+
+    public UpdateOpeningHoursInput buildUpdateInput() {
+        return new UpdateOpeningHoursInput(id, dayOfDay, openHour, closeHour);
     }
 }

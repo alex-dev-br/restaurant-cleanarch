@@ -9,11 +9,9 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuil
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateRestaurantInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateRestaurantInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.CreateRestaurantUseCase;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.DeleteRestaurantUseCase;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.GetAllRestaurantUseCase;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.GetByIdRestaurantUseCase;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +38,9 @@ class RestaurantControllerTest {
     private CreateRestaurantUseCase createRestaurantUseCase;
 
     @Mock
+    private UpdateRestaurantUseCase updateRestaurantUseCase;
+
+    @Mock
     private GetByIdRestaurantUseCase getByIdRestaurantUseCase;
 
     @Mock
@@ -53,6 +54,9 @@ class RestaurantControllerTest {
 
     @Captor
     private ArgumentCaptor<CreateRestaurantInput> createRestaurantInputCaptor;
+
+    @Captor
+    private ArgumentCaptor<UpdateRestaurantInput> updateRestaurantInputCaptor;
 
     @Test
     @DisplayName("Deve criar Restaurant com sucesso e retornar RestaurantOutput")
@@ -127,15 +131,23 @@ class RestaurantControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com CreateRestaurantUseCase nulo")
     void shouldThrowExceptionWhenCreateUseCaseIsNull() {
-        assertThatThrownBy(() -> new RestaurantController(null, getByIdRestaurantUseCase, getAllRestaurantUseCase, deleteRestaurantUseCase))
+        assertThatThrownBy(() -> new RestaurantController(null, updateRestaurantUseCase, getByIdRestaurantUseCase, getAllRestaurantUseCase, deleteRestaurantUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("CreateRestaurantUseCase cannot be null.");
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao instanciar controller com UpdateRestaurantUseCase nulo")
+    void shouldThrowExceptionWhenUpdateUseCaseIsNull() {
+        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, null, getByIdRestaurantUseCase, getAllRestaurantUseCase, deleteRestaurantUseCase))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("UpdateRestaurantUseCase cannot be null.");
+    }
+
+    @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com GetByIdRestaurantUseCase nulo")
     void shouldThrowExceptionWhenGetByIdUseCaseIsNull() {
-        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, null, getAllRestaurantUseCase, deleteRestaurantUseCase))
+        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, updateRestaurantUseCase, null, getAllRestaurantUseCase, deleteRestaurantUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("GetByIdRestaurantUseCase cannot be null.");
     }
@@ -143,7 +155,7 @@ class RestaurantControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com GetAllRestaurantUseCase nulo")
     void shouldThrowExceptionWhenGetAllUseCaseIsNull() {
-        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, getByIdRestaurantUseCase, null, deleteRestaurantUseCase))
+        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, updateRestaurantUseCase, getByIdRestaurantUseCase, null, deleteRestaurantUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("GetAllRestaurantUseCase cannot be null.");
     }
@@ -151,7 +163,7 @@ class RestaurantControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com DeleteRestaurantUseCase nulo")
     void shouldThrowExceptionWhenDeleteUseCaseIsNull() {
-        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, getByIdRestaurantUseCase, getAllRestaurantUseCase, null))
+        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, updateRestaurantUseCase, getByIdRestaurantUseCase, getAllRestaurantUseCase, null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("DeleteRestaurantUseCase cannot be null.");
     }
@@ -162,6 +174,62 @@ class RestaurantControllerTest {
         assertThatThrownBy(() -> restaurantController.createRestaurant(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("CreateRestaurantInput cannot be null.");
+    }
+
+    @Test
+    @DisplayName("Deve atualizar Restaurant com sucesso")
+    void shouldUpdateRestaurantSuccessfully() {
+        // Arrange
+        UpdateRestaurantInput input = new UpdateRestaurantInput(
+                1L,
+                "Novo Nome",
+                new AddressBuilder().buildInput(),
+                "Japonesa",
+                null,
+                null,
+                null
+        );
+
+        // Act
+        restaurantController.updateRestaurant(input);
+
+        // Assert
+        then(updateRestaurantUseCase).should().execute(updateRestaurantInputCaptor.capture());
+        UpdateRestaurantInput capturedInput = updateRestaurantInputCaptor.getValue();
+        assertThat(capturedInput).isEqualTo(input);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando UpdateRestaurantUseCase lança exceção")
+    void shouldThrowExceptionWhenUpdateUseCaseThrowsException() {
+        // Arrange
+        UpdateRestaurantInput input = new UpdateRestaurantInput(
+                1L,
+                "Novo Nome",
+                new AddressBuilder().buildInput(),
+                "Japonesa",
+                null,
+                null,
+                null
+        );
+        RuntimeException expectedException = new RuntimeException("Error updating restaurant");
+
+        willThrow(expectedException).given(updateRestaurantUseCase).execute(input);
+
+        // Act & Assert
+        assertThatThrownBy(() -> restaurantController.updateRestaurant(input))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Error updating restaurant");
+
+        then(updateRestaurantUseCase).should().execute(input);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao chamar updateRestaurant com input nulo")
+    void shouldThrowExceptionWhenUpdateRestaurantInputIsNull() {
+        assertThatThrownBy(() -> restaurantController.updateRestaurant(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("UpdateRestaurantInput cannot be null.");
     }
 
     @Test

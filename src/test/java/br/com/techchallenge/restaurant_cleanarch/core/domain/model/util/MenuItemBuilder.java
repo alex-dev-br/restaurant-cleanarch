@@ -1,8 +1,8 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model.util;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.MenuItemInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateMenuItemInput;
 
 import java.math.BigDecimal;
 
@@ -73,6 +73,17 @@ public class MenuItemBuilder {
 
     public MenuItemInput buildInput() {
         return new MenuItemInput(
+                name,
+                description,
+                price,
+                restaurantOnly,
+                photoPath
+        );
+    }
+
+    public UpdateMenuItemInput buildUpdateInput() {
+        return new UpdateMenuItemInput(
+                id,
                 name,
                 description,
                 price,
