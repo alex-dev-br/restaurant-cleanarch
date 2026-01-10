@@ -2,11 +2,10 @@ package br.com.techchallenge.restaurant_cleanarch.core.controller;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.MenuItemBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.OpeningHoursBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.*;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateRestaurantInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateRestaurantInput;
@@ -28,6 +27,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,6 +49,9 @@ class RestaurantControllerTest {
     @Mock
     private DeleteRestaurantUseCase deleteRestaurantUseCase;
 
+    @Mock
+    private ListRestaurantsByCuisineTypeUseCase listRestaurantsByCuisineTypeUseCase;
+
     @InjectMocks
     private RestaurantController restaurantController;
 
@@ -57,6 +60,9 @@ class RestaurantControllerTest {
 
     @Captor
     private ArgumentCaptor<UpdateRestaurantInput> updateRestaurantInputCaptor;
+
+    @Captor
+    private ArgumentCaptor<PagedQuery<String>> pagedQueryCaptor;
 
     @Test
     @DisplayName("Deve criar Restaurant com sucesso e retornar RestaurantOutput")
@@ -131,7 +137,7 @@ class RestaurantControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com CreateRestaurantUseCase nulo")
     void shouldThrowExceptionWhenCreateUseCaseIsNull() {
-        assertThatThrownBy(() -> new RestaurantController(null, updateRestaurantUseCase, getByIdRestaurantUseCase, getAllRestaurantUseCase, deleteRestaurantUseCase))
+        assertThatThrownBy(() -> new RestaurantController(null, updateRestaurantUseCase, getByIdRestaurantUseCase, getAllRestaurantUseCase, deleteRestaurantUseCase, listRestaurantsByCuisineTypeUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("CreateRestaurantUseCase cannot be null.");
     }
@@ -139,7 +145,7 @@ class RestaurantControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com UpdateRestaurantUseCase nulo")
     void shouldThrowExceptionWhenUpdateUseCaseIsNull() {
-        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, null, getByIdRestaurantUseCase, getAllRestaurantUseCase, deleteRestaurantUseCase))
+        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, null, getByIdRestaurantUseCase, getAllRestaurantUseCase, deleteRestaurantUseCase, listRestaurantsByCuisineTypeUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("UpdateRestaurantUseCase cannot be null.");
     }
@@ -147,7 +153,7 @@ class RestaurantControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com GetByIdRestaurantUseCase nulo")
     void shouldThrowExceptionWhenGetByIdUseCaseIsNull() {
-        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, updateRestaurantUseCase, null, getAllRestaurantUseCase, deleteRestaurantUseCase))
+        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, updateRestaurantUseCase, null, getAllRestaurantUseCase, deleteRestaurantUseCase, listRestaurantsByCuisineTypeUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("GetByIdRestaurantUseCase cannot be null.");
     }
@@ -155,7 +161,7 @@ class RestaurantControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com GetAllRestaurantUseCase nulo")
     void shouldThrowExceptionWhenGetAllUseCaseIsNull() {
-        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, updateRestaurantUseCase, getByIdRestaurantUseCase, null, deleteRestaurantUseCase))
+        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, updateRestaurantUseCase, getByIdRestaurantUseCase, null, deleteRestaurantUseCase, listRestaurantsByCuisineTypeUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("GetAllRestaurantUseCase cannot be null.");
     }
@@ -163,9 +169,17 @@ class RestaurantControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com DeleteRestaurantUseCase nulo")
     void shouldThrowExceptionWhenDeleteUseCaseIsNull() {
-        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, updateRestaurantUseCase, getByIdRestaurantUseCase, getAllRestaurantUseCase, null))
+        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, updateRestaurantUseCase, getByIdRestaurantUseCase, getAllRestaurantUseCase, null, listRestaurantsByCuisineTypeUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("DeleteRestaurantUseCase cannot be null.");
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao instanciar controller com ListRestaurantsByCuisineTypeUseCase nulo")
+    void shouldThrowExceptionWhenListByCuisineTypeUseCaseIsNull() {
+        assertThatThrownBy(() -> new RestaurantController(createRestaurantUseCase, updateRestaurantUseCase, getByIdRestaurantUseCase, getAllRestaurantUseCase, deleteRestaurantUseCase, null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("ListRestaurantsByCuisineTypeUseCase cannot be null.");
     }
     
     @Test
@@ -343,6 +357,64 @@ class RestaurantControllerTest {
         assertThat(result).isNotNull().isEmpty();
 
         then(getAllRestaurantUseCase).should().execute();
+    }
+
+    @Test
+    @DisplayName("Deve buscar por tipo de cozinha e retornar página de RestaurantOutput")
+    void shouldFindByCuisineTypeAndReturnPageOfRestaurantOutput() {
+        // Arrange
+        String cuisineType = "Italiana";
+        int pageNumber = 0;
+        int pageSize = 10;
+
+        Restaurant restaurant = new RestaurantBuilder().withCuisineType(cuisineType).build();
+        Page<Restaurant> restaurantPage = new Page<>(pageNumber, pageSize, 1, 1, List.of(restaurant));
+
+        given(listRestaurantsByCuisineTypeUseCase.execute(any())).willReturn(restaurantPage);
+
+        // Act
+        Page<RestaurantOutput> result = restaurantController.findByCuisineType(cuisineType, pageNumber, pageSize);
+
+        // Assert
+        assertThat(result).isNotNull();
+        assertThat(result.currentPage()).isEqualTo(pageNumber);
+        assertThat(result.pageSize()).isEqualTo(pageSize);
+        assertThat(result.totalElements()).isOne();
+        assertThat(result.totalPages()).isOne();
+        assertThat(result.content()).hasSize(1);
+        assertThat(result.content().getFirst().cuisineType()).isEqualTo(cuisineType);
+
+        then(listRestaurantsByCuisineTypeUseCase).should().execute(pagedQueryCaptor.capture());
+        PagedQuery<String> capturedQuery = pagedQueryCaptor.getValue();
+        assertThat(capturedQuery.filter()).isEqualTo(cuisineType);
+        assertThat(capturedQuery.pageNumber()).isEqualTo(pageNumber);
+        assertThat(capturedQuery.pageSize()).isEqualTo(pageSize);
+    }
+
+    @Test
+    @DisplayName("Deve retornar página vazia quando nenhum restaurante for encontrado por tipo de cozinha")
+    void shouldReturnEmptyPageWhenNoRestaurantFoundByCuisineType() {
+        // Arrange
+        String cuisineType = "Inexistente";
+        int pageNumber = 0;
+        int pageSize = 10;
+
+        Page<Restaurant> emptyPage = new Page<>(pageNumber, pageSize, 0, 1, List.of());
+
+        given(listRestaurantsByCuisineTypeUseCase.execute(any())).willReturn(emptyPage);
+
+        // Act
+        Page<RestaurantOutput> result = restaurantController.findByCuisineType(cuisineType, pageNumber, pageSize);
+
+        // Assert
+        assertThat(result).isNotNull();
+        assertThat(result.currentPage()).isEqualTo(pageNumber);
+        assertThat(result.pageSize()).isEqualTo(pageSize);
+        assertThat(result.totalElements()).isZero();
+        assertThat(result.totalPages()).isOne();
+        assertThat(result.content()).isEmpty();
+
+        then(listRestaurantsByCuisineTypeUseCase).should().execute(any());
     }
 
     @Test

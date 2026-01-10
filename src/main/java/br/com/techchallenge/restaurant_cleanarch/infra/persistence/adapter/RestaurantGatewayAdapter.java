@@ -1,12 +1,16 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.persistence.adapter;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.RestaurantMapper;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.RestaurantEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.RestaurantRepository;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Optional;
@@ -72,5 +76,19 @@ public class RestaurantGatewayAdapter implements RestaurantGateway {
     @Override
     public void delete(Long id) {
         restaurantRepository.deleteById(id);
+    }
+
+    @Override
+    public Page<Restaurant> findByCuisineType(PagedQuery<String> query) {
+        var pageRequest = PageRequest.of(query.pageNumber(), query.pageSize(), Sort.by(Sort.Direction.ASC, "cuisineType"));
+        var pagedResult = restaurantRepository.findByCuisineType(query.filter(), pageRequest);
+        var page = new Page<> (
+            pagedResult.getNumber(),
+            pagedResult.getSize(),
+            pagedResult.getTotalElements(),
+            pagedResult.getTotalPages(),
+            pagedResult.getContent()
+        );
+        return page.mapItems(restaurantMapper::toDomain);
     }
 }

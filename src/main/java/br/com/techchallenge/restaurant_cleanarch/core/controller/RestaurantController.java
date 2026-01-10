@@ -1,5 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.core.controller;
 
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateRestaurantInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateRestaurantInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
@@ -16,22 +18,26 @@ public class RestaurantController {
     private final GetByIdRestaurantUseCase getByIdRestaurantUseCase;
     private final GetAllRestaurantUseCase getAllRestaurantUseCase;
     private final DeleteRestaurantUseCase deleteRestaurantUseCase;
+    private final ListRestaurantsByCuisineTypeUseCase listRestaurantsByCuisineTypeUseCase;
 
     public RestaurantController(CreateRestaurantUseCase createRestaurantUseCase,
                                 UpdateRestaurantUseCase updateRestaurantUseCase,
                                 GetByIdRestaurantUseCase getByIdRestaurantUseCase,
                                 GetAllRestaurantUseCase getAllRestaurantUseCase,
-                                DeleteRestaurantUseCase deleteRestaurantUseCase) {
+                                DeleteRestaurantUseCase deleteRestaurantUseCase,
+                                ListRestaurantsByCuisineTypeUseCase listRestaurantsByCuisineTypeUseCase) {
         Objects.requireNonNull(createRestaurantUseCase, "CreateRestaurantUseCase cannot be null.");
         Objects.requireNonNull(updateRestaurantUseCase, "UpdateRestaurantUseCase cannot be null.");
         Objects.requireNonNull(getByIdRestaurantUseCase, "GetByIdRestaurantUseCase cannot be null.");
         Objects.requireNonNull(getAllRestaurantUseCase, "GetAllRestaurantUseCase cannot be null.");
         Objects.requireNonNull(deleteRestaurantUseCase, "DeleteRestaurantUseCase cannot be null.");
+        Objects.requireNonNull(listRestaurantsByCuisineTypeUseCase, "ListRestaurantsByCuisineTypeUseCase cannot be null.");
         this.createRestaurantUseCase = createRestaurantUseCase;
         this.updateRestaurantUseCase = updateRestaurantUseCase;
         this.getByIdRestaurantUseCase = getByIdRestaurantUseCase;
         this.getAllRestaurantUseCase = getAllRestaurantUseCase;
         this.deleteRestaurantUseCase = deleteRestaurantUseCase;
+        this.listRestaurantsByCuisineTypeUseCase = listRestaurantsByCuisineTypeUseCase;
     }
 
     public RestaurantOutput createRestaurant(CreateRestaurantInput createRestaurantInput) {
@@ -56,6 +62,12 @@ public class RestaurantController {
                 .stream()
                 .map(RestaurantPresenter::toOutput)
                 .toList();
+    }
+
+    public Page<RestaurantOutput> findByCuisineType(String cuisineType, int pageNumber, int pageSize) {
+        var pagedQuery = new PagedQuery<>(cuisineType, pageNumber, pageSize);
+        var page = listRestaurantsByCuisineTypeUseCase.execute(pagedQuery);
+        return page.mapItems(RestaurantPresenter::toOutput);
     }
 
     public void deleteById(Long id) {
