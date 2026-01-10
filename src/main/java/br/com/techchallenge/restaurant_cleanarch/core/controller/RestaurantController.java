@@ -1,12 +1,10 @@
 package br.com.techchallenge.restaurant_cleanarch.core.controller;
 
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateRestaurantInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateRestaurantInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
 import br.com.techchallenge.restaurant_cleanarch.core.presenter.RestaurantPresenter;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.CreateRestaurantUseCase;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.DeleteRestaurantUseCase;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.GetAllRestaurantUseCase;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.GetByIdRestaurantUseCase;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -14,19 +12,23 @@ import java.util.Objects;
 public class RestaurantController {
 
     private final CreateRestaurantUseCase createRestaurantUseCase;
+    private final UpdateRestaurantUseCase updateRestaurantUseCase;
     private final GetByIdRestaurantUseCase getByIdRestaurantUseCase;
     private final GetAllRestaurantUseCase getAllRestaurantUseCase;
     private final DeleteRestaurantUseCase deleteRestaurantUseCase;
 
     public RestaurantController(CreateRestaurantUseCase createRestaurantUseCase,
+                                UpdateRestaurantUseCase updateRestaurantUseCase,
                                 GetByIdRestaurantUseCase getByIdRestaurantUseCase,
                                 GetAllRestaurantUseCase getAllRestaurantUseCase,
                                 DeleteRestaurantUseCase deleteRestaurantUseCase) {
         Objects.requireNonNull(createRestaurantUseCase, "CreateRestaurantUseCase cannot be null.");
+        Objects.requireNonNull(updateRestaurantUseCase, "UpdateRestaurantUseCase cannot be null.");
         Objects.requireNonNull(getByIdRestaurantUseCase, "GetByIdRestaurantUseCase cannot be null.");
         Objects.requireNonNull(getAllRestaurantUseCase, "GetAllRestaurantUseCase cannot be null.");
         Objects.requireNonNull(deleteRestaurantUseCase, "DeleteRestaurantUseCase cannot be null.");
         this.createRestaurantUseCase = createRestaurantUseCase;
+        this.updateRestaurantUseCase = updateRestaurantUseCase;
         this.getByIdRestaurantUseCase = getByIdRestaurantUseCase;
         this.getAllRestaurantUseCase = getAllRestaurantUseCase;
         this.deleteRestaurantUseCase = deleteRestaurantUseCase;
@@ -36,6 +38,11 @@ public class RestaurantController {
         Objects.requireNonNull(createRestaurantInput, "CreateRestaurantInput cannot be null.");
         var restaurant = createRestaurantUseCase.execute(createRestaurantInput);
         return RestaurantPresenter.toOutput(restaurant);
+    }
+
+    public void updateRestaurant(UpdateRestaurantInput updateRestaurantInput) {
+        Objects.requireNonNull(updateRestaurantInput, "UpdateRestaurantInput cannot be null.");
+        updateRestaurantUseCase.execute(updateRestaurantInput);
     }
 
     public RestaurantOutput findById(Long id) {
