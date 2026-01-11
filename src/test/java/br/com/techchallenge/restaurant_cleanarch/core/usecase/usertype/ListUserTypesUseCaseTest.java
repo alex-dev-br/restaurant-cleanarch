@@ -24,7 +24,7 @@ import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para GetAllUserTypeUseCase")
-class GetAllUserTypesUseCaseTest {
+class ListUserTypesUseCaseTest {
 
     @Mock
     private UserTypeGateway userTypeGateway;
@@ -33,7 +33,7 @@ class GetAllUserTypesUseCaseTest {
     private LoggedUserGateway loggedUserGateway;
 
     @InjectMocks
-    private GetAllUserTypesUseCase getAllUserTypesUseCase;
+    private ListUserTypesUseCase listUserTypesUseCase;
 
     @Test
     @DisplayName("Deve retornar todos os UserTypes com sucesso")
@@ -45,7 +45,7 @@ class GetAllUserTypesUseCaseTest {
         given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findAll()).willReturn(expectedUserTypes);
 
-        Set<UserType> result = getAllUserTypesUseCase.execute();
+        Set<UserType> result = listUserTypesUseCase.execute();
 
         assertThat(result).isNotNull().hasSize(2).containsExactlyInAnyOrder(userType1, userType2);
 
@@ -59,7 +59,7 @@ class GetAllUserTypesUseCaseTest {
         given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findAll()).willReturn(Collections.emptySet());
 
-        Set<UserType> result = getAllUserTypesUseCase.execute();
+        Set<UserType> result = listUserTypesUseCase.execute();
 
         assertThat(result).isNotNull().isEmpty();
 
@@ -72,7 +72,7 @@ class GetAllUserTypesUseCaseTest {
     void shouldThrowExceptionWhenUserHasNoPermission() {
         given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(false);
 
-        assertThatThrownBy(() -> getAllUserTypesUseCase.execute())
+        assertThatThrownBy(() -> listUserTypesUseCase.execute())
                 .isInstanceOf(OperationNotAllowedException.class)
                 .hasMessage("The current user does not have permission to get all user types.");
 

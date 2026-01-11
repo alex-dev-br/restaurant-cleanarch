@@ -23,7 +23,7 @@ import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para GetAllRolesUseCase")
-class GetAllRolesUseCaseTest {
+class ListRolesUseCaseTest {
 
     @Mock
     private RoleGateway roleGateway;
@@ -32,7 +32,7 @@ class GetAllRolesUseCaseTest {
     private LoggedUserGateway loggedUserGateway;
 
     @InjectMocks
-    private GetAllRolesUseCase getAllRolesUseCase;
+    private ListRolesUseCase listRolesUseCase;
 
     @Test
     @DisplayName("Deve retornar todas as Roles com sucesso")
@@ -44,7 +44,7 @@ class GetAllRolesUseCaseTest {
         given(loggedUserGateway.hasRole(RoleRoles.VIEW_ROLE)).willReturn(true);
         given(roleGateway.findAll()).willReturn(expectedRoles);
 
-        Set<Role> result = getAllRolesUseCase.execute();
+        Set<Role> result = listRolesUseCase.execute();
 
         assertThat(result).isNotNull().hasSize(2).containsExactlyInAnyOrder(role1, role2);
 
@@ -58,7 +58,7 @@ class GetAllRolesUseCaseTest {
         given(loggedUserGateway.hasRole(RoleRoles.VIEW_ROLE)).willReturn(true);
         given(roleGateway.findAll()).willReturn(Collections.emptySet());
 
-        Set<Role> result = getAllRolesUseCase.execute();
+        Set<Role> result = listRolesUseCase.execute();
 
         assertThat(result).isNotNull().isEmpty();
 
@@ -71,7 +71,7 @@ class GetAllRolesUseCaseTest {
     void shouldThrowExceptionWhenUserHasNoPermission() {
         given(loggedUserGateway.hasRole(RoleRoles.VIEW_ROLE)).willReturn(false);
 
-        assertThatThrownBy(() -> getAllRolesUseCase.execute())
+        assertThatThrownBy(() -> listRolesUseCase.execute())
                 .isInstanceOf(OperationNotAllowedException.class)
                 .hasMessage("The current user does not have permission to get all roles.");
 

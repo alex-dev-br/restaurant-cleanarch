@@ -26,7 +26,7 @@ import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para GetByIdUserTypeUseCase")
-class GetByIdUserTypeUseCaseTest {
+class GetUserTypeByIdUseCaseTest {
 
     @Mock
     private UserTypeGateway userTypeGateway;
@@ -35,7 +35,7 @@ class GetByIdUserTypeUseCaseTest {
     private LoggedUserGateway loggedUserGateway;
 
     @InjectMocks
-    private GetByIdUserTypeUseCase getByIdUserTypeUseCase;
+    private GetUserTypeByIdUseCase getUserTypeByIdUseCase;
 
     @Test
     @DisplayName("Deve retornar UserType com sucesso quando encontrado")
@@ -46,7 +46,7 @@ class GetByIdUserTypeUseCaseTest {
         given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.of(expectedUserType));
 
-        UserType result = getByIdUserTypeUseCase.execute(id);
+        UserType result = getUserTypeByIdUseCase.execute(id);
 
         assertThat(result).isNotNull().isEqualTo(expectedUserType);
 
@@ -60,7 +60,7 @@ class GetByIdUserTypeUseCaseTest {
         Long id = 1L;
         given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(false);
 
-        assertThatThrownBy(() -> getByIdUserTypeUseCase.execute(id))
+        assertThatThrownBy(() -> getUserTypeByIdUseCase.execute(id))
                 .isInstanceOf(OperationNotAllowedException.class)
                 .hasMessage("The current user does not have permission to get user types.");
 
@@ -75,7 +75,7 @@ class GetByIdUserTypeUseCaseTest {
         given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> getByIdUserTypeUseCase.execute(id))
+        assertThatThrownBy(() -> getUserTypeByIdUseCase.execute(id))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("User type not found.");
 
@@ -86,7 +86,7 @@ class GetByIdUserTypeUseCaseTest {
     @Test
     @DisplayName("Deve lançar exceção quando ID é nulo")
     void shouldThrowExceptionWhenIdIsNull() {
-        assertThatThrownBy(() -> getByIdUserTypeUseCase.execute(null))
+        assertThatThrownBy(() -> getUserTypeByIdUseCase.execute(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("Id of user type cannot be null.");
 
