@@ -15,7 +15,7 @@ public abstract class UseCaseBase<T, R> {
         this.loggedUserGateway = loggedUserGateway;
     }
 
-    public  R execute(T input) {
+    public R execute(T input) {
         Objects.requireNonNull(input,  "Input cannot be null.");
 
         boolean isAllowed = isPublicAccessAllowed() || loggedUserGateway.hasRole(getRequiredRole());
