@@ -1,7 +1,6 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
@@ -35,8 +34,10 @@ class UserTest {
     @Test
     @DisplayName("Deve lançar NullPointerException quando name for nulo")
     void deveLancarExcecaoQuandoNameForNulo() {
-        var invalidBuilder = new UserBuilder().withName(null);
-        assertThatThrownBy(invalidBuilder::build)
+        UUID uuid = UUID.randomUUID();
+        Address address = new AddressBuilder().build();
+
+        assertThatThrownBy(() -> new User(uuid, null, "email@mail.com", address, restauranteOwnerUserType, "secret"))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("Name cannot be null");
     }
