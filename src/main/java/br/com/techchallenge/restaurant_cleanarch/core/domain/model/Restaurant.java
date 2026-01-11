@@ -3,6 +3,7 @@ package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.UserCannotBeRestaurantOwnerException;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -33,7 +34,7 @@ public class Restaurant {
             throw new BusinessException("O tipo de cozinha não pode ser vazio.");
         }
         if (!owner.canOwnRestaurant()) {
-            throw new BusinessException("O restaurante deve ter um dono com permissão de proprietário.");
+            throw new UserCannotBeRestaurantOwnerException();
         }
 
         this.id = id;
