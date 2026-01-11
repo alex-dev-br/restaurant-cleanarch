@@ -1,4 +1,4 @@
-package br.com.techchallenge.restaurant_cleanarch.core.usecase;
+package br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
@@ -6,7 +6,6 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserTypeGateway;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype.GetAllUserTypesUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
