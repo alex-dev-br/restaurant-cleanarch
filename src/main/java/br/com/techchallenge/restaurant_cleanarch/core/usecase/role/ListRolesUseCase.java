@@ -9,12 +9,12 @@ import br.com.techchallenge.restaurant_cleanarch.core.gateway.RoleGateway;
 import java.util.Objects;
 import java.util.Set;
 
-public class GetAllRolesUseCase {
+public class ListRolesUseCase {
 
     private final LoggedUserGateway loggedUserGateway;
     private final RoleGateway roleGateway;
 
-    public GetAllRolesUseCase(LoggedUserGateway loggedUserGateway, RoleGateway roleGateway) {
+    public ListRolesUseCase(LoggedUserGateway loggedUserGateway, RoleGateway roleGateway) {
         Objects.requireNonNull(loggedUserGateway, "LoggedUserGateway cannot be null.");
         Objects.requireNonNull(roleGateway, "RoleGateway cannot be null.");
         this.loggedUserGateway = loggedUserGateway;

@@ -1,12 +1,5 @@
 package br.com.techchallenge.restaurant_cleanarch;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.gateway.*;
-import br.com.techchallenge.restaurant_cleanarch.core.inbound.*;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem.CreateMenuItemUseCase;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.*;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.role.GetAllRolesUseCase;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype.*;
 import org.junit.jupiter.api.*;
 
 import static org.mockito.Mockito.mock;

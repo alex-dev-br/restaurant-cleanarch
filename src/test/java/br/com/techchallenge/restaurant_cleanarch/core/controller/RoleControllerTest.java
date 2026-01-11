@@ -2,7 +2,7 @@ package br.com.techchallenge.restaurant_cleanarch.core.controller;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.RoleOutput;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.role.GetAllRolesUseCase;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.role.ListRolesUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +22,7 @@ import static org.mockito.BDDMockito.then;
 class RoleControllerTest {
 
     @Mock
-    private GetAllRolesUseCase getAllRolesUseCase;
+    private ListRolesUseCase listRolesUseCase;
 
     @InjectMocks
     private RoleController roleController;
@@ -34,14 +34,14 @@ class RoleControllerTest {
         Role role2 = new Role(2L, "USER");
         Set<Role> roles = Set.of(role1, role2);
 
-        given(getAllRolesUseCase.execute()).willReturn(roles);
+        given(listRolesUseCase.execute()).willReturn(roles);
 
         Set<RoleOutput> result = roleController.getAllRoles();
 
         assertThat(result).isNotNull().hasSize(2);
         assertThat(result).extracting(RoleOutput::name).containsExactlyInAnyOrder("ADMIN", "USER");
 
-        then(getAllRolesUseCase).should().execute();
+        then(listRolesUseCase).should().execute();
     }
 
     @Test
@@ -49,13 +49,13 @@ class RoleControllerTest {
     void shouldThrowExceptionWhenGetAllUseCaseThrowsException() {
         RuntimeException expectedException = new RuntimeException("Error fetching roles");
 
-        given(getAllRolesUseCase.execute()).willThrow(expectedException);
+        given(listRolesUseCase.execute()).willThrow(expectedException);
 
         assertThatThrownBy(() -> roleController.getAllRoles())
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Error fetching roles");
 
-        then(getAllRolesUseCase).should().execute();
+        then(listRolesUseCase).should().execute();
     }
 
     @Test

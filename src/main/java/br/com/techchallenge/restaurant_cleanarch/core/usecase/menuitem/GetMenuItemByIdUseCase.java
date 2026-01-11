@@ -7,12 +7,12 @@ import br.com.techchallenge.restaurant_cleanarch.core.gateway.*;
 
 import java.util.Objects;
 
-public class GetByIdMenuItemUseCase {
+public class GetMenuItemByIdUseCase {
 
     private MenuItemGateway menuItemGateway;
     private LoggedUserGateway loggedUserGateway;
 
-    public GetByIdMenuItemUseCase(MenuItemGateway menuItemGateway, LoggedUserGateway loggedUserGateway) {
+    public GetMenuItemByIdUseCase(MenuItemGateway menuItemGateway, LoggedUserGateway loggedUserGateway) {
         Objects.requireNonNull(menuItemGateway, "MenuItemGateway cannot be null");
         Objects.requireNonNull(loggedUserGateway, "LoggedUserGateway cannot be null");
 

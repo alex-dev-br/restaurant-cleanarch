@@ -31,7 +31,7 @@ import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para GetAllRestaurantUseCase")
-class GetAllRestaurantUseCaseTest {
+class ListRestaurantsUseCaseTest {
 
     @Mock
     private RestaurantGateway restaurantGateway;
@@ -40,7 +40,7 @@ class GetAllRestaurantUseCaseTest {
     private LoggedUserGateway loggedUserGateway;
 
     @InjectMocks
-    private GetAllRestaurantUseCase getAllRestaurantUseCase;
+    private ListRestaurantsUseCase listRestaurantsUseCase;
 
     @Test
     @DisplayName("Deve retornar lista de Restaurant com sucesso")
@@ -68,7 +68,7 @@ class GetAllRestaurantUseCaseTest {
         given(restaurantGateway.findAll()).willReturn(List.of(restaurant));
 
         // Act
-        List<Restaurant> result = getAllRestaurantUseCase.execute();
+        List<Restaurant> result = listRestaurantsUseCase.execute();
 
         // Assert
         assertThat(result).isNotNull().hasSize(1);
@@ -92,7 +92,7 @@ class GetAllRestaurantUseCaseTest {
         given(restaurantGateway.findAll()).willReturn(Collections.emptyList());
 
         // Act
-        List<Restaurant> result = getAllRestaurantUseCase.execute();
+        List<Restaurant> result = listRestaurantsUseCase.execute();
 
         // Assert
         assertThat(result).isNotNull().isEmpty();
@@ -108,7 +108,7 @@ class GetAllRestaurantUseCaseTest {
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(false);
 
         // Act & Assert
-        assertThatThrownBy(() -> getAllRestaurantUseCase.execute())
+        assertThatThrownBy(() -> listRestaurantsUseCase.execute())
                 .isInstanceOf(OperationNotAllowedException.class)
                 .hasMessage("The current user does not have permission to view restaurants.");
 
