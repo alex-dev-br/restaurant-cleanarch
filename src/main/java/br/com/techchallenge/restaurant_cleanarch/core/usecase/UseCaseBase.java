@@ -8,7 +8,7 @@ import java.util.Objects;
 
 public abstract class UseCaseBase<T, R> {
 
-    private final LoggedUserGateway loggedUserGateway;
+    protected final LoggedUserGateway loggedUserGateway;
 
     protected UseCaseBase(LoggedUserGateway loggedUserGateway) {
         Objects.requireNonNull(loggedUserGateway, "LoggedUserGateway cannot be null.");
