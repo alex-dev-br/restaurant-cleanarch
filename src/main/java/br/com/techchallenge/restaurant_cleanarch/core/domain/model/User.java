@@ -1,6 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import lombok.*;
 
@@ -41,7 +42,7 @@ public class User {
         return this.userType.getRoles()
                 .stream()
                 .map(Role::name)
-                .anyMatch("RESTAURANT_OWNER"::equals);
+                .anyMatch(UserRoles.RESTAURANT_OWNER.getRoleName()::equals);
     }
 
     @Override
