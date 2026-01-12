@@ -7,12 +7,12 @@ import br.com.techchallenge.restaurant_cleanarch.core.gateway.*;
 
 import java.util.*;
 
-public class GetAllUserUseCase {
+public class ListUsersUseCase {
 
     private final UserGateway userGateway;
     private final LoggedUserGateway loggedUserGateway;
 
-    public GetAllUserUseCase(UserGateway userGateway, LoggedUserGateway loggedUserGateway) {
+    public ListUsersUseCase(UserGateway userGateway, LoggedUserGateway loggedUserGateway) {
         Objects.requireNonNull(userGateway, "userGateway cannot be null");
         Objects.requireNonNull(loggedUserGateway, "loggedUserGateway cannot be null");
         this.userGateway = userGateway;

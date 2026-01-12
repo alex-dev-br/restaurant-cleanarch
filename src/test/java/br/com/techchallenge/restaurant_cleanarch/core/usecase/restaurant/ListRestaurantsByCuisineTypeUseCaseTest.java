@@ -101,5 +101,6 @@ class ListRestaurantsByCuisineTypeUseCaseTest {
                 .hasMessage("Input cannot be null.");
 
         then(restaurantGateway).should(never()).findByCuisineType(null);
+        then(loggedUserGateway).should(never()).hasRole(any());
     }
 }

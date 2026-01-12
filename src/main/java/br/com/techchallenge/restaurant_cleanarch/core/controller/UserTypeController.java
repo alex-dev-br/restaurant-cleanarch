@@ -14,26 +14,26 @@ public class UserTypeController {
     private final CreateUserTypeUseCase createUserTypeUseCase;
     private final UpdateUserTypeUseCase updateUserTypeUseCase;
     private final DeleteUserTypeUseCase deleteUserTypeUseCase;
-    private final GetByIdUserTypeUseCase getByIdUserTypeUseCase;
-    private final GetAllUserTypesUseCase getAllUserTypesUseCase;
+    private final GetUserTypeByIdUseCase getUserTypeByIdUseCase;
+    private final ListUserTypesUseCase listUserTypesUseCase;
 
     public UserTypeController (
             CreateUserTypeUseCase createUserTypeUseCase,
             UpdateUserTypeUseCase updateUserTypeUseCase,
             DeleteUserTypeUseCase deleteUserTypeUseCase,
-            GetByIdUserTypeUseCase getByIdUserTypeUseCase,
-            GetAllUserTypesUseCase getAllUserTypesUseCase
+            GetUserTypeByIdUseCase getUserTypeByIdUseCase,
+            ListUserTypesUseCase listUserTypesUseCase
     ) {
         Objects.requireNonNull(createUserTypeUseCase, "CreateUserTypeUseCase cannot be null.");
         Objects.requireNonNull(updateUserTypeUseCase, "UpdateUserTypeUseCase cannot be null.");
         Objects.requireNonNull(deleteUserTypeUseCase, "DeleteUserTypeUseCase cannot be null.");
-        Objects.requireNonNull(getByIdUserTypeUseCase, "GetByIdUserTypeUseCase cannot be null.");
-        Objects.requireNonNull(getAllUserTypesUseCase, "GetAllUserTypesUseCase cannot be null.");
+        Objects.requireNonNull(getUserTypeByIdUseCase, "GetByIdUserTypeUseCase cannot be null.");
+        Objects.requireNonNull(listUserTypesUseCase, "GetAllUserTypesUseCase cannot be null.");
         this.createUserTypeUseCase = createUserTypeUseCase;
         this.updateUserTypeUseCase = updateUserTypeUseCase;
         this.deleteUserTypeUseCase = deleteUserTypeUseCase;
-        this.getByIdUserTypeUseCase = getByIdUserTypeUseCase;
-        this.getAllUserTypesUseCase = getAllUserTypesUseCase;
+        this.getUserTypeByIdUseCase = getUserTypeByIdUseCase;
+        this.listUserTypesUseCase = listUserTypesUseCase;
     }
 
     public UserTypeOutput createUserType(CreateUserTypeInput input) {
@@ -50,12 +50,12 @@ public class UserTypeController {
     }
 
     public UserTypeOutput getUserTypeById(Long id) {
-        var userType = getByIdUserTypeUseCase.execute(id);
+        var userType = getUserTypeByIdUseCase.execute(id);
         return UserTypePresenter.toOutput(userType);
     }
 
     public List<UserTypeOutput> getAllUserTypes() {
-        var userTypes = getAllUserTypesUseCase.execute();
+        var userTypes = listUserTypesUseCase.execute();
         return userTypes.stream().map(UserTypePresenter::toOutput).toList();
     }
 }

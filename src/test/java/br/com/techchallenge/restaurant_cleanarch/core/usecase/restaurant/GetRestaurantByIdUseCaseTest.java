@@ -29,7 +29,7 @@ import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para GetByIdRestaurantUseCase")
-class GetByIdRestaurantUseCaseTest {
+class GetRestaurantByIdUseCaseTest {
 
     @Mock
     private RestaurantGateway restaurantGateway;
@@ -38,7 +38,7 @@ class GetByIdRestaurantUseCaseTest {
     private LoggedUserGateway loggedUserGateway;
 
     @InjectMocks
-    private GetByIdRestaurantUseCase getByIdRestaurantUseCase;
+    private GetRestaurantByIdUseCase getRestaurantByIdUseCase;
 
     @Test
     @DisplayName("Deve retornar Restaurant com sucesso quando encontrado")
@@ -58,14 +58,18 @@ class GetByIdRestaurantUseCaseTest {
         var tuesday = new OpeningHoursBuilder().withDayOfDay(DayOfWeek.TUESDAY).build();
         var friday = new OpeningHoursBuilder().build();
         var menuItem = new MenuItemBuilder().build();
+        var employee = new UserBuilder().build();
 
-        Restaurant expectedRestaurant = new Restaurant(id, "Restaurant Name", address, "Cuisine",
-                Set.of(tuesday, friday), Set.of(menuItem), owner);
+        Restaurant expectedRestaurant = new Restaurant(id, "Restaurant Name", address, "Cuisine", owner);
+        expectedRestaurant.addOpeningHours(tuesday);
+        expectedRestaurant.addOpeningHours(friday);
+        expectedRestaurant.addMenuItem(menuItem);
+        expectedRestaurant.addEmployee(employee);
 
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(id)).willReturn(Optional.of(expectedRestaurant));
 
-        Restaurant result = getByIdRestaurantUseCase.execute(id);
+        Restaurant result = getRestaurantByIdUseCase.execute(id);
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNotNull().isEqualTo(expectedRestaurant.getId());
@@ -74,6 +78,7 @@ class GetByIdRestaurantUseCaseTest {
         assertThat(result.getCuisineType()).isNotNull().isEqualTo(expectedRestaurant.getCuisineType());
         assertThat(result.getOpeningHours()).isNotNull().hasSize(2).isEqualTo(expectedRestaurant.getOpeningHours());
         assertThat(result.getMenu()).isNotNull().hasSize(1).isEqualTo(expectedRestaurant.getMenu());
+        assertThat(result.getEmployees()).isNotNull().hasSize(1).isEqualTo(expectedRestaurant.getEmployees());
         assertThat(result.getOwner()).isNotNull().isEqualTo(expectedRestaurant.getOwner());
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
@@ -86,7 +91,7 @@ class GetByIdRestaurantUseCaseTest {
         Long id = 1L;
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(false);
 
-        assertThatThrownBy(() -> getByIdRestaurantUseCase.execute(id))
+        assertThatThrownBy(() -> getRestaurantByIdUseCase.execute(id))
                 .isInstanceOf(OperationNotAllowedException.class)
                 .hasMessage("The current user does not have permission to update restaurants.");
 
@@ -101,7 +106,7 @@ class GetByIdRestaurantUseCaseTest {
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(id)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> getByIdRestaurantUseCase.execute(id))
+        assertThatThrownBy(() -> getRestaurantByIdUseCase.execute(id))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Restaurant not found.");
 
@@ -112,7 +117,7 @@ class GetByIdRestaurantUseCaseTest {
     @Test
     @DisplayName("Deve lançar exceção quando ID é nulo")
     void shouldThrowExceptionWhenIdIsNull() {
-        assertThatThrownBy(() -> getByIdRestaurantUseCase.execute(null))
+        assertThatThrownBy(() -> getRestaurantByIdUseCase.execute(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("Restaurant Id cannot be null.");
 

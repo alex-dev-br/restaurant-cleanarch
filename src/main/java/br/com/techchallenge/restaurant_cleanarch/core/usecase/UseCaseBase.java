@@ -8,19 +8,19 @@ import java.util.Objects;
 
 public abstract class UseCaseBase<T, R> {
 
-    private final LoggedUserGateway loggedUserGateway;
+    protected final LoggedUserGateway loggedUserGateway;
 
     protected UseCaseBase(LoggedUserGateway loggedUserGateway) {
         Objects.requireNonNull(loggedUserGateway, "LoggedUserGateway cannot be null.");
         this.loggedUserGateway = loggedUserGateway;
     }
 
-    public  R execute(T input) {
+    public R execute(T input) {
         Objects.requireNonNull(input,  "Input cannot be null.");
 
         boolean isAllowed = isPublicAccessAllowed() || loggedUserGateway.hasRole(getRequiredRole());
         if (!isAllowed)
-            throw new OperationNotAllowedException("The current user does not have permission to update restaurants.");
+            throw new OperationNotAllowedException("The current user does not have permission to perform this action.");
 
         return doExecute(input);
     }

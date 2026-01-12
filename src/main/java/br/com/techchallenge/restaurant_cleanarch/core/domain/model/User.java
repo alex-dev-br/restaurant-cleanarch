@@ -1,20 +1,24 @@
 package br.com.techchallenge.restaurant_cleanarch.core.domain.model;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import lombok.*;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 @Getter
-@ToString(exclude = "passwordHash")   // Para não expor o hash da senha em logs
+@ToString(exclude = "passwordHash")
 public class User {
-    private UUID id;
-    private String name;
-    private String email;
-    private Address address;
-    private UserType userType;
-    private String passwordHash;
+    private final UUID id;
+    private final String name;
+    private final String email;
+    private final Address address;
+    private final UserType userType;
+    private final String passwordHash;
+
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$");
 
     public User(UUID id, String name, String email, Address address, UserType userType, String passwordHash) {
         Objects.requireNonNull(name, "Name cannot be null.");
@@ -24,7 +28,7 @@ public class User {
 
         if(name.trim().isBlank()) throw new BusinessException("Name cannot be blank.");
 
-        if(!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) throw new BusinessException("Email inválido.");
+        if(!EMAIL_PATTERN.matcher(email).matches()) throw new BusinessException("Email inválido.");
 
         this.id = id;
         this.name = name;
@@ -34,15 +38,11 @@ public class User {
         this.passwordHash = passwordHash;
     }
 
-    public boolean isRestaurantOwner() {
-        return userType != null  && "Dono de Restaurante".equalsIgnoreCase(this.userType.getName());
-    }
-
     public boolean canOwnRestaurant() {
         return this.userType.getRoles()
                 .stream()
                 .map(Role::name)
-                .anyMatch("RESTAURANT_OWNER"::equals);
+                .anyMatch(UserRoles.RESTAURANT_OWNER.getRoleName()::equals);
     }
 
     @Override

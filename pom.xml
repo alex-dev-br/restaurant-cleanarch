@@ -153,6 +153,17 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.14</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/RestaurantCleanarchApplication.class</exclude>
+                        <exclude>**/core/exception/*.class</exclude>
+                        <exclude>**/core/domain/pagination/*.class</exclude>
+                        <exclude>**/core/domain/roles/*.class</exclude>
+                        <exclude>**/core/domain/model/valueobject/*.class</exclude>
+                        <exclude>**/infra/persistence/entity/*Entity*.class</exclude>
+                        <exclude>**/infra/mapper/*Impl*.class</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>

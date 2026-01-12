@@ -1,7 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.core.presenter;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
-import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantPublicOutput;
 
 import java.util.stream.Collectors;
 
@@ -9,11 +9,11 @@ public class RestaurantPresenter {
 
     private RestaurantPresenter() {}
 
-    public static RestaurantOutput toOutput(Restaurant restaurant) {
+    public static RestaurantPublicOutput toOutput(Restaurant restaurant) {
 
         Long restaurantId = restaurant.getId();
 
-        return new RestaurantOutput (
+        return new RestaurantPublicOutput(
                 restaurant.getId(),
                 restaurant.getName(),
                 AddressPresenter.toOutput(restaurant.getAddress()),

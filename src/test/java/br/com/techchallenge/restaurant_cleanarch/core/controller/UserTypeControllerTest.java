@@ -36,10 +36,10 @@ class UserTypeControllerTest {
     private DeleteUserTypeUseCase deleteUserTypeUseCase;
 
     @Mock
-    private GetByIdUserTypeUseCase getByIdUserTypeUseCase;
+    private GetUserTypeByIdUseCase getUserTypeByIdUseCase;
 
     @Mock
-    private GetAllUserTypesUseCase getAllUserTypesUseCase;
+    private ListUserTypesUseCase listUserTypesUseCase;
 
     @InjectMocks
     private UserTypeController userTypeController;
@@ -156,7 +156,7 @@ class UserTypeControllerTest {
         Role role = new Role(1L, roleName);
         UserType userType = new UserType(id, userTypeName, Set.of(role));
 
-        given(getByIdUserTypeUseCase.execute(id)).willReturn(userType);
+        given(getUserTypeByIdUseCase.execute(id)).willReturn(userType);
 
         UserTypeOutput result = userTypeController.getUserTypeById(id);
 
@@ -165,7 +165,7 @@ class UserTypeControllerTest {
         assertThat(result.name()).isEqualTo(userTypeName);
         assertThat(result.roles()).containsExactly(roleName);
 
-        then(getByIdUserTypeUseCase).should().execute(id);
+        then(getUserTypeByIdUseCase).should().execute(id);
     }
 
     @Test
@@ -174,13 +174,13 @@ class UserTypeControllerTest {
         Long id = 1L;
         RuntimeException expectedException = new RuntimeException("User type not found");
 
-        given(getByIdUserTypeUseCase.execute(id)).willThrow(expectedException);
+        given(getUserTypeByIdUseCase.execute(id)).willThrow(expectedException);
 
         assertThatThrownBy(() -> userTypeController.getUserTypeById(id))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("User type not found");
 
-        then(getByIdUserTypeUseCase).should().execute(id);
+        then(getUserTypeByIdUseCase).should().execute(id);
     }
 
     @Test
@@ -196,14 +196,14 @@ class UserTypeControllerTest {
         Role role2 = new Role(2L, roleName2);
         UserType userType2 = new UserType(2L, userTypeName2, Set.of(role2));
 
-        given(getAllUserTypesUseCase.execute()).willReturn(Set.of(userType1, userType2));
+        given(listUserTypesUseCase.execute()).willReturn(Set.of(userType1, userType2));
 
         List<UserTypeOutput> result = userTypeController.getAllUserTypes();
 
         assertThat(result).isNotNull().hasSize(2);
         assertThat(result).extracting(UserTypeOutput::name).containsExactlyInAnyOrder(userTypeName1, userTypeName2);
 
-        then(getAllUserTypesUseCase).should().execute();
+        then(listUserTypesUseCase).should().execute();
     }
 
     @Test
@@ -211,19 +211,19 @@ class UserTypeControllerTest {
     void shouldThrowExceptionWhenGetAllUseCaseThrowsException() {
         RuntimeException expectedException = new RuntimeException("Error fetching user types");
 
-        given(getAllUserTypesUseCase.execute()).willThrow(expectedException);
+        given(listUserTypesUseCase.execute()).willThrow(expectedException);
 
         assertThatThrownBy(() -> userTypeController.getAllUserTypes())
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Error fetching user types");
 
-        then(getAllUserTypesUseCase).should().execute();
+        then(listUserTypesUseCase).should().execute();
     }
 
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com CreateUserTypeUseCase nulo")
     void shouldThrowExceptionWhenCreateUseCaseIsNull() {
-        assertThatThrownBy(() -> new UserTypeController(null, updateUserTypeUseCase, deleteUserTypeUseCase, getByIdUserTypeUseCase, getAllUserTypesUseCase))
+        assertThatThrownBy(() -> new UserTypeController(null, updateUserTypeUseCase, deleteUserTypeUseCase, getUserTypeByIdUseCase, listUserTypesUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("CreateUserTypeUseCase cannot be null.");
     }
@@ -231,7 +231,7 @@ class UserTypeControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com UpdateUserTypeUseCase nulo")
     void shouldThrowExceptionWhenUpdateUseCaseIsNull() {
-        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, null, deleteUserTypeUseCase, getByIdUserTypeUseCase, getAllUserTypesUseCase))
+        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, null, deleteUserTypeUseCase, getUserTypeByIdUseCase, listUserTypesUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("UpdateUserTypeUseCase cannot be null.");
     }
@@ -239,7 +239,7 @@ class UserTypeControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com DeleteUserTypeUseCase nulo")
     void shouldThrowExceptionWhenDeleteUseCaseIsNull() {
-        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, updateUserTypeUseCase, null, getByIdUserTypeUseCase, getAllUserTypesUseCase))
+        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, updateUserTypeUseCase, null, getUserTypeByIdUseCase, listUserTypesUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("DeleteUserTypeUseCase cannot be null.");
     }
@@ -247,7 +247,7 @@ class UserTypeControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com GetByIdUserTypeUseCase nulo")
     void shouldThrowExceptionWhenGetByIdUseCaseIsNull() {
-        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, updateUserTypeUseCase, deleteUserTypeUseCase, null, getAllUserTypesUseCase))
+        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, updateUserTypeUseCase, deleteUserTypeUseCase, null, listUserTypesUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("GetByIdUserTypeUseCase cannot be null.");
     }
@@ -255,7 +255,7 @@ class UserTypeControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com GetAllUserTypesUseCase nulo")
     void shouldThrowExceptionWhenGetAllUseCaseIsNull() {
-        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, updateUserTypeUseCase, deleteUserTypeUseCase, getByIdUserTypeUseCase, null))
+        assertThatThrownBy(() -> new UserTypeController(createUserTypeUseCase, updateUserTypeUseCase, deleteUserTypeUseCase, getUserTypeByIdUseCase, null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("GetAllUserTypesUseCase cannot be null.");
     }
