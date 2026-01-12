@@ -4,7 +4,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateRestaurantInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateRestaurantInput;
-import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantPublicOutput;
 import br.com.techchallenge.restaurant_cleanarch.core.presenter.RestaurantPresenter;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.*;
 
@@ -40,7 +40,7 @@ public class RestaurantController {
         this.listRestaurantsByCuisineTypeUseCase = listRestaurantsByCuisineTypeUseCase;
     }
 
-    public RestaurantOutput createRestaurant(CreateRestaurantInput createRestaurantInput) {
+    public RestaurantPublicOutput createRestaurant(CreateRestaurantInput createRestaurantInput) {
         Objects.requireNonNull(createRestaurantInput, "CreateRestaurantInput cannot be null.");
         var restaurant = createRestaurantUseCase.execute(createRestaurantInput);
         return RestaurantPresenter.toOutput(restaurant);
@@ -51,20 +51,20 @@ public class RestaurantController {
         updateRestaurantUseCase.execute(updateRestaurantInput);
     }
 
-    public RestaurantOutput findById(Long id) {
+    public RestaurantPublicOutput findById(Long id) {
         Objects.requireNonNull(id, "Restaurant Id cannot be null.");
         var restaurant = getRestaurantByIdUseCase.execute(id);
         return RestaurantPresenter.toOutput(restaurant);
     }
 
-    public List<RestaurantOutput> findAll() {
+    public List<RestaurantPublicOutput> findAll() {
         return listRestaurantsUseCase.execute()
                 .stream()
                 .map(RestaurantPresenter::toOutput)
                 .toList();
     }
 
-    public Page<RestaurantOutput> findByCuisineType(String cuisineType, int pageNumber, int pageSize) {
+    public Page<RestaurantPublicOutput> findByCuisineType(String cuisineType, int pageNumber, int pageSize) {
         var pagedQuery = new PagedQuery<>(cuisineType, pageNumber, pageSize);
         var page = listRestaurantsByCuisineTypeUseCase.execute(pagedQuery);
         return page.mapItems(RestaurantPresenter::toOutput);

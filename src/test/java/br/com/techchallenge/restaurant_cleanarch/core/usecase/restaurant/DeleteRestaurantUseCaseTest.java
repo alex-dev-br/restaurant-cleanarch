@@ -61,8 +61,10 @@ class DeleteRestaurantUseCaseTest {
                 .withPasswordHash("HASHED_DEFAULT") // opcional (builder já tem default)
                 .build();
 
-        Restaurant restaurant = new Restaurant(id, "Restaurant Name", address, "Cuisine",
-                Set.of(tuesday, friday), Set.of(menuItem), owner);
+        Restaurant restaurant = new Restaurant(id, "Restaurant Name", address, "Cuisine", owner);
+        restaurant.addOpeningHours(tuesday);
+        restaurant.addOpeningHours(friday);
+        restaurant.addMenuItem(menuItem);
 
         given(loggedUserGateway.hasRole(RestaurantRoles.DELETE_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(id)).willReturn(Optional.of(restaurant));

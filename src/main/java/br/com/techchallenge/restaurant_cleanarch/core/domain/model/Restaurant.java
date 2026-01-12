@@ -7,6 +7,8 @@ import br.com.techchallenge.restaurant_cleanarch.core.exception.UserCannotBeRest
 import lombok.Getter;
 import lombok.ToString;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -20,8 +22,9 @@ public class Restaurant {
     private final Set<OpeningHours> openingHours;
     private final Set<MenuItem> menu;
     private final User owner;
+    private final Set<User> employees;
 
-    public Restaurant(Long id, String name, Address address, String cuisineType, Set<OpeningHours> openingHours, Set<MenuItem> menu, User owner) {
+    public Restaurant(Long id, String name, Address address, String cuisineType, User owner) {
         Objects.requireNonNull(name, "O nome do restaurante não pode ser nulo.");
         Objects.requireNonNull(address, "O endereço não pode ser nulo.");
         Objects.requireNonNull(cuisineType, "O tipo de cozinha não pode ser nulo.");
@@ -41,9 +44,46 @@ public class Restaurant {
         this.name = name.trim();
         this.address = address;
         this.cuisineType = cuisineType.trim();
-        this.openingHours = openingHours == null ? Set.of() : Set.copyOf(openingHours);
-        this.menu = menu == null ? Set.of() : Set.copyOf(menu);
+        this.openingHours = new HashSet<>();
+        this.menu = new HashSet<>();
         this.owner = owner;
+        this.employees = new HashSet<>();
+    }
+
+    public void addOpeningHours(OpeningHours openingHour) {
+        this.openingHours.add(openingHour);
+    }
+
+    public void addOpeningHours(Collection<? extends OpeningHours> openingHours) {
+        this.openingHours.addAll(openingHours);
+    }
+
+    public void addMenuItem(MenuItem menuItem) {
+        this.menu.add(menuItem);
+    }
+
+    public void addMenuItems(Collection<? extends MenuItem> menuItems) {
+        this.menu.addAll(menuItems);
+    }
+
+    public void addEmployee(User employee) {
+        this.employees.add(employee);
+    }
+
+    public void addEmployees(Collection<? extends User> employees) {
+        this.employees.addAll(employees);
+    }
+
+    public Set<OpeningHours> getOpeningHours() {
+        return Set.copyOf(openingHours);
+    }
+
+    public Set<MenuItem> getMenuItems() {
+        return Set.copyOf(menu);
+    }
+
+    public Set<User> getEmployees() {
+        return Set.copyOf(this.employees);
     }
 
     @Override

@@ -53,6 +53,8 @@ class UpdateRestaurantUseCaseTest {
         var owner = new UserBuilder().withId(UUID.randomUUID()).withRole(UserRoles.RESTAURANT_OWNER).build();
         var openingHoursInput = new OpeningHoursBuilder().buildUpdateInput();
         var menu = new MenuItemBuilder().buildUpdateInput();
+        var employeeId = UUID.randomUUID();
+
 
         var restaurant = new RestaurantBuilder()
                 .withName("Old Name")
@@ -68,6 +70,7 @@ class UpdateRestaurantUseCaseTest {
                 "New Cuisine",
                 Set.of(openingHoursInput),
                 Set.of(menu),
+                Set.of(employeeId),
                 owner.getId()
         );
 
@@ -88,7 +91,7 @@ class UpdateRestaurantUseCaseTest {
     @Test
     @DisplayName("Deve lançar exceção quando usuário não tem permissão")
     void shouldThrowExceptionWhenUserHasNoPermission() {
-        UpdateRestaurantInput input = new UpdateRestaurantInput(1L, "New Name", null, "New Cuisine", null, null, null);
+        var input = new UpdateRestaurantInput(1L, "New Name", null, "New Cuisine", null, null, null, null);
         given(loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT)).willReturn(false);
 
         assertThatThrownBy(() -> updateRestaurantUseCase.execute(input))
@@ -105,7 +108,7 @@ class UpdateRestaurantUseCaseTest {
     @Test
     @DisplayName("Deve lançar exceção quando restaurante não é encontrado")
     void shouldThrowExceptionWhenRestaurantNotFound() {
-        UpdateRestaurantInput input = new UpdateRestaurantInput(1L, "Restaurant", null, "New Cuisine", null, null, null);
+        UpdateRestaurantInput input = new UpdateRestaurantInput(1L, "Restaurant", null, "New Cuisine", null, null, null, null);
         given(loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(anyLong())).willReturn(Optional.empty());
 
@@ -131,6 +134,7 @@ class UpdateRestaurantUseCaseTest {
                 "Restaurant",
                 inputAddress,
                 "New Cuisine",
+                null,
                 null,
                 null,
                 owner.getId());
@@ -165,7 +169,7 @@ class UpdateRestaurantUseCaseTest {
     void shouldThrowExceptionWhenUserCannotBeOwner() {
         UUID newOwnerUuid = UUID.randomUUID();
         var inputAddress = new AddressBuilder().buildInput();
-        UpdateRestaurantInput input = new UpdateRestaurantInput(1L, "Restaurant", inputAddress, "New Cuisine", null, null, newOwnerUuid);
+        UpdateRestaurantInput input = new UpdateRestaurantInput(1L, "Restaurant", inputAddress, "New Cuisine", null, null, null, newOwnerUuid);
 
         var newOwner = new UserBuilder().withId(newOwnerUuid).build();
 

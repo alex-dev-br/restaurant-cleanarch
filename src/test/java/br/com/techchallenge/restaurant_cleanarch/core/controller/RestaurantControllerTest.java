@@ -8,8 +8,10 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateRestaurantInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.MenuItemInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.OpeningHoursInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateRestaurantInput;
-import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantPublicOutput;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -69,12 +71,16 @@ class RestaurantControllerTest {
     void shouldCreateRestaurantSuccessfully() {
         // Arrange
         UUID ownerId = UUID.randomUUID();
+        OpeningHoursInput openingHoursInput = new OpeningHoursBuilder().buildInput();
+        MenuItemInput menuItemInput = new MenuItemBuilder().buildInput();
+        var employeeUuid = UUID.randomUUID();
         CreateRestaurantInput input = new CreateRestaurantInput(
                 "Restaurante Teste",
                 new AddressBuilder().buildInput(),
                 "Italiana",
-                Set.of(new OpeningHoursBuilder().buildInput()),
-                Set.of(new MenuItemBuilder().buildInput()),
+                Set.of(openingHoursInput),
+                Set.of(menuItemInput),
+                Set.of(employeeUuid),
                 ownerId
         );
 
@@ -86,15 +92,19 @@ class RestaurantControllerTest {
                 "Restaurante Teste",
                 address,
                 "Italiana",
-                Set.of(new OpeningHoursBuilder().build()),
-                Set.of(new MenuItemBuilder().build()),
                 owner
         );
+        var openingHour = new OpeningHoursBuilder().build();
+        var menuItem = new MenuItemBuilder().build();
+        var employee = new UserBuilder().withId(employeeUuid).build();
+        restaurant.addOpeningHours(openingHour);
+        restaurant.addMenuItem(menuItem);
+        restaurant.addEmployee(employee);
 
         given(createRestaurantUseCase.execute(input)).willReturn(restaurant);
 
         // Act
-        RestaurantOutput result = restaurantController.createRestaurant(input);
+        RestaurantPublicOutput result = restaurantController.createRestaurant(input);
 
         // Assert
         assertThat(result).isNotNull();
@@ -103,11 +113,18 @@ class RestaurantControllerTest {
         assertThat(result.cuisineType()).isEqualTo(restaurant.getCuisineType());
         assertThat(result.openingHours()).isNotNull().hasSize(1);
         assertThat(result.menuItems()).isNotNull().hasSize(1);
+
         assertThat(result.ownerId()).isEqualTo(ownerId);
 
         then(createRestaurantUseCase).should().execute(createRestaurantInputCaptor.capture());
         CreateRestaurantInput capturedInput = createRestaurantInputCaptor.getValue();
-        assertThat(capturedInput).isEqualTo(input);
+        assertThat(capturedInput).isNotNull();
+        assertThat(capturedInput.name()).isEqualTo(input.name());
+        assertThat(capturedInput.cuisineType()).isEqualTo(input.cuisineType());
+        assertThat(capturedInput.address()).isEqualTo(input.address());
+        assertThat(capturedInput.openingHours()).containsExactlyInAnyOrder(openingHoursInput);
+        assertThat(capturedInput.menu()).containsExactlyInAnyOrder(menuItemInput);
+        assertThat(capturedInput.employees()).containsExactlyInAnyOrder(employeeUuid);
     }
 
     @Test
@@ -118,6 +135,7 @@ class RestaurantControllerTest {
                 "Restaurante Teste",
                 new AddressBuilder().buildInput(),
                 "Italiana",
+                Collections.emptySet(),
                 Collections.emptySet(),
                 Collections.emptySet(),
                 UUID.randomUUID()
@@ -201,6 +219,7 @@ class RestaurantControllerTest {
                 "Japonesa",
                 null,
                 null,
+                null,
                 null
         );
 
@@ -222,6 +241,7 @@ class RestaurantControllerTest {
                 "Novo Nome",
                 new AddressBuilder().buildInput(),
                 "Japonesa",
+                null,
                 null,
                 null,
                 null
@@ -254,21 +274,25 @@ class RestaurantControllerTest {
         UUID ownerId = UUID.randomUUID();
         Address address = new AddressBuilder().build();
         User owner = new UserBuilder().withId(ownerId).withRole(UserRoles.RESTAURANT_OWNER).build();
+        var openingHours = new OpeningHoursBuilder().build();
+        var menu = new MenuItemBuilder().build();
+        var employee = new UserBuilder().withId(UUID.randomUUID()).build();
 
         Restaurant restaurant = new Restaurant(
                 id,
                 "Restaurante Teste",
                 address,
                 "Italiana",
-                Set.of(new OpeningHoursBuilder().build()),
-                Set.of(new MenuItemBuilder().build()),
                 owner
         );
+        restaurant.addOpeningHours(openingHours);
+        restaurant.addMenuItem(menu);
+        restaurant.addEmployee(employee);
 
         given(getRestaurantByIdUseCase.execute(id)).willReturn(restaurant);
 
         // Act
-        RestaurantOutput result = restaurantController.findById(id);
+        RestaurantPublicOutput result = restaurantController.findById(id);
 
         // Assert
         assertThat(result).isNotNull();
@@ -277,6 +301,7 @@ class RestaurantControllerTest {
         assertThat(result.cuisineType()).isEqualTo(restaurant.getCuisineType());
         assertThat(result.openingHours()).isNotNull().hasSize(1);
         assertThat(result.menuItems()).isNotNull().hasSize(1);
+//        assertThat(result.employees()).isNotNull().hasSize(1);
         assertThat(result.ownerId()).isEqualTo(ownerId);
 
         then(getRestaurantByIdUseCase).should().execute(id);
@@ -315,25 +340,29 @@ class RestaurantControllerTest {
         UUID ownerId = UUID.randomUUID();
         Address address = new AddressBuilder().build();
         User owner = new UserBuilder().withId(ownerId).withRole(UserRoles.RESTAURANT_OWNER).build();
+        var openingHours = new OpeningHoursBuilder().build();
+        var menu = new MenuItemBuilder().build();
+        var employee = new UserBuilder().withId(UUID.randomUUID()).build();
 
         Restaurant restaurant = new Restaurant(
                 id,
                 "Restaurante Teste",
                 address,
                 "Italiana",
-                Set.of(new OpeningHoursBuilder().build()),
-                Set.of(new MenuItemBuilder().build()),
                 owner
         );
+        restaurant.addOpeningHours(openingHours);
+        restaurant.addMenuItem(menu);
+        restaurant.addEmployee(employee);
 
         given(listRestaurantsUseCase.execute()).willReturn(List.of(restaurant));
 
         // Act
-        List<RestaurantOutput> result = restaurantController.findAll();
+        List<RestaurantPublicOutput> result = restaurantController.findAll();
 
         // Assert
         assertThat(result).isNotNull().hasSize(1);
-        RestaurantOutput output = result.getFirst();
+        RestaurantPublicOutput output = result.getFirst();
         assertThat(output.id()).isEqualTo(restaurant.getId());
         assertThat(output.name()).isEqualTo(restaurant.getName());
         assertThat(output.cuisineType()).isEqualTo(restaurant.getCuisineType());
@@ -351,7 +380,7 @@ class RestaurantControllerTest {
         given(listRestaurantsUseCase.execute()).willReturn(Collections.emptyList());
 
         // Act
-        List<RestaurantOutput> result = restaurantController.findAll();
+        List<RestaurantPublicOutput> result = restaurantController.findAll();
 
         // Assert
         assertThat(result).isNotNull().isEmpty();
@@ -373,7 +402,7 @@ class RestaurantControllerTest {
         given(listRestaurantsByCuisineTypeUseCase.execute(any())).willReturn(restaurantPage);
 
         // Act
-        Page<RestaurantOutput> result = restaurantController.findByCuisineType(cuisineType, pageNumber, pageSize);
+        Page<RestaurantPublicOutput> result = restaurantController.findByCuisineType(cuisineType, pageNumber, pageSize);
 
         // Assert
         assertThat(result).isNotNull();
@@ -404,7 +433,7 @@ class RestaurantControllerTest {
         given(listRestaurantsByCuisineTypeUseCase.execute(any())).willReturn(emptyPage);
 
         // Act
-        Page<RestaurantOutput> result = restaurantController.findByCuisineType(cuisineType, pageNumber, pageSize);
+        Page<RestaurantPublicOutput> result = restaurantController.findByCuisineType(cuisineType, pageNumber, pageSize);
 
         // Assert
         assertThat(result).isNotNull();

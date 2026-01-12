@@ -10,5 +10,6 @@ public record UpdateRestaurantInput (
     String cuisineType,
     Set<UpdateOpeningHoursInput> openingHours,
     Set<UpdateMenuItemInput> menu,
+    Set<UUID> employees,
     UUID owner
 ){}

@@ -42,6 +42,7 @@ public class CreateMenuItemUseCase {
 
         // Valida se é o dono
         User currentUser = loggedUserGateway.requireCurrentUser();
+        //restaurant.getEmployees().contains(currentUser)
         if (!restaurant.getOwner().equals(currentUser)) {
             throw new OperationNotAllowedException("Apenas o dono do restaurante pode criar itens do cardápio.");
         }

@@ -5,6 +5,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateUserInput;
 
 import java.util.HashSet;
 import java.util.Set;

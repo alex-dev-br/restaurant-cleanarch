@@ -33,6 +33,7 @@ class RestaurantTest {
     private Address address;
     private Set<OpeningHours> openingHours;
     private Set<MenuItem> menu;
+    private User employee;
 
     @BeforeEach
     void setUp() {
@@ -43,13 +44,17 @@ class RestaurantTest {
         address = new AddressBuilder().build();
         openingHours = buildSetOfOpeningHours();
         menu = buildSetOfMenuItems();
+        employee = new UserBuilder().build();
     }
 
     @Test
     @DisplayName("Deve criar Restaurant válido com campos preenchidos")
     void deveCriarRestaurantValido() {
         // Act
-        var restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, openingHours, menu, owner);
+        var restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
+        restaurant.addOpeningHours(openingHours);
+        restaurant.addMenuItems(menu);
+        restaurant.addEmployee(employee);
 
         // Assert
         assertThat(restaurant.getId()).isNotNull().isEqualTo(restaurantId);
@@ -60,31 +65,15 @@ class RestaurantTest {
         assertThat(restaurant.getOwner().getEmail()).isNotNull().isEqualTo(owner.getEmail());
         assertThat(restaurant.getOpeningHours()).isNotNull().hasSize(6).containsExactlyInAnyOrderElementsOf(openingHours);
         assertThat(restaurant.getMenu()).isNotNull().hasSize(1);
+        assertThat(restaurant.getEmployees()).isNotNull().hasSize(1);
     }
 
     @Test
-    @DisplayName("Deve criar Restaurant válido com OpenHours vazio quando recebe null no construtor")
-    void deveCriarRestaurantComOpenHoursVazioQuandoReceberNullNoConstrutor() {
+    @DisplayName("Deve criar Restaurant válido e adicionar um OpenHours")
+    void deveCriarRestaurantEAdicionaOpenHours() {
         // Act
-        var restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, null, menu, owner);
-
-        // Assert
-        assertThat(restaurant.getId()).isNotNull().isEqualTo(restaurantId);
-        assertThat(restaurant.getName()).isNotNull().isEqualTo(restaurantName);
-        assertThat(restaurant.getCuisineType()).isNotNull().isEqualTo(cuisineType);
-        assertThat(restaurant.getOwner()).isNotNull().isEqualTo(owner);
-        assertThat(restaurant.getOwner().getName()).isNotNull().isEqualTo(owner.getName());
-        assertThat(restaurant.getOwner().getEmail()).isNotNull().isEqualTo(owner.getEmail());
-        assertThat(restaurant.getOpeningHours()).isNotNull().isEmpty();
-        assertThat(restaurant.getMenu()).isNotNull().hasSize(1);
-    }
-
-    @Test
-    @DisplayName("Deve criar Restaurant válido com MenuItems vazio quando recebe null no construtor")
-    void deveCriarRestaurantComMenuItemsVazioQuandoReceberNullNoConstrutor() {
-        // Act
-        var restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, openingHours, null, owner);
-
+        var restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
+        restaurant.addOpeningHours(openingHours);
         // Assert
         assertThat(restaurant.getId()).isNotNull().isEqualTo(restaurantId);
         assertThat(restaurant.getName()).isNotNull().isEqualTo(restaurantName);
@@ -93,7 +82,38 @@ class RestaurantTest {
         assertThat(restaurant.getOwner().getName()).isNotNull().isEqualTo(owner.getName());
         assertThat(restaurant.getOwner().getEmail()).isNotNull().isEqualTo(owner.getEmail());
         assertThat(restaurant.getOpeningHours()).isNotNull().hasSize(6).containsExactlyInAnyOrderElementsOf(openingHours);
-        assertThat(restaurant.getMenu()).isNotNull().isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deve criar Restaurant válido e adicionar MenuItems")
+    void deveCriarRestaurantEAdicionaMenuItems() {
+        // Act
+        var restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
+        restaurant.addMenuItems(menu);
+        // Assert
+        assertThat(restaurant.getId()).isNotNull().isEqualTo(restaurantId);
+        assertThat(restaurant.getName()).isNotNull().isEqualTo(restaurantName);
+        assertThat(restaurant.getCuisineType()).isNotNull().isEqualTo(cuisineType);
+        assertThat(restaurant.getOwner()).isNotNull().isEqualTo(owner);
+        assertThat(restaurant.getOwner().getName()).isNotNull().isEqualTo(owner.getName());
+        assertThat(restaurant.getOwner().getEmail()).isNotNull().isEqualTo(owner.getEmail());
+        assertThat(restaurant.getMenu()).isNotNull().hasSize(1).containsExactlyInAnyOrderElementsOf(menu);
+    }
+
+    @Test
+    @DisplayName("Deve criar Restaurant válido e adicionar Employee")
+    void deveCriarRestaurantAdicionaEmployee() {
+        // Act
+        var restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
+        restaurant.addEmployee(employee);
+        // Assert
+        assertThat(restaurant.getId()).isNotNull().isEqualTo(restaurantId);
+        assertThat(restaurant.getName()).isNotNull().isEqualTo(restaurantName);
+        assertThat(restaurant.getCuisineType()).isNotNull().isEqualTo(cuisineType);
+        assertThat(restaurant.getOwner()).isNotNull().isEqualTo(owner);
+        assertThat(restaurant.getOwner().getName()).isNotNull().isEqualTo(owner.getName());
+        assertThat(restaurant.getOwner().getEmail()).isNotNull().isEqualTo(owner.getEmail());
+        assertThat(restaurant.getEmployees()).isNotNull().hasSize(1).containsExactlyInAnyOrder(employee);
     }
 
     @Test
@@ -103,7 +123,7 @@ class RestaurantTest {
         User invalidOwner = new UserBuilder().withUserType(clienteType).build();
 
         // Act & Assert
-        assertThatThrownBy(() -> new Restaurant(restaurantId, restaurantName, address, cuisineType, openingHours, menu, invalidOwner))
+        assertThatThrownBy(() -> new Restaurant(restaurantId, restaurantName, address, cuisineType, invalidOwner))
                 .isInstanceOf(UserCannotBeRestaurantOwnerException.class)
                 .hasMessageContaining("User cannot be restaurant owner");
     }
@@ -112,7 +132,7 @@ class RestaurantTest {
     @DisplayName("Deve lançar BusinessException sem dono")
     void deveLancarExcecaoSemDono() {
         // Act & Assert
-        assertThatThrownBy(() -> new Restaurant(restaurantId, restaurantName, address, cuisineType, openingHours, menu, null))
+        assertThatThrownBy(() -> new Restaurant(restaurantId, restaurantName, address, cuisineType, null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("O dono do restaurante não pode ser nulo");
     }
@@ -121,7 +141,7 @@ class RestaurantTest {
     @DisplayName("Deve lançar exceção quando name for nulo")
     void deveLancarExcecaoQuandoNameForNulo() {
         // Act & Assert
-        assertThatThrownBy(() -> new Restaurant(restaurantId, null, address, cuisineType, openingHours, menu, owner))
+        assertThatThrownBy(() -> new Restaurant(restaurantId, null, address, cuisineType, owner))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("O nome do restaurante não pode ser nulo");
     }
@@ -131,7 +151,7 @@ class RestaurantTest {
     @DisplayName("Deve lançar exceção quando name for blank")
     void deveLancarExcecaoQuandoNameForBlank(String name) {
         // Act & Assert
-        assertThatThrownBy(() -> new Restaurant(restaurantId, name, address, cuisineType, openingHours, menu, owner))
+        assertThatThrownBy(() -> new Restaurant(restaurantId, name, address, cuisineType, owner))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("O nome do restaurante não pode ser vazio");
     }
@@ -139,7 +159,7 @@ class RestaurantTest {
     @Test
     @DisplayName("Deve lançar exceção quando address for nulo")
     void deveLancarExcecaoQuandoAddressForNulo() {
-        assertThatThrownBy(() -> new Restaurant(restaurantId, restaurantName, null, cuisineType, openingHours, menu, owner))
+        assertThatThrownBy(() -> new Restaurant(restaurantId, restaurantName, null, cuisineType, owner))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("O endereço não pode ser nulo");
     }
@@ -148,7 +168,7 @@ class RestaurantTest {
     @DisplayName("Deve lançar exceção quando cuisineType for nulo")
     void deveLancarExcecaoQuandoCuisineTypeNull() {
         // Act & Assert - caso nulo
-        assertThatThrownBy(() -> new Restaurant(restaurantId, restaurantName, address, null, openingHours, menu, owner))
+        assertThatThrownBy(() -> new Restaurant(restaurantId, restaurantName, address, null, owner))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("O tipo de cozinha não pode ser nulo");
     }
@@ -157,7 +177,7 @@ class RestaurantTest {
     @ValueSource(strings = {"", " "})
     @DisplayName("Deve lançar exceção quando cuisineType for vazio ou espaço em branco")
     void deveLancarExcecaoQuandoCuisineTypeEspacoEmBranco(String emptyCuisineType) {
-        assertThatThrownBy(() -> new Restaurant(restaurantId, restaurantName, address, emptyCuisineType, openingHours, menu, owner))
+        assertThatThrownBy(() -> new Restaurant(restaurantId, restaurantName, address, emptyCuisineType, owner))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("O tipo de cozinha não pode ser vazio");
     }
@@ -165,16 +185,17 @@ class RestaurantTest {
     @Test
     @DisplayName("Deve permitir coleções nulas ou vazias")
     void devePermitirColecoesNulasOuVazias() {
-        Restaurant restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, Set.of(), Set.of(), owner);
+        Restaurant restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
 
         assertThat(restaurant.getOpeningHours()).isNotNull().isEmpty();
         assertThat(restaurant.getMenu()).isNotNull().isEmpty();
+        assertThat(restaurant.getEmployees()).isNotNull().isEmpty();
     }
 
     @Test
     @DisplayName("Deve retornar true para equals com mesmo objeto")
     void deveSerIgualParaMesmoObjeto() {
-        var baseRestaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, openingHours, menu, owner);
+        var baseRestaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
         var firstRestaurant = baseRestaurant;
         var secondRestaurant = baseRestaurant;
 
@@ -185,7 +206,7 @@ class RestaurantTest {
     @Test
     @DisplayName("Deve retornar false para equals com objeto de outra classe")
     void deveSerDiferenteParaOutraClasse() {
-        var restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, openingHours, menu, owner);
+        var restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
 
         // Act & Assert
         assertThat(restaurant).isNotEqualTo(new Object());
@@ -194,8 +215,8 @@ class RestaurantTest {
     @Test
     @DisplayName("Deve retornar true para equals quando ids são iguais")
     void deveSerIgualQuandoIdsIguais() {
-        var r1 = new Restaurant(restaurantId, restaurantName, address, cuisineType, openingHours, menu, owner);
-        var r2 = new Restaurant(restaurantId, restaurantName.concat("II"), address, cuisineType, openingHours, menu, owner);
+        var r1 = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
+        var r2 = new Restaurant(restaurantId, restaurantName.concat("II"), address, cuisineType, owner);
 
         // Act & Assert
         assertThat(r1).isEqualTo(r2).hasSameHashCodeAs(r2);
@@ -204,9 +225,9 @@ class RestaurantTest {
     @Test
     @DisplayName("Deve retornar false para equals quando ids diferentes ou mistos")
     void deveSerDiferenteQuandoIdsDiferentesOuMistos() {
-        var r1 = new Restaurant(restaurantId, restaurantName, address, cuisineType, openingHours, menu, owner);
-        var r2 = new Restaurant(restaurantId+1, restaurantName, address, cuisineType, openingHours, menu, owner);
-        var r3 = new Restaurant(null, restaurantName, address, cuisineType, openingHours, menu, owner);
+        var r1 = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
+        var r2 = new Restaurant(restaurantId+1, restaurantName, address, cuisineType, owner);
+        var r3 = new Restaurant(null, restaurantName, address, cuisineType, owner);
 
         assertThat(r1).isNotEqualTo(r2).isNotEqualTo(r3);
         assertThat(r2).isNotEqualTo(r1).isNotEqualTo(r3);
@@ -215,8 +236,8 @@ class RestaurantTest {
     @Test
     @DisplayName("Deve respeitar contrato equals com id nulo")
     void deveRespeitarContratoComIdNulo() {
-        var r1 = new Restaurant(null, restaurantName, address, cuisineType, openingHours, menu, owner);
-        var r2 = new Restaurant(null, restaurantName.concat(" II"), address, cuisineType, openingHours, menu, owner);
+        var r1 = new Restaurant(null, restaurantName, address, cuisineType, owner);
+        var r2 = new Restaurant(null, restaurantName.concat(" II"), address, cuisineType, owner);
 
         // Act & Assert
         assertThat(r1).isNotEqualTo(r2).doesNotHaveSameHashCodeAs(r2);

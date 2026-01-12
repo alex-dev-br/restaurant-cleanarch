@@ -9,6 +9,8 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 public class RestaurantBuilder {
@@ -18,6 +20,7 @@ public class RestaurantBuilder {
     private String cuisineType;
     private Set<OpeningHours> openingHours;
     private Set<MenuItem> menu;
+    private Set<User> employees;
     private User owner;
 
     public RestaurantBuilder() {
@@ -33,7 +36,8 @@ public class RestaurantBuilder {
             new OpeningHours(6L, DayOfWeek.SATURDAY, LocalTime.of(11, 0), LocalTime.of(22, 0))
         );
 
-        this.menu = Set.of();
+        this.menu = new HashSet<>();
+        this.employees = new HashSet<>();
 
         //Owner padrão com permissão de dono de restaurante
         this.owner = new UserBuilder()
@@ -83,7 +87,21 @@ public class RestaurantBuilder {
         return this;
     }
 
+    public RestaurantBuilder withEmployee(User employee) {
+        this.employees.add(employee);
+        return this;
+    }
+
+    public RestaurantBuilder withEmployee(Collection<? extends User> employees) {
+        this.employees.addAll(employees);
+        return this;
+    }
+
     public Restaurant build() {
-        return new Restaurant(id, name, address, cuisineType, openingHours, menu, owner);
+        var restaurant = new Restaurant(id, name, address, cuisineType, owner);
+        restaurant.addOpeningHours(openingHours);
+        restaurant.addMenuItems(menu);
+        restaurant.addEmployees(employees);
+        return restaurant;
     }
 }

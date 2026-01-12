@@ -9,5 +9,6 @@ public record CreateRestaurantInput (
     String cuisineType,
     Set<OpeningHoursInput> openingHours,
     Set<MenuItemInput> menu,
+    Set<UUID> employees,
     UUID owner
 ) {}

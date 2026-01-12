@@ -24,6 +24,7 @@ import org.springframework.test.context.jdbc.Sql;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -84,8 +85,6 @@ class RestaurantGatewayAdapterTest {
                 "Tasty Food",
                 new AddressBuilder().build(),
                 "Brazilian",
-                Collections.emptySet(),
-                Collections.emptySet(),
                 ownerDomain
         );
 
@@ -110,8 +109,6 @@ class RestaurantGatewayAdapterTest {
                 "Original Name",
                 new AddressBuilder().build(),
                 "Original Cuisine",
-                Collections.emptySet(),
-                Collections.emptySet(),
                 ownerDomain
         );
         Restaurant savedRestaurant = adapter.save(restaurant);
@@ -122,10 +119,11 @@ class RestaurantGatewayAdapterTest {
                 "Updated Name",
                 savedRestaurant.getAddress(),
                 "Updated Cuisine",
-                savedRestaurant.getOpeningHours(),
-                savedRestaurant.getMenu(),
                 savedRestaurant.getOwner()
         );
+        restaurant.addOpeningHours(savedRestaurant.getOpeningHours());
+        restaurant.addMenuItems(savedRestaurant.getMenu());
+
 
         // When
         Restaurant result = adapter.save(updatedRestaurantDomain);
@@ -151,8 +149,6 @@ class RestaurantGatewayAdapterTest {
                 "Existing Restaurant",
                 new AddressBuilder().build(),
                 "Italian",
-                Collections.emptySet(),
-                Collections.emptySet(),
                 ownerDomain
         );
         adapter.save(restaurant);
@@ -183,8 +179,6 @@ class RestaurantGatewayAdapterTest {
                 "Restaurant 1",
                 new AddressBuilder().build(),
                 "Italian",
-                Collections.emptySet(),
-                Collections.emptySet(),
                 ownerDomain
         );
         Restaurant restaurant2 = new Restaurant(
@@ -192,8 +186,6 @@ class RestaurantGatewayAdapterTest {
                 "Restaurant 2",
                 new AddressBuilder().build(),
                 "Japanese",
-                Collections.emptySet(),
-                Collections.emptySet(),
                 ownerDomain
         );
         adapter.save(restaurant1);
@@ -230,8 +222,6 @@ class RestaurantGatewayAdapterTest {
                 "Restaurant to Delete",
                 new AddressBuilder().build(),
                 "Mexican",
-                Collections.emptySet(),
-                Collections.emptySet(),
                 ownerDomain
         );
         Restaurant savedRestaurant = adapter.save(restaurant);
@@ -261,9 +251,9 @@ class RestaurantGatewayAdapterTest {
     @DisplayName("Deve encontrar restaurantes por tipo de cozinha")
     void shouldFindRestaurantsByCuisineType() {
         // Given
-        adapter.save(new Restaurant(null, "Italian Place", new AddressBuilder().build(), "Italian", Collections.emptySet(), Collections.emptySet(), ownerDomain));
-        adapter.save(new Restaurant(null, "Super Italian", new AddressBuilder().build(), "Italian", Collections.emptySet(), Collections.emptySet(), ownerDomain));
-        adapter.save(new Restaurant(null, "Japanese Place", new AddressBuilder().build(), "Japanese", Collections.emptySet(), Collections.emptySet(), ownerDomain));
+        adapter.save(new Restaurant(null, "Italian Place", new AddressBuilder().build(), "Italian", ownerDomain));
+        adapter.save(new Restaurant(null, "Super Italian", new AddressBuilder().build(), "Italian", ownerDomain));
+        adapter.save(new Restaurant(null, "Japanese Place", new AddressBuilder().build(), "Japanese", ownerDomain));
 
         PagedQuery<String> query = new PagedQuery<>("Italian", 0, 10);
 
@@ -279,7 +269,7 @@ class RestaurantGatewayAdapterTest {
     @DisplayName("Deve retornar página vazia se nenhum restaurante corresponder ao tipo de cozinha")
     void shouldReturnEmptyPageWhenNoRestaurantMatchesCuisineType() {
         // Given
-        adapter.save(new Restaurant(null, "Japanese Place", new AddressBuilder().build(), "Japanese", Collections.emptySet(), Collections.emptySet(), ownerDomain));
+        adapter.save(new Restaurant(null, "Japanese Place", new AddressBuilder().build(), "Japanese", ownerDomain));
         PagedQuery<String> query = new PagedQuery<>("Mexican", 0, 10);
 
         // When
@@ -293,7 +283,7 @@ class RestaurantGatewayAdapterTest {
     @DisplayName("Deve encontrar restaurantes por tipo de cozinha ignorando case")
     void shouldFindRestaurantsByCuisineTypeIgnoringCase() {
         // Given
-        adapter.save(new Restaurant(null, "Italian Place", new AddressBuilder().build(), "Italian", Collections.emptySet(), Collections.emptySet(), ownerDomain));
+        adapter.save(new Restaurant(null, "Italian Place", new AddressBuilder().build(), "Italian", ownerDomain));
         PagedQuery<String> query = new PagedQuery<>("italian", 0, 10);
 
         // When
@@ -308,9 +298,9 @@ class RestaurantGatewayAdapterTest {
     @DisplayName("Deve paginar os resultados corretamente")
     void shouldPaginateResultsCorrectly() {
         // Given
-        adapter.save(new Restaurant(null, "Italian 1", new AddressBuilder().build(), "Italian", Collections.emptySet(), Collections.emptySet(), ownerDomain));
-        adapter.save(new Restaurant(null, "Italian 2", new AddressBuilder().build(), "Italian", Collections.emptySet(), Collections.emptySet(), ownerDomain));
-        adapter.save(new Restaurant(null, "Italian 3", new AddressBuilder().build(), "Italian", Collections.emptySet(), Collections.emptySet(), ownerDomain));
+        adapter.save(new Restaurant(null, "Italian 1", new AddressBuilder().build(), "Italian", ownerDomain));
+        adapter.save(new Restaurant(null, "Italian 2", new AddressBuilder().build(), "Italian", ownerDomain));
+        adapter.save(new Restaurant(null, "Italian 3", new AddressBuilder().build(), "Italian", ownerDomain));
 
         PagedQuery<String> firstPageQuery = new PagedQuery<>("Italian", 0, 2);
         PagedQuery<String> secondPageQuery = new PagedQuery<>("Italian", 1, 2);

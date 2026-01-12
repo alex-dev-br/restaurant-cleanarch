@@ -4,7 +4,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.*;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.*;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
-import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantOutput;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantPublicOutput;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -40,6 +40,8 @@ class RestaurantPresenterTest {
                 .build();
 
         Set<MenuItem> menu = Set.of(menuItem);
+        var employee = new UserBuilder().build();
+        var employees = Set.of(employee);
 
         // Owner (User)
         Role role = new Role(1L, "RESTAURANT_OWNER");
@@ -57,9 +59,12 @@ class RestaurantPresenterTest {
         Long restaurantId = 100L;
         String restaurantName = "Restaurante Teste";
         String cuisineType = "Italiana";
-        Restaurant restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, openingHoursSet, menu, owner);
+        Restaurant restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
+        restaurant.addOpeningHours(openingHours);
+        restaurant.addMenuItems(menu);
+        restaurant.addEmployees(employees);
 
-        RestaurantOutput output = RestaurantPresenter.toOutput(restaurant);
+        RestaurantPublicOutput output = RestaurantPresenter.toOutput(restaurant);
 
         assertThat(output).isNotNull();
         assertThat(output.id()).isEqualTo(restaurantId);

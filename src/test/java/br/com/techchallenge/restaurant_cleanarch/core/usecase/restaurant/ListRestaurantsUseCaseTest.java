@@ -61,8 +61,13 @@ class ListRestaurantsUseCaseTest {
         var friday = new OpeningHoursBuilder().build();
         var menuItem = new MenuItemBuilder().build();
 
-        Restaurant restaurant = new Restaurant(id, "Restaurant Name", address, "Cuisine",
-                Set.of(tuesday, friday), Set.of(menuItem), owner);
+        var employee = new UserBuilder().build();
+
+        Restaurant restaurant = new Restaurant(id, "Restaurant Name", address, "Cuisine", owner);
+        restaurant.addOpeningHours(tuesday);
+        restaurant.addOpeningHours(friday);
+        restaurant.addMenuItem(menuItem);
+        restaurant.addEmployee(employee);
 
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findAll()).willReturn(List.of(restaurant));
@@ -79,6 +84,7 @@ class ListRestaurantsUseCaseTest {
         assertThat(output.getOpeningHours()).hasSize(2);
         assertThat(output.getMenu()).hasSize(1);
         assertThat(output.getOwner().getId()).isEqualTo(owner.getId());
+        assertThat(output.getEmployees()).hasSize(1);
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
         then(restaurantGateway).should().findAll();

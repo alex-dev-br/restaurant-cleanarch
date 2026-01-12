@@ -58,9 +58,13 @@ class GetRestaurantByIdUseCaseTest {
         var tuesday = new OpeningHoursBuilder().withDayOfDay(DayOfWeek.TUESDAY).build();
         var friday = new OpeningHoursBuilder().build();
         var menuItem = new MenuItemBuilder().build();
+        var employee = new UserBuilder().build();
 
-        Restaurant expectedRestaurant = new Restaurant(id, "Restaurant Name", address, "Cuisine",
-                Set.of(tuesday, friday), Set.of(menuItem), owner);
+        Restaurant expectedRestaurant = new Restaurant(id, "Restaurant Name", address, "Cuisine", owner);
+        expectedRestaurant.addOpeningHours(tuesday);
+        expectedRestaurant.addOpeningHours(friday);
+        expectedRestaurant.addMenuItem(menuItem);
+        expectedRestaurant.addEmployee(employee);
 
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(id)).willReturn(Optional.of(expectedRestaurant));
@@ -74,6 +78,7 @@ class GetRestaurantByIdUseCaseTest {
         assertThat(result.getCuisineType()).isNotNull().isEqualTo(expectedRestaurant.getCuisineType());
         assertThat(result.getOpeningHours()).isNotNull().hasSize(2).isEqualTo(expectedRestaurant.getOpeningHours());
         assertThat(result.getMenu()).isNotNull().hasSize(1).isEqualTo(expectedRestaurant.getMenu());
+        assertThat(result.getEmployees()).isNotNull().hasSize(1).isEqualTo(expectedRestaurant.getEmployees());
         assertThat(result.getOwner()).isNotNull().isEqualTo(expectedRestaurant.getOwner());
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);

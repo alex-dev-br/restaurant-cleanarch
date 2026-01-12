@@ -13,11 +13,10 @@ import br.com.techchallenge.restaurant_cleanarch.core.exception.UserCannotBeRest
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
-import br.com.techchallenge.restaurant_cleanarch.core.inbound.AddressInput;
-import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateRestaurantInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.*;
 
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 public class UpdateRestaurantUseCase {
 
@@ -52,16 +51,29 @@ public class UpdateRestaurantUseCase {
         }
 
         var address = buildAddress(input.address());
-        var openingHours = input.openingHours() == null ? null : input.openingHours().stream()
-                .map(oh -> new OpeningHours(oh.id(), oh.dayOfDay(), oh.openHour(), oh.closeHour()))
-                        .collect(Collectors.toSet());
-        var menu = input.menu() == null ? null : input.menu().stream()
-                .map(i -> new MenuItem(i.id(), i.name(), i.description(), i.price(), i.restaurantOnly(), i.photoPath()))
-                .collect(Collectors.toSet());
+        var openingHoursInput = Optional.ofNullable(input.openingHours());
+        var menuItemsInput = Optional.ofNullable(input.menu());
 
-        var restaurantToUpdate = new Restaurant(input.id(), input.name(), address, input.cuisineType(), openingHours, menu, owner);
+        var restaurantToUpdate = new Restaurant(input.id(), input.name(), address, input.cuisineType(), owner);
+        openingHoursInput.ifPresent(o -> o.stream().map(this::buildOpeningHours).forEach(restaurant::addOpeningHours));
+        menuItemsInput.ifPresent(m -> m.stream().map(this::buildMenu).forEach(restaurant::addMenuItem));
 
         restaurantGateway.save(restaurantToUpdate);
+    }
+
+    private MenuItem buildMenu(UpdateMenuItemInput input) {
+        return input == null ? null : new MenuItem (
+                input.id(),
+                input.name(),
+                input.description(),
+                input.price(),
+                input.restaurantOnly(),
+                input.photoPath()
+        );
+    }
+
+    private OpeningHours buildOpeningHours(UpdateOpeningHoursInput input) {
+        return input == null ? null : new OpeningHours(input.id(), input.dayOfDay(), input.openHour(), input.closeHour());
     }
 
     private Address buildAddress(AddressInput input) {
