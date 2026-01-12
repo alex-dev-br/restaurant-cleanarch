@@ -207,14 +207,19 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.4</version>
+                <version>3.5.4</version> <!-- ou a versão que você já usa -->
                 <configuration>
-                    <argLine>@{argLine} -javaagent:${project.build.directory}/agents/mockito-core.jar</argLine>
+                    <!-- Mantém o JaCoCo (argLine) e adiciona encoding + Mockito -->
+                    <argLine>
+                        -Dfile.encoding=UTF-8
+                        -javaagent:${project.build.directory}/agents/mockito-core.jar
+                        @{argLine}  <!-- preserva o JaCoCo agent que o jacoco-maven-plugin injeta -->
+                    </argLine>
 
-                    <!-- opcional: melhora encoding nos logs -->
-                    <systemPropertyVariables>
+                    <!-- Remova completamente essa parte (ela causa o warning) -->
+                    <!-- <systemPropertyVariables>
                         <file.encoding>UTF-8</file.encoding>
-                    </systemPropertyVariables>
+                    </systemPropertyVariables> -->
                 </configuration>
             </plugin>
 
