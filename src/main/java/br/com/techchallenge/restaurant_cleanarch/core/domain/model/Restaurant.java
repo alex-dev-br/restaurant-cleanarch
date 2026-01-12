@@ -4,8 +4,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.A
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.UserCannotBeRestaurantOwnerException;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -19,9 +18,15 @@ public class Restaurant {
     private final String name;
     private final Address address;
     private final String cuisineType;
-    private final Set<OpeningHours> openingHours;
-    private final Set<MenuItem> menu;
     private final User owner;
+
+    @Getter(AccessLevel.NONE)  // Pois os getters retornam cópias imutáveis, evitando exposição direta.
+    private final Set<OpeningHours> openingHours;
+
+    @Getter(AccessLevel.NONE)
+    private final Set<MenuItem> menu;
+
+    @Getter(AccessLevel.NONE)
     private final Set<User> employees;
 
     public Restaurant(Long id, String name, Address address, String cuisineType, User owner) {

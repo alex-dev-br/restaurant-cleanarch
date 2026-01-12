@@ -68,7 +68,7 @@ class RestaurantGatewayAdapterTest {
         var ownerEntity = new UserEntity();
         ownerEntity.setUserType(userTypeEntity);
         ownerEntity.setName("Owner");
-        ownerEntity.setEmail("ownerId@email.com");
+        ownerEntity.setEmail("owner_" + java.util.UUID.randomUUID() + "@email.com");
         ownerEntity.setPasswordHash("HASHED_TEST");
 
         ownerEntity = userRepository.save(ownerEntity);
@@ -122,7 +122,7 @@ class RestaurantGatewayAdapterTest {
                 savedRestaurant.getOwner()
         );
         restaurant.addOpeningHours(savedRestaurant.getOpeningHours());
-        restaurant.addMenuItems(savedRestaurant.getMenu());
+        restaurant.addMenuItems(savedRestaurant.getMenuItems());
 
 
         // When

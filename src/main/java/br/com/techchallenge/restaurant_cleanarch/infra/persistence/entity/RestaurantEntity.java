@@ -1,14 +1,13 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.*;
 
 @Entity
 @Table(name = "restaurants")
-@Data
+@Getter @Setter
 @NoArgsConstructor
 public class RestaurantEntity {
 
@@ -25,13 +24,37 @@ public class RestaurantEntity {
     @Column(name = "cuisine_type", nullable = false)
     private String cuisineType;
 
-    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
-    private Set<OpeningHoursEntity> openingHours;
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<OpeningHoursEntity> openingHours = new HashSet<>();  // inicializa para evitar NPE;
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)   // `orphanRemoval = true` garante que itens removidos do menu sejam deletados do banco.
     private Set<MenuItemEntity> menu = new HashSet<>();  // inicializa para evitar NPE;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
+    @JoinColumn(name = "owner_id", nullable = false)
     private UserEntity owner;
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<RestaurantEmployeeEntity> employeeLinks = new HashSet<>();
+
+    // Conveniência para acessar empregados diretamente (NÃO é property pro MapStruct)
+    @Transient
+    public Set<UserEntity> employeesView() {
+        if (employeeLinks == null || employeeLinks.isEmpty()) return Set.of();
+        Set<UserEntity> employees = new HashSet<>();
+        for (var link : employeeLinks) {
+            employees.add(link.getEmployee());
+        }
+        return Collections.unmodifiableSet(employees);
+    }
+
+    public void addEmployee(UserEntity employee) {
+        if (employeeLinks == null) employeeLinks = new HashSet<>();
+        employeeLinks.add(RestaurantEmployeeEntity.link(this, employee));
+    }
+
+    public void clearEmployees() {
+        if (employeeLinks != null) employeeLinks.clear();
+    }
+
 }

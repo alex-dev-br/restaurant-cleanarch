@@ -4,10 +4,8 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.MenuItemMapper;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.MenuItemEntity;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.RestaurantEntity;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.MenuItemRepository;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.RestaurantRepository;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.*;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,8 +16,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -41,18 +38,34 @@ class MenuItemGatewayAdapterTest {
     private RestaurantRepository restaurantRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private MenuItemMapper menuItemMapper;
+
+    @Autowired
     private MenuItemMapper mapper;
 
     private RestaurantEntity restaurant;
+
 
     @BeforeEach
     void setUp() {
         menuItemRepository.deleteAll();
         restaurantRepository.deleteAll();
+        userRepository.deleteAll();
+
+        var owner = new UserEntity();
+        // Não setar ID manualmente, deixa o JPA cuidar disso
+        owner.setName("Owner Test");
+        owner.setEmail("owner_" + UUID.randomUUID() + "@test.com");
+        owner.setPasswordHash("hash");   // qualquer valor serve para o teste
+        owner = userRepository.save(owner);
 
         restaurant = new RestaurantEntity();
         restaurant.setName("Test Restaurant");
         restaurant.setCuisineType("Test Cuisine");
+        restaurant.setOwner(owner);
         restaurant = restaurantRepository.save(restaurant);
     }
 

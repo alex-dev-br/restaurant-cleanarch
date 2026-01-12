@@ -82,7 +82,7 @@ class ListRestaurantsUseCaseTest {
         assertThat(output.getName()).isEqualTo(restaurant.getName());
         assertThat(output.getCuisineType()).isEqualTo(restaurant.getCuisineType());
         assertThat(output.getOpeningHours()).hasSize(2);
-        assertThat(output.getMenu()).hasSize(1);
+        assertThat(output.getMenuItems()).hasSize(1);
         assertThat(output.getOwner().getId()).isEqualTo(owner.getId());
         assertThat(output.getEmployees()).hasSize(1);
 

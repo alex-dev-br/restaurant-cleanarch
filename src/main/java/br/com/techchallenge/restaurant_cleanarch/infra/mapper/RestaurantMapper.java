@@ -5,9 +5,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.MenuItemEntity;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.OpeningHoursEntity;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.RestaurantEntity;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.*;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -20,7 +18,6 @@ import java.util.stream.Collectors;
 
 /**
  * Mapper para conversão bidirecional entre Restaurant (domínio) e RestaurantEntity (infra).
- *
  * - Domain → Entity: MapStruct
  * - Entity → Domain: manual (para respeitar imutabilidade/validações e evitar problemas com coleções imutáveis)
  */
@@ -41,8 +38,9 @@ public abstract class RestaurantMapper {
     @Autowired protected AddressMapper addressMapper;
 
     // Domain → Entity: MapStruct gera automático
-    @Mapping(target = "menu", source = "menu")
+    @Mapping(target = "menu", source = "menuItems")
     @Mapping(target = "openingHours", source = "openingHours")
+    @Mapping(target = "employeeLinks", ignore = true)  // Populado no RestaurantGatewayAdapter.save()
     public abstract RestaurantEntity toEntity(Restaurant domain);
 
     /**
@@ -70,11 +68,30 @@ public abstract class RestaurantMapper {
                 owner
         );
 
+        restaurant.addEmployees(mapEmployees(entity.employeesView()));
         restaurant.addOpeningHours(mapOpeningHours(entity.getOpeningHours()));
         restaurant.addMenuItems(mapMenuItems(entity.getMenu()));
 
         return restaurant;
     }
+
+    @AfterMapping
+    protected void linkChildren(@MappingTarget RestaurantEntity restaurant) {
+        if (restaurant.getMenu() == null) restaurant.setMenu(new HashSet<>());
+        if (restaurant.getOpeningHours() == null) restaurant.setOpeningHours(new HashSet<>());
+
+        restaurant.getMenu().forEach(mi -> mi.setRestaurant(restaurant));
+        restaurant.getOpeningHours().forEach(oh -> oh.setRestaurant(restaurant));
+    }
+
+    private Set<User> mapEmployees(Set<UserEntity> entities) {
+        return (entities != null && !entities.isEmpty())
+                ? entities.stream()
+                .map(userMapper::toDomain)
+                .collect(Collectors.toSet())
+                : Set.of();
+    }
+
 
     private Set<OpeningHours> mapOpeningHours(Set<OpeningHoursEntity> entities) {
         return (entities != null && !entities.isEmpty())
@@ -86,18 +103,5 @@ public abstract class RestaurantMapper {
         return (entities != null && !entities.isEmpty())
                 ? entities.stream().map(menuItemMapper::toDomain).collect(Collectors.toSet())
                 : Set.of();
-    }
-
-    @AfterMapping
-    protected void linkChildren(@MappingTarget RestaurantEntity restaurant) {
-        if (restaurant.getMenu() == null) {
-            restaurant.setMenu(new HashSet<>());
-        }
-        if (restaurant.getOpeningHours() == null) {
-            restaurant.setOpeningHours(new HashSet<>());
-        }
-
-        restaurant.getMenu().forEach(mi -> mi.setRestaurant(restaurant));
-        restaurant.getOpeningHours().forEach(oh -> oh.setRestaurant(restaurant));
     }
 }

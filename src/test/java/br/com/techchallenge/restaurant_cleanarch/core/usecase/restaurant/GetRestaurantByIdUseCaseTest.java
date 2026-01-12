@@ -77,7 +77,7 @@ class GetRestaurantByIdUseCaseTest {
         assertThat(result.getAddress()).isNotNull().isEqualTo(expectedRestaurant.getAddress());
         assertThat(result.getCuisineType()).isNotNull().isEqualTo(expectedRestaurant.getCuisineType());
         assertThat(result.getOpeningHours()).isNotNull().hasSize(2).isEqualTo(expectedRestaurant.getOpeningHours());
-        assertThat(result.getMenu()).isNotNull().hasSize(1).isEqualTo(expectedRestaurant.getMenu());
+        assertThat(result.getMenuItems()).isNotNull().hasSize(1).isEqualTo(expectedRestaurant.getMenuItems());
         assertThat(result.getEmployees()).isNotNull().hasSize(1).isEqualTo(expectedRestaurant.getEmployees());
         assertThat(result.getOwner()).isNotNull().isEqualTo(expectedRestaurant.getOwner());
 

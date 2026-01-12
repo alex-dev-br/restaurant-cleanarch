@@ -150,7 +150,7 @@ class CreateRestaurantUseCaseTest {
         assertThat(result.getAddress()).isEqualTo(address);
         assertThat(result.getCuisineType()).isEqualTo(input.cuisineType());
         assertThat(result.getOpeningHours()).hasSize(2).containsExactlyInAnyOrderElementsOf(openingHours);
-        assertThat(result.getMenu()).hasSize(1).containsExactlyInAnyOrderElementsOf(menuItems);
+        assertThat(result.getMenuItems()).hasSize(1).containsExactlyInAnyOrderElementsOf(menuItems);
         assertThat(result.getOwner()).isEqualTo(owner);
         assertThat(result.getEmployees()).hasSize(1).containsExactlyInAnyOrderElementsOf(employees);
 
@@ -208,7 +208,7 @@ class CreateRestaurantUseCaseTest {
         assertThat(result.getAddress()).isEqualTo(address);
         assertThat(result.getCuisineType()).isEqualTo(input.cuisineType());
         assertThat(result.getOpeningHours()).isEmpty();
-        assertThat(result.getMenu()).isEmpty();
+        assertThat(result.getMenuItems()).isEmpty();
         assertThat(result.getOwner()).isEqualTo(owner);
         assertThat(result.getEmployees()).isEmpty();
 

@@ -16,7 +16,7 @@ public class MenuItemBuilder {
     private String photoPath;
 
     public MenuItemBuilder() {
-        this.id = 1L;
+        this.id = null;
         this.name = "Pizza Margherita";
         this.description = "Pizza clássica";
         this.price = new BigDecimal("30");

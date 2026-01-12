@@ -64,7 +64,7 @@ class RestaurantTest {
         assertThat(restaurant.getOwner().getName()).isNotNull().isEqualTo(owner.getName());
         assertThat(restaurant.getOwner().getEmail()).isNotNull().isEqualTo(owner.getEmail());
         assertThat(restaurant.getOpeningHours()).isNotNull().hasSize(6).containsExactlyInAnyOrderElementsOf(openingHours);
-        assertThat(restaurant.getMenu()).isNotNull().hasSize(1);
+        assertThat(restaurant.getMenuItems()).isNotNull().hasSize(1);
         assertThat(restaurant.getEmployees()).isNotNull().hasSize(1);
     }
 
@@ -97,7 +97,7 @@ class RestaurantTest {
         assertThat(restaurant.getOwner()).isNotNull().isEqualTo(owner);
         assertThat(restaurant.getOwner().getName()).isNotNull().isEqualTo(owner.getName());
         assertThat(restaurant.getOwner().getEmail()).isNotNull().isEqualTo(owner.getEmail());
-        assertThat(restaurant.getMenu()).isNotNull().hasSize(1).containsExactlyInAnyOrderElementsOf(menu);
+        assertThat(restaurant.getMenuItems()).isNotNull().hasSize(1).containsExactlyInAnyOrderElementsOf(menu);
     }
 
     @Test
@@ -188,7 +188,7 @@ class RestaurantTest {
         Restaurant restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
 
         assertThat(restaurant.getOpeningHours()).isNotNull().isEmpty();
-        assertThat(restaurant.getMenu()).isNotNull().isEmpty();
+        assertThat(restaurant.getMenuItems()).isNotNull().isEmpty();
         assertThat(restaurant.getEmployees()).isNotNull().isEmpty();
     }
 

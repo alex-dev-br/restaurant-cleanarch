@@ -13,6 +13,9 @@ public interface RestaurantGateway {
 
     Optional<Restaurant> findById(Long id);
 
+    // para management view
+    Optional<Restaurant> findByIdWithManagement(Long id);
+
     /**
      * Verifica se já existe um restaurante com o mesmo nome
      * (útil para evitar duplicidade no cadastro)
@@ -24,7 +27,12 @@ public interface RestaurantGateway {
      */
     boolean existsRestaurantWithNameExcludingId(String name, Long excludingId);
 
+    // ⚠️ ideal: substituir por paginado, mantido por compatibilidade
     List<Restaurant> findAll();
+
+    // ⚠️ NOVO: público paginado (2 passos)
+    Page<Restaurant> findAll(PagedQuery<Void> query);
+
 
     void delete(Long id);
 
