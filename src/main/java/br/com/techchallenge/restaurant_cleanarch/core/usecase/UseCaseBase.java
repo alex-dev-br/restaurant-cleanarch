@@ -20,7 +20,7 @@ public abstract class UseCaseBase<T, R> {
 
         boolean isAllowed = isPublicAccessAllowed() || loggedUserGateway.hasRole(getRequiredRole());
         if (!isAllowed)
-            throw new OperationNotAllowedException("The current user does not have permission to update restaurants.");
+            throw new OperationNotAllowedException("The current user does not have permission to perform this action.");
 
         return doExecute(input);
     }
