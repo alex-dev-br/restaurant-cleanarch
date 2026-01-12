@@ -2,17 +2,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>4.0.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
+
     <groupId>br.com.techchallenge</groupId>
     <artifactId>restaurant-cleanarch</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>restaurant-cleanarch</name>
     <description>Sistema de gestão para restaurantes - Tech Challenge Fase 2</description>
+
     <properties>
         <java.version>21</java.version>
         <maven.compiler.source>21</maven.compiler.source>
@@ -21,6 +24,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
     </properties>
+
     <dependencies>
         <!-- Core Spring Boot -->
         <dependency>
@@ -36,16 +40,32 @@
             <artifactId>spring-boot-starter-validation</artifactId> <!-- Para validações @Valid, @NotBlank, etc. -->
         </dependency>
 
+        <!-- Spring Security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
         <!-- Banco de Dados -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-h2console</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>test</scope> <!-- Para testes in-memory -->
+            <scope>runtime</scope> <!-- Para testes in-memory -->
         </dependency>
 
         <!-- Lombok -->
@@ -74,12 +94,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope> <!-- ESSA É A QUE FALTAVA: Traz JUnit 5, incluindo assertDoesNotThrow -->
+            <scope>test</scope> <!-- Traz JUnit 5, incluindo assertDoesNotThrow -->
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa-test</artifactId>
-            <scope>test</scope> <!-- ESSA É A QUE FALTAVA: Traz JUnit 5, incluindo assertDoesNotThrow -->
+            <scope>test</scope> <!-- Traz JUnit 5, incluindo assertDoesNotThrow -->
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
