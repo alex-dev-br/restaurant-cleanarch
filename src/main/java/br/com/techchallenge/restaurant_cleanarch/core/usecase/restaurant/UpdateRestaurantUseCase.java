@@ -5,6 +5,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
@@ -14,35 +15,32 @@ import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.*;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public class UpdateRestaurantUseCase {
+public class UpdateRestaurantUseCase extends UseCaseBase<UpdateRestaurantInput, Void> {
 
-    private final LoggedUserGateway loggedUserGateway;
     private final RestaurantGateway restaurantGateway;
     private final UserGateway userGateway;
 
     public UpdateRestaurantUseCase(LoggedUserGateway loggedUserGateway, RestaurantGateway restaurantGateway, UserGateway userGateway) {
-        Objects.requireNonNull(loggedUserGateway, "LoggedUserGateway cannot be null");
+        super(loggedUserGateway);
         Objects.requireNonNull(restaurantGateway, "RestaurantGateway cannot be null");
         Objects.requireNonNull(userGateway, "UserGateway cannot be null");
-        this.loggedUserGateway = loggedUserGateway;
         this.restaurantGateway = restaurantGateway;
         this.userGateway = userGateway;
     }
 
-    public void execute(UpdateRestaurantInput input) {
-        Objects.requireNonNull(input, "UpdateRestaurantInput cannot be null.");
-
-        if (!loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT))
-            throw new OperationNotAllowedException("The current user does not have permission to update restaurants.");
-
+    @Override
+    protected Void doExecute(UpdateRestaurantInput input) {
         var restaurant = restaurantGateway.findById(input.id()).orElseThrow(() -> new BusinessException("Restaurant not found."));
         User owner = userGateway.findById(input.owner()).orElseThrow(() -> new BusinessException("Owner not found."));
 
-        if (!restaurant.getName().equals(owner.getName()) && restaurantGateway.existsRestaurantWithName(restaurant.getName())) {
+        if (!restaurant.getName().equals(input.name()) && restaurantGateway.existsRestaurantWithName(input.name())) {
             throw new RestaurantNameIsAlreadyInUseException();
         }
 
@@ -50,15 +48,28 @@ public class UpdateRestaurantUseCase {
             throw new UserCannotBeRestaurantOwnerException();
         }
 
+        var employees = Optional.ofNullable(input.employees())
+                .orElse(Set.of())
+                .stream()
+                .map(e -> userGateway.findById(e).orElseThrow(() -> new BusinessException("Employee "+ e + " not found.")))
+                .collect(Collectors.toSet());
+
         var address = buildAddress(input.address());
         var openingHoursInput = Optional.ofNullable(input.openingHours());
         var menuItemsInput = Optional.ofNullable(input.menu());
 
         var restaurantToUpdate = new Restaurant(input.id(), input.name(), address, input.cuisineType(), owner);
-        openingHoursInput.ifPresent(o -> o.stream().map(this::buildOpeningHours).forEach(restaurant::addOpeningHours));
-        menuItemsInput.ifPresent(m -> m.stream().map(this::buildMenu).forEach(restaurant::addMenuItem));
+        openingHoursInput.ifPresent(o -> o.stream().map(this::buildOpeningHours).forEach(restaurantToUpdate::addOpeningHours));
+        menuItemsInput.ifPresent(m -> m.stream().map(this::buildMenu).forEach(restaurantToUpdate::addMenuItem));
+        restaurantToUpdate.addEmployees(employees);
 
         restaurantGateway.save(restaurantToUpdate);
+        return null;
+    }
+
+    @Override
+    protected ForGettingRoleName getRequiredRole() {
+        return RestaurantRoles.UPDATE_RESTAURANT;
     }
 
     private MenuItem buildMenu(UpdateMenuItemInput input) {
