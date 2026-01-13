@@ -6,7 +6,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.exception.*;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.*;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
 
-import java.util.Objects;
+import java.util.*;
 
 public class GetRestaurantManagementByIdUseCase extends UseCaseBase<Long, Restaurant> {
 
@@ -25,9 +25,18 @@ public class GetRestaurantManagementByIdUseCase extends UseCaseBase<Long, Restau
                 .orElseThrow(() -> new BusinessException("Restaurant not found."));
 
         User currentUser = loggedUserGateway.requireCurrentUser();
+        UUID currentUserId = currentUser.getId();
 
-        boolean isOwner = restaurant.getOwner().equals(currentUser);
-        boolean isEmployee = restaurant.getEmployees().contains(currentUser);
+        boolean isOwner = restaurant.getOwner() != null
+                && restaurant.getOwner().getId() != null
+                && restaurant.getOwner().getId().equals(currentUserId);
+
+        boolean isEmployee = restaurant.getEmployees() != null
+                && restaurant.getEmployees().stream()
+                .map(User::getId)
+                .anyMatch(currentUserId::equals);
+
+
 
         // Owner or Employee podem ver os detalhes de gestão do restaurante
         if (!isOwner && !isEmployee) {
