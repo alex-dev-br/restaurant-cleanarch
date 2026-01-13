@@ -7,6 +7,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.exception.*;
 import java.util.Optional;
 
 public interface LoggedUserGateway {
+
     boolean hasRole(ForGettingRoleName roleName);
 
     Optional<User> getCurrentUser();
