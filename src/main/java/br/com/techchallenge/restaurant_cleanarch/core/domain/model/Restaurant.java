@@ -86,6 +86,11 @@ public class Restaurant {
         return Set.copyOf(this.employees);
     }
 
+    public boolean canBeManagedBy(User currentUser) {
+        if (currentUser == null) return false;
+        return currentUser.equals(owner) || employees.contains(currentUser);
+    }
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;
@@ -102,5 +107,4 @@ public class Restaurant {
     public int hashCode() {
         return id != null ? Objects.hashCode(id) : super.hashCode();
     }
-
 }

@@ -37,7 +37,13 @@ public class UpdateRestaurantUseCase extends UseCaseBase<UpdateRestaurantInput, 
 
     @Override
     protected Void doExecute(UpdateRestaurantInput input) {
-        var restaurant = restaurantGateway.findById(input.id()).orElseThrow(() -> new BusinessException("Restaurant not found."));
+        Restaurant restaurant = restaurantGateway.findById(input.id()).orElseThrow(() -> new BusinessException("Restaurant not found."));
+
+        User currentUser = loggedUserGateway.requireCurrentUser();
+        if (!restaurant.canBeManagedBy(currentUser)) {
+            throw new OperationNotAllowedException();
+        }
+
         User owner = userGateway.findById(input.owner()).orElseThrow(() -> new BusinessException("Owner not found."));
 
         if (!restaurant.getName().equals(input.name()) && restaurantGateway.existsRestaurantWithName(input.name())) {
