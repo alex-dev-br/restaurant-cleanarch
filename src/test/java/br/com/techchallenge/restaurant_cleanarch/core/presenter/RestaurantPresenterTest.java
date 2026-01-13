@@ -22,6 +22,7 @@ class RestaurantPresenterTest {
     @Test
     @DisplayName("Deve converter Restaurant para RestaurantOutput corretamente")
     void shouldConvertRestaurantToRestaurantOutput() {
+        // Arrange
         // Address
         Address address = new Address("Rua A", "10", "Cidade B", "Estado C", "12345-678", "Comp");
 
@@ -64,13 +65,14 @@ class RestaurantPresenterTest {
         restaurant.addMenuItems(menu);
         restaurant.addEmployees(employees);
 
+        // Act
         RestaurantPublicOutput output = RestaurantPresenter.toOutput(restaurant);
 
+        // Assert
         assertThat(output).isNotNull();
         assertThat(output.id()).isEqualTo(restaurantId);
         assertThat(output.name()).isEqualTo(restaurantName);
         assertThat(output.cuisineType()).isEqualTo(cuisineType);
-        assertThat(output.ownerId()).isEqualTo(owner.getId());
 
         // Verifica AddressOutput
         assertThat(output.address()).isNotNull();

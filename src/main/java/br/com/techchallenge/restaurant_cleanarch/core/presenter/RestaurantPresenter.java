@@ -23,8 +23,7 @@ public class RestaurantPresenter {
                         .collect(Collectors.toUnmodifiableSet()),
                 restaurant.getMenuItems().stream()
                         .map(menuItem -> MenuItemPresenter.toOutput(menuItem, restaurantId))
-                        .collect(Collectors.toUnmodifiableSet()),
-            restaurant.getOwner().getId()
+                        .collect(Collectors.toUnmodifiableSet())
         );
     }
 

@@ -2,7 +2,7 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.*;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.*;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.*;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
@@ -28,7 +28,7 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Testes para GetByIdRestaurantUseCase")
+@DisplayName("Testes para GetRestaurantByIdUseCase")
 class GetRestaurantByIdUseCaseTest {
 
     @Mock
@@ -41,24 +41,42 @@ class GetRestaurantByIdUseCaseTest {
     private GetRestaurantByIdUseCase getRestaurantByIdUseCase;
 
     @Test
-    @DisplayName("Deve retornar Restaurant com sucesso quando encontrado")
-    void shouldReturnRestaurantSuccessfully() {
+    @DisplayName("Deve retornar Restaurant com todos os dados quando encontrado e autorizado")
+    void shouldReturnRestaurantWithAllFieldsSuccessfully() {
+        // Arrange
         Long id = 1L;
+
         Address address = new Address("Street", "123", "City", "State", "12345678", "Complement");
-        UserType userType = new UserType(1L, "Owner", Set.of(new Role(1L, "RESTAURANT_OWNER")));
+
+        Role role = new Role(1L, "RESTAURANT_OWNER");
+        UserType userType = new UserType(1L, "Owner", Set.of(role));
+
         User owner = new UserBuilder()
                 .withId(UUID.randomUUID())
                 .withName("Owner Name")
                 .withEmail("owner@email.com")
                 .withAddress(address)
                 .withUserType(userType)
-                .withPasswordHash("HASHED_DEFAULT") // opcional (builder já tem default)
+                .withPasswordHash("HASHED_DEFAULT")
                 .build();
 
-        var tuesday = new OpeningHoursBuilder().withDayOfDay(DayOfWeek.TUESDAY).build();
-        var friday = new OpeningHoursBuilder().build();
-        var menuItem = new MenuItemBuilder().build();
-        var employee = new UserBuilder().build();
+        OpeningHours tuesday = new OpeningHoursBuilder()
+                .withDayOfDay(DayOfWeek.TUESDAY)
+                .build();
+
+        OpeningHours friday = new OpeningHoursBuilder()
+                .withDayOfDay(DayOfWeek.FRIDAY)
+                .build();
+
+        MenuItem menuItem = new MenuItemBuilder()
+                .withId(10L)
+                .withName("Pizza")
+                .build();
+
+        User employee = new UserBuilder()
+                .withId(UUID.randomUUID())
+                .withName("Employee 1")
+                .build();
 
         Restaurant expectedRestaurant = new Restaurant(id, "Restaurant Name", address, "Cuisine", owner);
         expectedRestaurant.addOpeningHours(tuesday);
@@ -69,18 +87,46 @@ class GetRestaurantByIdUseCaseTest {
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(id)).willReturn(Optional.of(expectedRestaurant));
 
+        // Act
         Restaurant result = getRestaurantByIdUseCase.execute(id);
 
-        assertThat(result).isNotNull();
-        assertThat(result.getId()).isNotNull().isEqualTo(expectedRestaurant.getId());
-        assertThat(result.getName()).isNotNull().isEqualTo(expectedRestaurant.getName());
-        assertThat(result.getAddress()).isNotNull().isEqualTo(expectedRestaurant.getAddress());
-        assertThat(result.getCuisineType()).isNotNull().isEqualTo(expectedRestaurant.getCuisineType());
-        assertThat(result.getOpeningHours()).isNotNull().hasSize(2).isEqualTo(expectedRestaurant.getOpeningHours());
-        assertThat(result.getMenuItems()).isNotNull().hasSize(1).isEqualTo(expectedRestaurant.getMenuItems());
-        assertThat(result.getEmployees()).isNotNull().hasSize(1).isEqualTo(expectedRestaurant.getEmployees());
-        assertThat(result.getOwner()).isNotNull().isEqualTo(expectedRestaurant.getOwner());
+        // Assert — identidade
+        assertThat(result).isSameAs(expectedRestaurant);
 
+        // Assert — dados básicos
+        assertThat(result.getId()).isEqualTo(id);
+        assertThat(result.getName()).isEqualTo("Restaurant Name");
+        assertThat(result.getCuisineType()).isEqualTo("Cuisine");
+
+        // Assert — address
+        assertThat(result.getAddress())
+                .extracting(Address::getStreet, Address::getCity, Address::getState)
+                .containsExactly("Street", "City", "State");
+
+        // Assert — owner
+        assertThat(result.getOwner()).isNotNull();
+        assertThat(result.getOwner().getId()).isEqualTo(owner.getId());
+        assertThat(result.getOwner().getName()).isEqualTo("Owner Name");
+
+        // Assert — opening hours
+        assertThat(result.getOpeningHours())
+                .hasSize(2)
+                .extracting(OpeningHours::getDayOfWeek)
+                .containsExactlyInAnyOrder(DayOfWeek.TUESDAY, DayOfWeek.FRIDAY);
+
+        // Assert — menu
+        assertThat(result.getMenuItems())
+                .hasSize(1)
+                .extracting(MenuItem::getId)
+                .containsExactly(10L);
+
+        // Assert — employees
+        assertThat(result.getEmployees())
+                .hasSize(1)
+                .extracting(User::getName)
+                .containsExactly("Employee 1");
+
+        // Assert — comportamento
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
         then(restaurantGateway).should().findById(id);
     }
@@ -88,12 +134,14 @@ class GetRestaurantByIdUseCaseTest {
     @Test
     @DisplayName("Deve lançar exceção quando usuário não tem permissão")
     void shouldThrowExceptionWhenUserHasNoPermission() {
+        // Arrange
         Long id = 1L;
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(false);
 
+        // Act + Assert
         assertThatThrownBy(() -> getRestaurantByIdUseCase.execute(id))
                 .isInstanceOf(OperationNotAllowedException.class)
-                .hasMessage("The current user does not have permission to update restaurants.");
+                .hasMessage("The current user does not have permission to view restaurants.");
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
         then(restaurantGateway).should(never()).findById(any());
@@ -102,10 +150,12 @@ class GetRestaurantByIdUseCaseTest {
     @Test
     @DisplayName("Deve lançar exceção quando Restaurant não é encontrado")
     void shouldThrowExceptionWhenRestaurantNotFound() {
+        // Arrange
         Long id = 1L;
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(id)).willReturn(Optional.empty());
 
+        // Act + Assert
         assertThatThrownBy(() -> getRestaurantByIdUseCase.execute(id))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Restaurant not found.");
@@ -117,6 +167,7 @@ class GetRestaurantByIdUseCaseTest {
     @Test
     @DisplayName("Deve lançar exceção quando ID é nulo")
     void shouldThrowExceptionWhenIdIsNull() {
+        // Act + Assert
         assertThatThrownBy(() -> getRestaurantByIdUseCase.execute(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("Restaurant Id cannot be null.");
@@ -124,4 +175,6 @@ class GetRestaurantByIdUseCaseTest {
         then(loggedUserGateway).should(never()).hasRole(any());
         then(restaurantGateway).should(never()).findById(any());
     }
+
+
 }

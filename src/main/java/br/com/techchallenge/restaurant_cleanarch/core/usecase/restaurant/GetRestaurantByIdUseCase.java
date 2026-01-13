@@ -25,7 +25,7 @@ public class GetRestaurantByIdUseCase {
         Objects.requireNonNull(id, "Restaurant Id cannot be null.");
 
         if (!loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT))
-            throw new OperationNotAllowedException("The current user does not have permission to update restaurants.");
+            throw new OperationNotAllowedException("The current user does not have permission to view restaurants.");
 
         return restaurantGateway
                 .findById(id)

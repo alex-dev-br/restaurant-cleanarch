@@ -120,7 +120,6 @@ class RestaurantControllerTest {
         assertThat(result.openingHours()).isNotNull().hasSize(1);
         assertThat(result.menuItems()).isNotNull().hasSize(1);
 
-        assertThat(result.ownerId()).isEqualTo(ownerId);
 
         then(createRestaurantUseCase).should().execute(createRestaurantInputCaptor.capture());
         CreateRestaurantInput capturedInput = createRestaurantInputCaptor.getValue();
@@ -355,8 +354,7 @@ class RestaurantControllerTest {
         assertThat(result.cuisineType()).isEqualTo(restaurant.getCuisineType());
         assertThat(result.openingHours()).isNotNull().hasSize(1);
         assertThat(result.menuItems()).isNotNull().hasSize(1);
-//        assertThat(result.employees()).isNotNull().hasSize(1);
-        assertThat(result.ownerId()).isEqualTo(ownerId);
+
 
         then(getRestaurantByIdUseCase).should().execute(id);
     }
@@ -422,7 +420,6 @@ class RestaurantControllerTest {
         assertThat(output.cuisineType()).isEqualTo(restaurant.getCuisineType());
         assertThat(output.openingHours()).isNotNull().hasSize(1);
         assertThat(output.menuItems()).isNotNull().hasSize(1);
-        assertThat(output.ownerId()).isEqualTo(ownerId);
 
         then(listRestaurantsUseCase).should().execute();
     }
