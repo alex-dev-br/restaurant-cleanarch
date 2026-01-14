@@ -57,7 +57,7 @@ class ListRestaurantsUseCaseTest {
                 .withUserType(userType)
                 .withPasswordHash("HASHED_DEFAULT") // opcional (builder já tem default)
                 .build();
-        var tuesday = new OpeningHoursBuilder().withDayOfDay(DayOfWeek.TUESDAY).build();
+        var tuesday = new OpeningHoursBuilder().withDayOfWeek(DayOfWeek.TUESDAY).build();
         var friday = new OpeningHoursBuilder().build();
         var menuItem = new MenuItemBuilder().build();
 

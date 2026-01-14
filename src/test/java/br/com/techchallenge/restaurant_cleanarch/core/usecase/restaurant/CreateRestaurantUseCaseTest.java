@@ -90,7 +90,7 @@ class CreateRestaurantUseCaseTest {
 
         OpeningHoursInput openingHoursFridayInput = openingHoursBuilder.buildInput();
         OpeningHours openingHoursFriday = openingHoursBuilder.build();
-        OpeningHoursInput openingHoursTuesdayInput = openingHoursBuilder.withDayOfDay(DayOfWeek.TUESDAY).buildInput();
+        OpeningHoursInput openingHoursTuesdayInput = openingHoursBuilder.withDayOfWeek(DayOfWeek.TUESDAY).buildInput();
         OpeningHours openingHoursTuesday = openingHoursBuilder.build();
         openingHours = Set.of(openingHoursTuesday, openingHoursFriday);
         openingHoursInput = Set.of(openingHoursTuesdayInput, openingHoursFridayInput);

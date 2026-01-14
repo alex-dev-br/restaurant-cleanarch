@@ -3,6 +3,7 @@ package br.com.techchallenge.restaurant_cleanarch.core.domain.model.util;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.OpeningHoursInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateOpeningHoursInput;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.OpeningHoursOutput;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -10,13 +11,13 @@ import java.time.LocalTime;
 public class OpeningHoursBuilder {
     
     private Long id;
-    private DayOfWeek dayOfDay;
+    private DayOfWeek dayOfWeek;
     private LocalTime openHour;
     private LocalTime closeHour;
 
     public OpeningHoursBuilder() {
         this.id = 1L;
-        this.dayOfDay = DayOfWeek.FRIDAY;
+        this.dayOfWeek = DayOfWeek.FRIDAY;
         this.openHour = LocalTime.of(0, 0);
         this.closeHour = LocalTime.of(23, 59);
     }
@@ -31,8 +32,8 @@ public class OpeningHoursBuilder {
         return this;
     }
 
-    public OpeningHoursBuilder withDayOfDay(DayOfWeek dayOfDay) {
-        this.dayOfDay = dayOfDay;
+    public OpeningHoursBuilder withDayOfWeek(DayOfWeek dayOfWeek) {
+        this.dayOfWeek = dayOfWeek;
         return this;
     }
 
@@ -47,14 +48,18 @@ public class OpeningHoursBuilder {
     }
 
     public OpeningHours build() {
-        return new OpeningHours(id, dayOfDay, openHour, closeHour);
+        return new OpeningHours(id, dayOfWeek, openHour, closeHour);
     }
 
     public OpeningHoursInput buildInput() {
-        return new OpeningHoursInput(dayOfDay, openHour, closeHour);
+        return new OpeningHoursInput(dayOfWeek, openHour, closeHour);
     }
 
     public UpdateOpeningHoursInput buildUpdateInput() {
-        return new UpdateOpeningHoursInput(id, dayOfDay, openHour, closeHour);
+        return new UpdateOpeningHoursInput(id, dayOfWeek, openHour, closeHour);
+    }
+
+    public OpeningHoursOutput buildOutput() {
+        return new OpeningHoursOutput(id, dayOfWeek, openHour, closeHour);
     }
 }

@@ -2,6 +2,7 @@ package br.com.techchallenge.restaurant_cleanarch.core.domain.model.util;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.AddressInput;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.AddressOutput;
 
 public class AddressBuilder {
 
@@ -57,5 +58,9 @@ public class AddressBuilder {
 
     public AddressInput buildInput() {
         return new AddressInput(street, number, city, state, zipCode, complement);
+    }
+
+    public AddressOutput buildOutput() {
+        return new AddressOutput(street, number, city, state, zipCode, complement);
     }
 }

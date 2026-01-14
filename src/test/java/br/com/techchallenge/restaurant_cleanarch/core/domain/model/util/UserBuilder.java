@@ -6,6 +6,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateUserInput;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.UserSummaryOutput;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -76,5 +77,9 @@ public class UserBuilder {
 
     public User build() {
         return new User(id, name, email, address, userType == null ? null : new UserType(this.userType.getId(), this.userType.getName(), this.roles), passwordHash);
+    }
+
+    public UserSummaryOutput buildSummaryOutput() {
+        return new UserSummaryOutput(id, name);
     }
 }

@@ -4,6 +4,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateRestaurantInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateRestaurantInput;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantManagementOutput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantPublicOutput;
 import br.com.techchallenge.restaurant_cleanarch.core.presenter.RestaurantPresenter;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.*;
@@ -40,10 +41,10 @@ public class RestaurantController {
         this.listRestaurantsByCuisineTypeUseCase = listRestaurantsByCuisineTypeUseCase;
     }
 
-    public RestaurantPublicOutput createRestaurant(CreateRestaurantInput createRestaurantInput) {
+    public RestaurantManagementOutput createRestaurant(CreateRestaurantInput createRestaurantInput) {
         Objects.requireNonNull(createRestaurantInput, "CreateRestaurantInput cannot be null.");
         var restaurant = createRestaurantUseCase.execute(createRestaurantInput);
-        return RestaurantPresenter.toOutput(restaurant);
+        return RestaurantPresenter.toManagementOutput(restaurant);
     }
 
     public void updateRestaurant(UpdateRestaurantInput updateRestaurantInput) {

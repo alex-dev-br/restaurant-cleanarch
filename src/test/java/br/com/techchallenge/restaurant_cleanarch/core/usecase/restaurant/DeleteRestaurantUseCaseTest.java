@@ -49,7 +49,7 @@ class DeleteRestaurantUseCaseTest {
         Address address = new Address("Street", "123", "City", "State", "12345678", "Complement");
         UserType userType = new UserType(1L, "Owner", Set.of(new Role(1L, "RESTAURANT_OWNER")));
 
-        var tuesday = new OpeningHoursBuilder().withDayOfDay(DayOfWeek.TUESDAY).build();
+        var tuesday = new OpeningHoursBuilder().withDayOfWeek(DayOfWeek.TUESDAY).build();
         var friday = new OpeningHoursBuilder().build();
         var menuItem = new MenuItemBuilder().build();
         User owner = new UserBuilder()

@@ -6,12 +6,14 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.*;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class RestaurantBuilder {
     private Long id;
@@ -103,5 +105,24 @@ public class RestaurantBuilder {
         restaurant.addMenuItems(menu);
         restaurant.addEmployees(employees);
         return restaurant;
+    }
+
+    public RestaurantPublicOutput buildPublicOutput() {
+        var addressOutput = address == null ? null : new AddressOutput(address.getStreet(), address.getNumber(), address.getCity(), address.getState(), address.getZipCode(), address.getComplement());
+        Set<OpeningHoursOutput> openingHoursOutput = openingHours == null ? Set.of() : openingHours.stream()
+                .map(oh -> new OpeningHoursOutput(oh.getId(), oh.getDayOfWeek(), oh.getOpenHour(), oh.getCloseHour()))
+                .collect(Collectors.toSet());
+        Set<MenuItemOutput> menuOutput = menu == null ? Set.of()
+                : menu.stream()
+                .map(m -> new MenuItemOutput(m.getId(), m.getName(), m.getDescription(), m.getPrice(), m.getRestaurantOnly(), m.getPhotoPath(), id))
+                .collect(Collectors.toSet());
+        return new RestaurantPublicOutput (
+                id,
+                name,
+                addressOutput,
+                cuisineType,
+                openingHoursOutput,
+                menuOutput
+        );
     }
 }
