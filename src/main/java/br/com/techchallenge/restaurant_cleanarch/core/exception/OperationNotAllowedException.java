@@ -7,6 +7,6 @@ public class OperationNotAllowedException extends BusinessException {
     }
 
     public OperationNotAllowedException() {
-        this("The current user does not have permission to perform this operation.");
+        this("The current user does not have permission to perform this action.");
     }
 }

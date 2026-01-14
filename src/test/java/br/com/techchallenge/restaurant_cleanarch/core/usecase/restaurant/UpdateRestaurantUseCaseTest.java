@@ -225,7 +225,7 @@ class UpdateRestaurantUseCaseTest {
         // When
         assertThatThrownBy(() -> updateRestaurantUseCase.execute(input))
                 .isInstanceOf(OperationNotAllowedException.class)
-                .hasMessageContaining("The current user does not have permission to perform this operation");
+                .hasMessageContaining("The current user does not have permission to perform this action");
 
         // Then
         then(loggedUserGateway).should().hasRole(RestaurantRoles.UPDATE_RESTAURANT);
