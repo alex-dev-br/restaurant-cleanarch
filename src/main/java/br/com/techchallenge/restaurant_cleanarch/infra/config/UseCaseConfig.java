@@ -36,10 +36,10 @@ public class UseCaseConfig {
 
     @Bean
     public GetRestaurantByIdUseCase getRestaurantByIdUseCase(
-            RestaurantGateway restaurantGateway,
-            LoggedUserGateway loggedUserGateway
+            LoggedUserGateway loggedUserGateway,
+            RestaurantGateway restaurantGateway
     ) {
-        return new GetRestaurantByIdUseCase(restaurantGateway, loggedUserGateway);
+        return new GetRestaurantByIdUseCase(loggedUserGateway, restaurantGateway);
     }
 
     @Bean
@@ -52,10 +52,10 @@ public class UseCaseConfig {
 
     @Bean
     public ListRestaurantsUseCase listRestaurantsUseCase(
-            RestaurantGateway restaurantGateway,
-            LoggedUserGateway loggedUserGateway
+            LoggedUserGateway loggedUserGateway,
+            RestaurantGateway restaurantGateway
     ) {
-        return new ListRestaurantsUseCase(restaurantGateway, loggedUserGateway);
+        return new ListRestaurantsUseCase(loggedUserGateway, restaurantGateway);
     }
 
     @Bean
@@ -76,10 +76,10 @@ public class UseCaseConfig {
 
     @Bean
     public DeleteRestaurantUseCase deleteRestaurantUseCase(
-            RestaurantGateway restaurantGateway,
-            LoggedUserGateway loggedUserGateway
+            LoggedUserGateway loggedUserGateway,
+            RestaurantGateway restaurantGateway
     ) {
-        return new DeleteRestaurantUseCase(restaurantGateway, loggedUserGateway);
+        return new DeleteRestaurantUseCase(loggedUserGateway, restaurantGateway);
     }
 
     /* ============================

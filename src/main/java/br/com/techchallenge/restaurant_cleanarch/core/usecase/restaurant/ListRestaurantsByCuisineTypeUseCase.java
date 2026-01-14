@@ -15,15 +15,17 @@ public class ListRestaurantsByCuisineTypeUseCase extends UseCaseBase<PagedQuery<
 
     private final RestaurantGateway restaurantGateway;
 
-    public ListRestaurantsByCuisineTypeUseCase(LoggedUserGateway loggedUserGateway, RestaurantGateway restaurantGateway) {
-        super(loggedUserGateway);
-        Objects.requireNonNull(restaurantGateway, "RestaurantGateway cannot be null.");
-        this.restaurantGateway = restaurantGateway;
+    public ListRestaurantsByCuisineTypeUseCase(
+            LoggedUserGateway loggedUserGateway,
+            RestaurantGateway restaurantGateway
+    ) {
+        super(Objects.requireNonNull(loggedUserGateway, "LoggedUserGateway cannot be null."));
+        this.restaurantGateway = Objects.requireNonNull(restaurantGateway, "RestaurantGateway cannot be null.");
     }
 
     @Override
     protected Page<Restaurant> doExecute(PagedQuery<String> query) {
-        Objects.requireNonNull(query, "PagedQuery cannot be null.");
+        // query já foi validado como não-nulo no execute()
         return restaurantGateway.findByCuisineType(query);
     }
 

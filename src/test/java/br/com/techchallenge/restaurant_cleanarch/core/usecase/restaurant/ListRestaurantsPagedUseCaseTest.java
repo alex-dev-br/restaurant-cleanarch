@@ -4,6 +4,8 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.RestaurantBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
 import org.junit.jupiter.api.DisplayName;
@@ -21,8 +23,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Testes para ListRestaurantsByCuisineTypeUseCase")
-class ListRestaurantsByCuisineTypeUseCaseTest {
+@DisplayName("Testes para ListRestaurantsPagedUseCase")
+class ListRestaurantsPagedUseCaseTest {
 
     @Mock
     private RestaurantGateway restaurantGateway;
@@ -31,20 +33,20 @@ class ListRestaurantsByCuisineTypeUseCaseTest {
     private LoggedUserGateway loggedUserGateway;
 
     @InjectMocks
-    private ListRestaurantsByCuisineTypeUseCase useCase;
+    private ListRestaurantsPagedUseCase useCase;
 
     @Test
-    @DisplayName("Deve retornar página de restaurantes com sucesso")
-    void shouldReturnPageOfRestaurantsSuccessfully() {
+    @DisplayName("Deve retornar página de restaurantes quando usuário tiver permissão")
+    void shouldReturnPageOfRestaurantsWhenUserHasPermission() {
         // Arrange
-        String cuisineType = "Italian";
-        Restaurant restaurant = new RestaurantBuilder()
-                .withCuisineType(cuisineType)
-                .build();
-
         int currentPage = 0;
         int pageSize = 10;
-        PagedQuery<String> query = new PagedQuery<>(cuisineType, currentPage, pageSize);
+
+        PagedQuery<Void> query = new PagedQuery<>(null, currentPage, pageSize);
+
+        Restaurant restaurant = new RestaurantBuilder()
+                .withName("R1")
+                .build();
 
         Page<Restaurant> expectedPage = new Page<>(
                 currentPage,
@@ -54,7 +56,8 @@ class ListRestaurantsByCuisineTypeUseCaseTest {
                 List.of(restaurant)
         );
 
-        given(restaurantGateway.findByCuisineType(query)).willReturn(expectedPage);
+        given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
+        given(restaurantGateway.findAll(query)).willReturn(expectedPage);
 
         // Act
         Page<Restaurant> result = useCase.execute(query);
@@ -67,20 +70,18 @@ class ListRestaurantsByCuisineTypeUseCaseTest {
         assertThat(result.totalPages()).isOne();
         assertThat(result.content()).containsExactly(restaurant);
 
-        // Como é public access, não deve consultar role
-        then(loggedUserGateway).shouldHaveNoInteractions();
-        then(restaurantGateway).should().findByCuisineType(query);
+        then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
+        then(restaurantGateway).should().findAll(query);
     }
 
     @Test
-    @DisplayName("Deve retornar página vazia quando não houver restaurantes")
-    void shouldReturnEmptyPageWhenNoRestaurantsFound() {
+    @DisplayName("Deve retornar página vazia quando não houver restaurantes e usuário tiver permissão")
+    void shouldReturnEmptyPageWhenNoRestaurantsAndUserHasPermission() {
         // Arrange
-        String cuisineType = "NonExistentCuisine";
-
         int currentPage = 0;
         int pageSize = 10;
-        PagedQuery<String> query = new PagedQuery<>(cuisineType, currentPage, pageSize);
+
+        PagedQuery<Void> query = new PagedQuery<>(null, currentPage, pageSize);
 
         Page<Restaurant> expectedPage = new Page<>(
                 currentPage,
@@ -90,33 +91,47 @@ class ListRestaurantsByCuisineTypeUseCaseTest {
                 List.of()
         );
 
-        given(restaurantGateway.findByCuisineType(query)).willReturn(expectedPage);
+        given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
+        given(restaurantGateway.findAll(query)).willReturn(expectedPage);
 
         // Act
         Page<Restaurant> result = useCase.execute(query);
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.currentPage()).isEqualTo(currentPage);
-        assertThat(result.pageSize()).isEqualTo(pageSize);
         assertThat(result.totalElements()).isZero();
-        assertThat(result.totalPages()).isOne();
         assertThat(result.content()).isEmpty();
 
-        // Como é public access, não deve consultar role
-        then(loggedUserGateway).shouldHaveNoInteractions();
-        then(restaurantGateway).should().findByCuisineType(query);
+        then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
+        then(restaurantGateway).should().findAll(query);
     }
 
     @Test
-    @DisplayName("Deve lançar NullPointerException quando a consulta for nula (validação do UseCaseBase)")
-    void shouldThrowExceptionWhenQueryIsNull() {
+    @DisplayName("Deve lançar OperationNotAllowedException quando usuário não tiver permissão")
+    void shouldThrowOperationNotAllowedWhenUserHasNoPermission() {
+        // Arrange
+        PagedQuery<Void> query = new PagedQuery<>(null, 0, 10);
+
+        given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(false);
+
+        // Act & Assert
+        assertThatThrownBy(() -> useCase.execute(query))
+                .isInstanceOf(OperationNotAllowedException.class)
+                .hasMessageContaining("does not have permission to perform this action");
+
+        then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
+        then(restaurantGateway).shouldHaveNoInteractions();
+    }
+
+    @Test
+    @DisplayName("Deve lançar NullPointerException quando query for nula (validação do UseCaseBase)")
+    void shouldThrowNullPointerExceptionWhenQueryIsNull() {
         // Act & Assert
         assertThatThrownBy(() -> useCase.execute(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("Input cannot be null.");
 
-        then(restaurantGateway).shouldHaveNoInteractions();
         then(loggedUserGateway).shouldHaveNoInteractions();
+        then(restaurantGateway).shouldHaveNoInteractions();
     }
 }

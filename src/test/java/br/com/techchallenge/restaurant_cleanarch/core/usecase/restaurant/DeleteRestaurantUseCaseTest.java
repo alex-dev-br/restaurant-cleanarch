@@ -1,11 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.*;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.RestaurantBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
@@ -18,13 +14,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.DayOfWeek;
 import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
@@ -34,88 +26,80 @@ import static org.mockito.Mockito.never;
 class DeleteRestaurantUseCaseTest {
 
     @Mock
-    private RestaurantGateway restaurantGateway;
+    private LoggedUserGateway loggedUserGateway;
 
     @Mock
-    private LoggedUserGateway loggedUserGateway;
+    private RestaurantGateway restaurantGateway;
 
     @InjectMocks
     private DeleteRestaurantUseCase deleteRestaurantUseCase;
 
     @Test
-    @DisplayName("Deve deletar Restaurant com sucesso")
+    @DisplayName("Deve excluir restaurante com sucesso quando usuário tem role e restaurante existe")
     void shouldDeleteRestaurantSuccessfully() {
-        Long id = 1L;
-        Address address = new Address("Street", "123", "City", "State", "12345678", "Complement");
-        UserType userType = new UserType(1L, "Owner", Set.of(new Role(1L, "RESTAURANT_OWNER")));
+        // Arrange
+        Long restaurantId = 1L;
 
-        var tuesday = new OpeningHoursBuilder().withDayOfDay(DayOfWeek.TUESDAY).build();
-        var friday = new OpeningHoursBuilder().build();
-        var menuItem = new MenuItemBuilder().build();
-        User owner = new UserBuilder()
-                .withId(UUID.randomUUID())
-                .withName("Owner Name")
-                .withEmail("owner@email.com")
-                .withAddress(address)
-                .withUserType(userType)
-                .withPasswordHash("HASHED_DEFAULT") // opcional (builder já tem default)
+        Restaurant restaurant = new RestaurantBuilder()
+                .withId(restaurantId)
                 .build();
 
-        Restaurant restaurant = new Restaurant(id, "Restaurant Name", address, "Cuisine", owner);
-        restaurant.addOpeningHours(tuesday);
-        restaurant.addOpeningHours(friday);
-        restaurant.addMenuItem(menuItem);
-
         given(loggedUserGateway.hasRole(RestaurantRoles.DELETE_RESTAURANT)).willReturn(true);
-        given(restaurantGateway.findById(id)).willReturn(Optional.of(restaurant));
+        given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(restaurant));
 
-        deleteRestaurantUseCase.execute(id);
+        // Act
+        deleteRestaurantUseCase.execute(restaurantId);
 
+        // Assert
         then(loggedUserGateway).should().hasRole(RestaurantRoles.DELETE_RESTAURANT);
-        then(restaurantGateway).should().findById(id);
-        then(restaurantGateway).should().delete(id);
+        then(restaurantGateway).should().findById(restaurantId);
+        then(restaurantGateway).should().delete(restaurantId);
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando usuário não tem permissão")
-    void shouldThrowExceptionWhenUserHasNoPermission() {
-        Long id = 1L;
+    @DisplayName("Deve lançar OperationNotAllowedException quando usuário não tem role")
+    void shouldThrowOperationNotAllowedWhenUserHasNoRole() {
+        // Arrange
+        Long restaurantId = 1L;
         given(loggedUserGateway.hasRole(RestaurantRoles.DELETE_RESTAURANT)).willReturn(false);
 
-        assertThatThrownBy(() -> deleteRestaurantUseCase.execute(id))
+        // Act / Assert
+        assertThatThrownBy(() -> deleteRestaurantUseCase.execute(restaurantId))
                 .isInstanceOf(OperationNotAllowedException.class)
-                .hasMessage("The current user does not have permission to delete restaurants.");
+                .hasMessageContaining("does not have permission to perform this action");
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.DELETE_RESTAURANT);
-        then(restaurantGateway).should(never()).findById(any());
-        then(restaurantGateway).should(never()).delete(any());
+        then(restaurantGateway).shouldHaveNoInteractions();
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando Restaurant não é encontrado")
-    void shouldThrowExceptionWhenRestaurantNotFound() {
-        Long id = 1L;
+    @DisplayName("Deve lançar BusinessException quando restaurante não existe e não deletar")
+    void shouldThrowBusinessExceptionWhenRestaurantNotFound() {
+        // Arrange
+        Long restaurantId = 1L;
+
         given(loggedUserGateway.hasRole(RestaurantRoles.DELETE_RESTAURANT)).willReturn(true);
-        given(restaurantGateway.findById(id)).willReturn(Optional.empty());
+        given(restaurantGateway.findById(restaurantId)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> deleteRestaurantUseCase.execute(id))
+        // Act / Assert
+        assertThatThrownBy(() -> deleteRestaurantUseCase.execute(restaurantId))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("Restaurant not found.");
+                .hasMessageContaining("Restaurant not found.");
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.DELETE_RESTAURANT);
-        then(restaurantGateway).should().findById(id);
-        then(restaurantGateway).should(never()).delete(any());
+        then(restaurantGateway).should().findById(restaurantId);
+        then(restaurantGateway).should(never()).delete(restaurantId);
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando ID é nulo")
-    void shouldThrowExceptionWhenIdIsNull() {
+    @DisplayName("Deve lançar NullPointerException quando input é nulo (validação do UseCaseBase)")
+    void shouldThrowNullPointerExceptionWhenInputIsNull() {
+        // Act / Assert
         assertThatThrownBy(() -> deleteRestaurantUseCase.execute(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessage("Restaurant Id cannot be null.");
+                .hasMessageContaining("Input cannot be null.");
 
-        then(loggedUserGateway).should(never()).hasRole(any());
-        then(restaurantGateway).should(never()).findById(any());
-        then(restaurantGateway).should(never()).delete(any());
+        then(loggedUserGateway).shouldHaveNoInteractions();
+        then(restaurantGateway).shouldHaveNoInteractions();
     }
 }

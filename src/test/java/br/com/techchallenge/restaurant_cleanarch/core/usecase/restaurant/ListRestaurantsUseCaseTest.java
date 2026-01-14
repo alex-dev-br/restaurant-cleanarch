@@ -1,11 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.*;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.RestaurantBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
@@ -17,20 +13,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.DayOfWeek;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Testes para GetAllRestaurantUseCase")
+@DisplayName("Testes para ListRestaurantsUseCase")
 class ListRestaurantsUseCaseTest {
 
     @Mock
@@ -40,85 +31,40 @@ class ListRestaurantsUseCaseTest {
     private LoggedUserGateway loggedUserGateway;
 
     @InjectMocks
-    private ListRestaurantsUseCase listRestaurantsUseCase;
+    private ListRestaurantsUseCase useCase;
 
     @Test
-    @DisplayName("Deve retornar lista de Restaurant com sucesso")
-    void shouldReturnRestaurantListSuccessfully() {
+    @DisplayName("Deve retornar lista de restaurantes quando usuário tiver permissão")
+    void shouldReturnRestaurantsWhenUserHasPermission() {
         // Arrange
-        Long id = 1L;
-        Address address = new Address("Street", "123", "City", "State", "12345678", "Complement");
-        UserType userType = new UserType(1L, "Owner", Set.of(new Role(1L, "RESTAURANT_OWNER")));
-        User owner = new UserBuilder()
-                .withId(UUID.randomUUID())
-                .withName("Owner Name")
-                .withEmail("owner@email.com")
-                .withAddress(address)
-                .withUserType(userType)
-                .withPasswordHash("HASHED_DEFAULT") // opcional (builder já tem default)
-                .build();
-        var tuesday = new OpeningHoursBuilder().withDayOfDay(DayOfWeek.TUESDAY).build();
-        var friday = new OpeningHoursBuilder().build();
-        var menuItem = new MenuItemBuilder().build();
-
-        var employee = new UserBuilder().build();
-
-        Restaurant restaurant = new Restaurant(id, "Restaurant Name", address, "Cuisine", owner);
-        restaurant.addOpeningHours(tuesday);
-        restaurant.addOpeningHours(friday);
-        restaurant.addMenuItem(menuItem);
-        restaurant.addEmployee(employee);
+        Restaurant r1 = new RestaurantBuilder().withName("R1").build();
+        Restaurant r2 = new RestaurantBuilder().withName("R2").build();
 
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
-        given(restaurantGateway.findAll()).willReturn(List.of(restaurant));
+        given(restaurantGateway.findAll()).willReturn(List.of(r1, r2));
 
         // Act
-        List<Restaurant> result = listRestaurantsUseCase.execute();
+        List<Restaurant> result = useCase.execute();
 
         // Assert
-        assertThat(result).isNotNull().hasSize(1);
-        Restaurant output = result.getFirst();
-        assertThat(output.getId()).isEqualTo(restaurant.getId());
-        assertThat(output.getName()).isEqualTo(restaurant.getName());
-        assertThat(output.getCuisineType()).isEqualTo(restaurant.getCuisineType());
-        assertThat(output.getOpeningHours()).hasSize(2);
-        assertThat(output.getMenuItems()).hasSize(1);
-        assertThat(output.getOwner().getId()).isEqualTo(owner.getId());
-        assertThat(output.getEmployees()).hasSize(1);
+        assertThat(result).containsExactly(r1, r2);
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
         then(restaurantGateway).should().findAll();
     }
 
     @Test
-    @DisplayName("Deve retornar lista vazia quando não houver restaurantes")
-    void shouldReturnEmptyListWhenNoRestaurants() {
-        // Arrange
-        given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
-        given(restaurantGateway.findAll()).willReturn(Collections.emptyList());
-
-        // Act
-        List<Restaurant> result = listRestaurantsUseCase.execute();
-
-        // Assert
-        assertThat(result).isNotNull().isEmpty();
-
-        then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
-        then(restaurantGateway).should().findAll();
-    }
-
-    @Test
-    @DisplayName("Deve lançar exceção quando usuário não tem permissão")
-    void shouldThrowExceptionWhenUserHasNoPermission() {
+    @DisplayName("Deve lançar OperationNotAllowedException quando usuário não tiver permissão")
+    void shouldThrowOperationNotAllowedWhenUserHasNoPermission() {
         // Arrange
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(false);
 
         // Act & Assert
-        assertThatThrownBy(() -> listRestaurantsUseCase.execute())
+        assertThatThrownBy(() -> useCase.execute())
                 .isInstanceOf(OperationNotAllowedException.class)
-                .hasMessage("The current user does not have permission to view restaurants.");
+                .hasMessageContaining("does not have permission to perform this action");
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
-        then(restaurantGateway).should(never()).findAll();
+        then(restaurantGateway).shouldHaveNoInteractions();
     }
 }

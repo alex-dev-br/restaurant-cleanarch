@@ -5,64 +5,105 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.RestaurantNameIsAlreadyInUseException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.UserCannotBeRestaurantOwnerException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.*;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public class UpdateRestaurantUseCase {
+public class UpdateRestaurantUseCase extends UseCaseBase<UpdateRestaurantInput, Void> {
 
-    private final LoggedUserGateway loggedUserGateway;
     private final RestaurantGateway restaurantGateway;
     private final UserGateway userGateway;
 
-    public UpdateRestaurantUseCase(LoggedUserGateway loggedUserGateway, RestaurantGateway restaurantGateway, UserGateway userGateway) {
-        Objects.requireNonNull(loggedUserGateway, "LoggedUserGateway cannot be null");
-        Objects.requireNonNull(restaurantGateway, "RestaurantGateway cannot be null");
-        Objects.requireNonNull(userGateway, "UserGateway cannot be null");
-        this.loggedUserGateway = loggedUserGateway;
-        this.restaurantGateway = restaurantGateway;
-        this.userGateway = userGateway;
+    public UpdateRestaurantUseCase(
+            LoggedUserGateway loggedUserGateway,
+            RestaurantGateway restaurantGateway,
+            UserGateway userGateway
+    ) {
+        super(loggedUserGateway);
+        this.restaurantGateway = Objects.requireNonNull(restaurantGateway, "RestaurantGateway cannot be null");
+        this.userGateway = Objects.requireNonNull(userGateway, "UserGateway cannot be null");
     }
 
-    public void execute(UpdateRestaurantInput input) {
+    @Override
+    protected ForGettingRoleName getRequiredRole() {
+        return RestaurantRoles.UPDATE_RESTAURANT;
+    }
+
+    @Override
+    protected Void doExecute(UpdateRestaurantInput input) {
         Objects.requireNonNull(input, "UpdateRestaurantInput cannot be null.");
+        Long restaurantId = Objects.requireNonNull(input.id(), "Restaurant id cannot be null.");
 
-        if (!loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT))
-            throw new OperationNotAllowedException("The current user does not have permission to update restaurants.");
+        Restaurant current = restaurantGateway.findById(restaurantId)
+                .orElseThrow(() -> new BusinessException("Restaurant not found."));
 
-        var restaurant = restaurantGateway.findById(input.id()).orElseThrow(() -> new BusinessException("Restaurant not found."));
-        User owner = userGateway.findById(input.owner()).orElseThrow(() -> new BusinessException("Owner not found."));
+        // PATCH semantics
+        String targetName = Optional.ofNullable(input.name()).orElse(current.getName());
+        Address targetAddress = input.address() == null ? current.getAddress() : buildAddress(input.address());
+        String targetCuisineType = Optional.ofNullable(input.cuisineType()).orElse(current.getCuisineType());
 
-        if (!restaurant.getName().equals(owner.getName()) && restaurantGateway.existsRestaurantWithName(restaurant.getName())) {
+        UUID targetOwnerId = input.owner() == null ? current.getOwner().getId() : input.owner();
+        User targetOwner = userGateway.findById(targetOwnerId)
+                .orElseThrow(() -> new BusinessException("Owner not found."));
+
+        if (!current.getName().equals(targetName) && restaurantGateway.existsRestaurantWithName(targetName)) {
             throw new RestaurantNameIsAlreadyInUseException();
         }
 
-        if (!owner.canOwnRestaurant()) {
+        if (!targetOwner.canOwnRestaurant()) {
             throw new UserCannotBeRestaurantOwnerException();
         }
 
-        var address = buildAddress(input.address());
-        var openingHoursInput = Optional.ofNullable(input.openingHours());
-        var menuItemsInput = Optional.ofNullable(input.menu());
+        Set<OpeningHours> targetOpeningHours = input.openingHours() == null
+                ? current.getOpeningHours()
+                : input.openingHours().stream().map(this::buildOpeningHours).collect(Collectors.toSet());
 
-        var restaurantToUpdate = new Restaurant(input.id(), input.name(), address, input.cuisineType(), owner);
-        openingHoursInput.ifPresent(o -> o.stream().map(this::buildOpeningHours).forEach(restaurant::addOpeningHours));
-        menuItemsInput.ifPresent(m -> m.stream().map(this::buildMenu).forEach(restaurant::addMenuItem));
+        Set<MenuItem> targetMenu = input.menu() == null
+                ? current.getMenuItems()
+                : input.menu().stream().map(this::buildMenu).collect(Collectors.toSet());
 
-        restaurantGateway.save(restaurantToUpdate);
+        // cache para evitar consultar 2x (owner tb pode ser employee)
+        Map<UUID, User> usersCache = new HashMap<>();
+        usersCache.put(targetOwner.getId(), targetOwner);
+
+        Set<User> targetEmployees = input.employees() == null
+                ? current.getEmployees()
+                : input.employees().stream()
+                .map(employeeId -> usersCache.computeIfAbsent(employeeId, id ->
+                        userGateway.findById(id)
+                                .orElseThrow(() -> new BusinessException("Employee " + id + " not found."))))
+                .collect(Collectors.toSet());
+
+        Restaurant updated = new Restaurant(restaurantId, targetName, targetAddress, targetCuisineType, targetOwner);
+        updated.addOpeningHours(targetOpeningHours);
+        updated.addMenuItems(targetMenu);
+        updated.addEmployees(targetEmployees);
+
+        restaurantGateway.save(updated);
+        return null;
+    }
+
+    private OpeningHours buildOpeningHours(UpdateOpeningHoursInput input) {
+        return input == null ? null : new OpeningHours(
+                input.id(),
+                input.dayOfDay(),
+                input.openHour(),
+                input.closeHour()
+        );
     }
 
     private MenuItem buildMenu(UpdateMenuItemInput input) {
-        return input == null ? null : new MenuItem (
+        return input == null ? null : new MenuItem(
                 input.id(),
                 input.name(),
                 input.description(),
@@ -72,18 +113,14 @@ public class UpdateRestaurantUseCase {
         );
     }
 
-    private OpeningHours buildOpeningHours(UpdateOpeningHoursInput input) {
-        return input == null ? null : new OpeningHours(input.id(), input.dayOfDay(), input.openHour(), input.closeHour());
-    }
-
-    private Address buildAddress(AddressInput input) {
-        return input == null ? null : new Address(
-                input.street(),
-                input.number(),
-                input.city(),
-                input.state(),
-                input.zipCode(),
-                input.complement()
+    private Address buildAddress(AddressInput addressInput) {
+        return addressInput == null ? null : new Address(
+                addressInput.street(),
+                addressInput.number(),
+                addressInput.city(),
+                addressInput.state(),
+                addressInput.zipCode(),
+                addressInput.complement()
         );
     }
 }

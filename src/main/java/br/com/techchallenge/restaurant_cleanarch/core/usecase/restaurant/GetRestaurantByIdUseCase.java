@@ -1,34 +1,36 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
 
 import java.util.Objects;
 
-public class GetRestaurantByIdUseCase {
+public class GetRestaurantByIdUseCase extends UseCaseBase<Long, Restaurant> {
 
     private final RestaurantGateway restaurantGateway;
-    private final LoggedUserGateway loggedUserGateway;
 
-    public GetRestaurantByIdUseCase(RestaurantGateway restaurantGateway, LoggedUserGateway loggedUserGateway) {
-        Objects.requireNonNull(restaurantGateway, "RestaurantGateway cannot be null.");
-        Objects.requireNonNull(loggedUserGateway, "LoggedUserGateway cannot be null.");
-        this.restaurantGateway = restaurantGateway;
-        this.loggedUserGateway = loggedUserGateway;
+    public GetRestaurantByIdUseCase(
+            LoggedUserGateway loggedUserGateway,
+            RestaurantGateway restaurantGateway
+    ) {
+        super(Objects.requireNonNull(loggedUserGateway, "LoggedUserGateway cannot be null."));
+        this.restaurantGateway = Objects.requireNonNull(restaurantGateway, "RestaurantGateway cannot be null.");
     }
 
-    public Restaurant execute(Long id) {
-        Objects.requireNonNull(id, "Restaurant Id cannot be null.");
+    @Override
+    protected ForGettingRoleName getRequiredRole() {
+        return RestaurantRoles.VIEW_RESTAURANT;
+    }
 
-        if (!loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT))
-            throw new OperationNotAllowedException("The current user does not have permission to view restaurants.");
-
-        return restaurantGateway
-                .findById(id)
+    @Override
+    protected Restaurant doExecute(Long id) {
+        // aqui id NÃO será null, pois UseCaseBase.execute já valida input != null
+        return restaurantGateway.findById(id)
                 .orElseThrow(() -> new BusinessException("Restaurant not found."));
     }
 }
