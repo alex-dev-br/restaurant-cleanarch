@@ -15,7 +15,7 @@ class OperationNotAllowedExceptionTest {
 
         assertThat(exception.getMessage())
                 .isNotNull()
-                .isEqualTo("The current user does not have permission to perform this operation.");
+                .isEqualTo("The current user does not have permission to perform this action.");
     }
 
     @Test
