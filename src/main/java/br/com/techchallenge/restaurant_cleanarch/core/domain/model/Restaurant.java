@@ -7,10 +7,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.exception.UserCannotBeRest
 import lombok.Getter;
 import lombok.ToString;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @ToString
@@ -75,15 +72,15 @@ public class Restaurant {
     }
 
     public Set<OpeningHours> getOpeningHours() {
-        return Set.copyOf(openingHours);
+        return new HashSet<>(this.openingHours);
     }
 
     public Set<MenuItem> getMenuItems() {
-        return Set.copyOf(menu);
+        return new HashSet<>(this.menu);
     }
 
     public Set<User> getEmployees() {
-        return Set.copyOf(this.employees);
+        return new HashSet<>(this.employees);
     }
 
     public boolean canBeManagedBy(User currentUser) {

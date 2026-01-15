@@ -29,9 +29,17 @@ public class RestaurantEntity {
     private Set<OpeningHoursEntity> openingHours;
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)   // `orphanRemoval = true` garante que itens removidos do menu sejam deletados do banco.
-    private Set<MenuItemEntity> menu = new HashSet<>();  // inicializa para evitar NPE;
+    private Set<MenuItemEntity> menu = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private UserEntity owner;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "restaurant_employees",
+            joinColumns = @JoinColumn(name = "restaurant_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<UserEntity> employees;
 }
