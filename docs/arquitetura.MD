@@ -32,3 +32,11 @@ para classes de dominio (domain), e das classes de dominio (domain) para classes
 deve utilizado para o que foi requisitado.
 
 ### Infra
+O pacote de infra contém as configurações do framework que no nosso caso é a stack do spring-boot e implementações das
+interfaces do core. Os principais sub-pacotes dentro da infra são:
+- Config: como o nome sugere esse pacote possuis as configurações do projeto, como criação de beans e configurações do 
+spring-security
+- Controller: no controller ficam abrigadas as classes de controle rest api do spring
+- Mapper: o mapper contém as configurações de mapeado da biblioteca map struct
+- Persistence: Neste contém as implementações dos gateweys de acesso e persistencia de dados, configuração do JPA(entidades),
+configurações de repositories do spring-data-jpa.
