@@ -51,8 +51,7 @@ class ListRestaurantsPagedUseCaseTest {
         Page<Restaurant> expectedPage = new Page<>(
                 currentPage,
                 pageSize,
-                1,
-                1,
+                1L,
                 List.of(restaurant)
         );
 
@@ -64,7 +63,7 @@ class ListRestaurantsPagedUseCaseTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.currentPage()).isEqualTo(currentPage);
+        assertThat(result.pageNumber()).isEqualTo(currentPage);
         assertThat(result.pageSize()).isEqualTo(pageSize);
         assertThat(result.totalElements()).isOne();
         assertThat(result.totalPages()).isOne();
@@ -86,8 +85,7 @@ class ListRestaurantsPagedUseCaseTest {
         Page<Restaurant> expectedPage = new Page<>(
                 currentPage,
                 pageSize,
-                0,
-                1,
+                0L,
                 List.of()
         );
 
@@ -100,6 +98,7 @@ class ListRestaurantsPagedUseCaseTest {
         // Assert
         assertThat(result).isNotNull();
         assertThat(result.totalElements()).isZero();
+        assertThat(result.totalPages()).isZero(); // com totalElements=0, tende a ser 0
         assertThat(result.content()).isEmpty();
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);

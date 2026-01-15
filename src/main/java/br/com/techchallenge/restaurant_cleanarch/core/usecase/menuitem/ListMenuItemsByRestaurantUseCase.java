@@ -28,7 +28,7 @@ public class ListMenuItemsByRestaurantUseCase extends UseCaseBase<PagedQuery<Lon
 
     @Override
     protected Page<MenuItem> doExecute(PagedQuery<Long> filter) {
-        restaurantGateway.findById(filter.filter()).orElseThrow(() -> new BusinessException("Restaurante not found"));
+        restaurantGateway.findById(filter.filter()).orElseThrow(() -> new BusinessException("Restaurant not found"));
         return menuItemGateway.findByRestaurant(filter);
     }
 

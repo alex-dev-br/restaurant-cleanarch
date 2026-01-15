@@ -59,7 +59,7 @@ class GetRestaurantManagementByIdUseCaseTest {
         Restaurant restaurant = new RestaurantBuilder()
                 .withId(restaurantId)
                 .withOwner(ownerFromRestaurant)
-                .withEmployee(Set.of())
+                .withEmployees(Set.of())
                 .build();
 
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT_MANAGEMENT)).willReturn(true);
@@ -100,7 +100,7 @@ class GetRestaurantManagementByIdUseCaseTest {
         Restaurant restaurant = new RestaurantBuilder()
                 .withId(restaurantId)
                 .withOwner(ownerFromRestaurant)
-                .withEmployee(Set.of(employeeFromRestaurant))
+                .withEmployees(Set.of(employeeFromRestaurant))
                 .build();
 
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT_MANAGEMENT)).willReturn(true);
@@ -140,7 +140,7 @@ class GetRestaurantManagementByIdUseCaseTest {
         Restaurant restaurant = new RestaurantBuilder()
                 .withId(restaurantId)
                 .withOwner(owner)
-                .withEmployee(Set.of(employee))
+                .withEmployees(Set.of(employee))
                 .build();
 
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT_MANAGEMENT)).willReturn(true);
@@ -169,7 +169,7 @@ class GetRestaurantManagementByIdUseCaseTest {
                         .withId(UUID.randomUUID())
                         .withRole(UserRoles.RESTAURANT_OWNER) // necessário para o domínio
                         .build())
-                .withEmployee(Set.of())
+                .withEmployees(Set.of())
                 .build();
 
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT_MANAGEMENT)).willReturn(true);

@@ -9,11 +9,10 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class RestaurantBuilder {
+
     private Long id;
     private String name;
     private Address address;
@@ -24,27 +23,50 @@ public class RestaurantBuilder {
     private User owner;
 
     public RestaurantBuilder() {
+        withDefaults();
+    }
+
+    public RestaurantBuilder withDefaults() {
+        this.id = null;
         this.name = "Restaurante Exemplo";
         this.address = new AddressBuilder().build();
         this.cuisineType = "Italiana";
-        this.openingHours = Set.of(
-            new OpeningHours(1L, DayOfWeek.MONDAY, LocalTime.of(11, 0), LocalTime.of(20, 30)),
-            new OpeningHours(2L, DayOfWeek.TUESDAY, LocalTime.of(11, 0), LocalTime.of(20, 0)),
-            new OpeningHours(3L, DayOfWeek.WEDNESDAY, LocalTime.of(11, 0), LocalTime.of(20, 0)),
-            new OpeningHours(4L, DayOfWeek.THURSDAY, LocalTime.of(11, 0), LocalTime.of(20, 0)),
-            new OpeningHours(5L, DayOfWeek.FRIDAY, LocalTime.of(11, 0), LocalTime.of(22, 0)),
-            new OpeningHours(6L, DayOfWeek.SATURDAY, LocalTime.of(11, 0), LocalTime.of(22, 0))
-        );
+
+        this.openingHours = new HashSet<>(Set.of(
+                new OpeningHours(1L, DayOfWeek.MONDAY, LocalTime.of(11, 0), LocalTime.of(20, 30)),
+                new OpeningHours(2L, DayOfWeek.TUESDAY, LocalTime.of(11, 0), LocalTime.of(20, 0)),
+                new OpeningHours(3L, DayOfWeek.WEDNESDAY, LocalTime.of(11, 0), LocalTime.of(20, 0)),
+                new OpeningHours(4L, DayOfWeek.THURSDAY, LocalTime.of(11, 0), LocalTime.of(20, 0)),
+                new OpeningHours(5L, DayOfWeek.FRIDAY, LocalTime.of(11, 0), LocalTime.of(22, 0)),
+                new OpeningHours(6L, DayOfWeek.SATURDAY, LocalTime.of(11, 0), LocalTime.of(22, 0))
+        ));
 
         this.menu = new HashSet<>();
         this.employees = new HashSet<>();
 
-        //Owner padrão com permissão de dono de restaurante
         this.owner = new UserBuilder()
+                .withDefaults()
                 .withRole(UserRoles.RESTAURANT_OWNER)
                 .withName("Dono do Restaurante")
                 .withEmail("dono@exemplo.com")
                 .build();
+
+        return this;
+    }
+
+    public RestaurantBuilder copy() {
+        RestaurantBuilder b = new RestaurantBuilder().withDefaults();
+        b.id = this.id;
+        b.name = this.name;
+        b.address = this.address;
+        b.cuisineType = this.cuisineType;
+
+        b.openingHours = new HashSet<>(this.openingHours);
+        b.menu = new HashSet<>(this.menu);
+        b.employees = new HashSet<>(this.employees);
+
+        b.owner = this.owner;
+        return b;
     }
 
     public RestaurantBuilder withoutId() {
@@ -73,12 +95,12 @@ public class RestaurantBuilder {
     }
 
     public RestaurantBuilder withOpeningHours(Set<OpeningHours> openingHours) {
-        this.openingHours = openingHours;
+        this.openingHours = (openingHours == null) ? new HashSet<>() : new HashSet<>(openingHours);
         return this;
     }
 
     public RestaurantBuilder withMenu(Set<MenuItem> menu) {
-        this.menu = menu;
+        this.menu = (menu == null) ? new HashSet<>() : new HashSet<>(menu);
         return this;
     }
 
@@ -87,21 +109,34 @@ public class RestaurantBuilder {
         return this;
     }
 
+    /** Atalho super útil para testes de autorização por UUID */
+    public RestaurantBuilder withOwnerId(UUID ownerId) {
+        this.owner = new UserBuilder()
+                .withDefaults()
+                .withId(ownerId)
+                .withRole(UserRoles.RESTAURANT_OWNER)
+                .build();
+        return this;
+    }
+
     public RestaurantBuilder withEmployee(User employee) {
         this.employees.add(employee);
         return this;
     }
 
-    public RestaurantBuilder withEmployee(Collection<? extends User> employees) {
-        this.employees.addAll(employees);
+    public RestaurantBuilder withEmployees(Collection<? extends User> employees) {
+        if (employees != null) this.employees.addAll(employees);
         return this;
     }
 
     public Restaurant build() {
         var restaurant = new Restaurant(id, name, address, cuisineType, owner);
-        restaurant.addOpeningHours(openingHours);
-        restaurant.addMenuItems(menu);
-        restaurant.addEmployees(employees);
+
+        // evita NPE se alguém setar null via builder
+        restaurant.addOpeningHours(openingHours == null ? Set.of() : openingHours);
+        restaurant.addMenuItems(menu == null ? Set.of() : menu);
+        restaurant.addEmployees(employees == null ? Set.of() : employees);
+
         return restaurant;
     }
 }

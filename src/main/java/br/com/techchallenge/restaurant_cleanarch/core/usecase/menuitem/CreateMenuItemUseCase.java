@@ -1,53 +1,67 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.*;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.MenuItemRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.*;
-import br.com.techchallenge.restaurant_cleanarch.core.gateway.*;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
+import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
+import br.com.techchallenge.restaurant_cleanarch.core.gateway.MenuItemGateway;
+import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateMenuItemInput;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
 
 import java.util.Objects;
+import java.util.UUID;
 
-public class CreateMenuItemUseCase {
+public class CreateMenuItemUseCase extends UseCaseBase<CreateMenuItemInput, MenuItem> {
 
     private final MenuItemGateway menuItemGateway;
     private final RestaurantGateway restaurantGateway;
-    private final LoggedUserGateway loggedUserGateway;
 
-    public CreateMenuItemUseCase(MenuItemGateway menuItemGateway, RestaurantGateway restaurantGateway, LoggedUserGateway loggedUserGateway) {
-        Objects.requireNonNull(menuItemGateway, "MenuItemGateway cannot be null");
-        Objects.requireNonNull(restaurantGateway, "RestaurantGateway cannot be null");
-        Objects.requireNonNull(loggedUserGateway, "LoggedUserGateway cannot be null");
-        this.menuItemGateway = menuItemGateway;
-        this.restaurantGateway = restaurantGateway;
-        this.loggedUserGateway = loggedUserGateway;
+    public CreateMenuItemUseCase(
+            LoggedUserGateway loggedUserGateway,
+            MenuItemGateway menuItemGateway,
+            RestaurantGateway restaurantGateway
+    ) {
+        super(Objects.requireNonNull(loggedUserGateway, "LoggedUserGateway cannot be null."));
+        this.menuItemGateway = Objects.requireNonNull(menuItemGateway, "MenuItemGateway cannot be null.");
+        this.restaurantGateway = Objects.requireNonNull(restaurantGateway, "RestaurantGateway cannot be null.");
     }
 
-    public MenuItem execute(CreateMenuItemInput input) {
-        Objects.requireNonNull(input, "CreateMenuItemInput cannot be null");
+    @Override
+    protected ForGettingRoleName getRequiredRole() {
+        return MenuItemRoles.CREATE_MENU_ITEM;
+    }
 
-        if (!loggedUserGateway.hasRole(MenuItemRoles.CREATE_MENU_ITEM)) {
-            throw new OperationNotAllowedException("Você não tem permissão para criar itens de menu.");
-        }
+    @Override
+    protected MenuItem doExecute(CreateMenuItemInput input) {
+        // Base já valida input != null (Input cannot be null.)
+        Long restaurantId = Objects.requireNonNull(input.restaurantId(), "restaurantId cannot be null.");
 
-        Long restaurantId = Objects.requireNonNull(input.restaurantId(), "restaurantId cannot be null");
-
-        // Valida se restaurante existe (você usa o nome no erro de duplicidade)
         Restaurant restaurant = restaurantGateway.findById(restaurantId)
                 .orElseThrow(() -> new BusinessException("Restaurante não encontrado com ID: " + restaurantId));
 
         String name = Objects.requireNonNull(input.name(), "name cannot be null").trim();
+        if (name.isBlank()) {
+            throw new BusinessException("name cannot be blank");
+        }
+
         String description = input.description() != null ? input.description().trim() : null;
         String photoPath = input.photoPath() != null ? input.photoPath().trim() : null;
 
-        // Valida se é o dono
         User currentUser = loggedUserGateway.requireCurrentUser();
-        //restaurant.getEmployees().contains(currentUser)
-        if (!restaurant.getOwner().equals(currentUser)) {
+
+        // compara por id (mais robusto que equals de instância)
+        UUID ownerId = restaurant.getOwner() != null ? restaurant.getOwner().getId() : null;
+        UUID currentUserId = currentUser != null ? currentUser.getId() : null;
+
+        if (ownerId == null || currentUserId == null || !ownerId.equals(currentUserId)) {
             throw new OperationNotAllowedException("Apenas o dono do restaurante pode criar itens do cardápio.");
         }
 
-        // Verifica duplicata de nome no mesmo restaurante
         if (menuItemGateway.existsByNameAndRestaurantId(name, restaurantId)) {
             throw new BusinessException(
                     "Já existe um item de cardápio com o nome '%s' no restaurante '%s'."
@@ -64,7 +78,6 @@ public class CreateMenuItemUseCase {
                 photoPath
         );
 
-        // passar restaurantId para o gateway
         return menuItemGateway.save(menuItem, restaurantId);
     }
 }

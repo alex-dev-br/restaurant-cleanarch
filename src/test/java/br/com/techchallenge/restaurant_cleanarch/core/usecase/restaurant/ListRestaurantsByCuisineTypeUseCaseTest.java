@@ -42,15 +42,16 @@ class ListRestaurantsByCuisineTypeUseCaseTest {
                 .withCuisineType(cuisineType)
                 .build();
 
-        int currentPage = 0;
+        int pageNumber = 0;
         int pageSize = 10;
-        PagedQuery<String> query = new PagedQuery<>(cuisineType, currentPage, pageSize);
+        long totalElements = 1L;
+
+        PagedQuery<String> query = new PagedQuery<>(cuisineType, pageNumber, pageSize);
 
         Page<Restaurant> expectedPage = new Page<>(
-                currentPage,
+                pageNumber,
                 pageSize,
-                1,
-                1,
+                totalElements,
                 List.of(restaurant)
         );
 
@@ -61,13 +62,13 @@ class ListRestaurantsByCuisineTypeUseCaseTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.currentPage()).isEqualTo(currentPage);
+        assertThat(result.pageNumber()).isEqualTo(pageNumber);
         assertThat(result.pageSize()).isEqualTo(pageSize);
-        assertThat(result.totalElements()).isOne();
-        assertThat(result.totalPages()).isOne();
+        assertThat(result.totalElements()).isEqualTo(totalElements);
+        assertThat(result.totalPages()).isEqualTo(1);
         assertThat(result.content()).containsExactly(restaurant);
 
-        // Como é public access, não deve consultar role
+        // public access: não deve consultar role
         then(loggedUserGateway).shouldHaveNoInteractions();
         then(restaurantGateway).should().findByCuisineType(query);
     }
@@ -78,15 +79,16 @@ class ListRestaurantsByCuisineTypeUseCaseTest {
         // Arrange
         String cuisineType = "NonExistentCuisine";
 
-        int currentPage = 0;
+        int pageNumber = 0;
         int pageSize = 10;
-        PagedQuery<String> query = new PagedQuery<>(cuisineType, currentPage, pageSize);
+        long totalElements = 0L;
+
+        PagedQuery<String> query = new PagedQuery<>(cuisineType, pageNumber, pageSize);
 
         Page<Restaurant> expectedPage = new Page<>(
-                currentPage,
+                pageNumber,
                 pageSize,
-                0,
-                1,
+                totalElements,
                 List.of()
         );
 
@@ -97,13 +99,13 @@ class ListRestaurantsByCuisineTypeUseCaseTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.currentPage()).isEqualTo(currentPage);
+        assertThat(result.pageNumber()).isEqualTo(pageNumber);
         assertThat(result.pageSize()).isEqualTo(pageSize);
         assertThat(result.totalElements()).isZero();
-        assertThat(result.totalPages()).isOne();
+        assertThat(result.totalPages()).isZero(); // totalElements=0 => totalPages=0 (derivado)
         assertThat(result.content()).isEmpty();
 
-        // Como é public access, não deve consultar role
+        // public access: não deve consultar role
         then(loggedUserGateway).shouldHaveNoInteractions();
         then(restaurantGateway).should().findByCuisineType(query);
     }
@@ -111,7 +113,7 @@ class ListRestaurantsByCuisineTypeUseCaseTest {
     @Test
     @DisplayName("Deve lançar NullPointerException quando a consulta for nula (validação do UseCaseBase)")
     void shouldThrowExceptionWhenQueryIsNull() {
-        // Act & Assert
+        // Act / Assert
         assertThatThrownBy(() -> useCase.execute(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("Input cannot be null.");

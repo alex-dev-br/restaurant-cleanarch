@@ -46,7 +46,7 @@ class MenuItemControllerTest {
         int pageSize = 10;
 
         MenuItem menuItem = new MenuItemBuilder().build();
-        var menuItemPage = new Page<>(pageNumber, pageSize, 1, 1, List.of(menuItem));
+        var menuItemPage = new Page<>(pageNumber, pageSize, 1L, List.of(menuItem));
 
         given(listMenuItemsByRestaurantUseCase.execute(any())).willReturn(menuItemPage);
 
@@ -55,7 +55,7 @@ class MenuItemControllerTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.currentPage()).isEqualTo(pageNumber);
+        assertThat(result.pageNumber()).isEqualTo(pageNumber);
         assertThat(result.pageSize()).isEqualTo(pageSize);
         assertThat(result.totalElements()).isOne();
         assertThat(result.totalPages()).isOne();
@@ -78,7 +78,7 @@ class MenuItemControllerTest {
         int pageNumber = 0;
         int pageSize = 10;
 
-        Page<MenuItem> emptyPage = new Page<>(pageNumber, pageSize, 0, 1, List.of());
+        Page<MenuItem> emptyPage = new Page<>(pageNumber, pageSize, 0L, List.of());
         given(listMenuItemsByRestaurantUseCase.execute(any())).willReturn(emptyPage);
 
         // Act
@@ -86,12 +86,11 @@ class MenuItemControllerTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.currentPage()).isEqualTo(pageNumber);
+        assertThat(result.pageNumber()).isEqualTo(pageNumber);
         assertThat(result.pageSize()).isEqualTo(pageSize);
         assertThat(result.totalElements()).isZero();
-        assertThat(result.totalPages()).isOne();
+        assertThat(result.totalPages()).isZero(); // totalElements=0 => totalPages=0
         assertThat(result.content()).isEmpty();
-
 
         then(listMenuItemsByRestaurantUseCase).should().execute(any());
     }

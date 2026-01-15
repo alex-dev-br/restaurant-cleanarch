@@ -1,5 +1,6 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant;
 
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressBuilder;
@@ -9,7 +10,6 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.Restaura
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
@@ -48,14 +48,9 @@ import static org.mockito.Mockito.*;
 @DisplayName("Testes para CreateRestaurantUseCase")
 class CreateRestaurantUseCaseTest {
 
-    @Mock
-    private LoggedUserGateway loggedUserGateway;
-
-    @Mock
-    private RestaurantGateway restaurantGateway;
-
-    @Mock
-    private UserGateway userGateway;
+    @Mock private LoggedUserGateway loggedUserGateway;
+    @Mock private RestaurantGateway restaurantGateway;
+    @Mock private UserGateway userGateway;
 
     @InjectMocks
     private CreateRestaurantUseCase createRestaurantUseCase;
@@ -65,10 +60,8 @@ class CreateRestaurantUseCaseTest {
 
     private UUID ownerId;
     private UUID employeeId;
-
     private User owner;
     private User employee;
-
     private Address address;
     private String restaurantName;
     private String cuisineType;
@@ -79,16 +72,17 @@ class CreateRestaurantUseCaseTest {
         employeeId = UUID.randomUUID();
 
         address = new AddressBuilder().build();
-
         restaurantName = "My Restaurant";
         cuisineType = "Italian";
 
         owner = new UserBuilder()
+                .withDefaults()
                 .withId(ownerId)
                 .withRole(UserRoles.RESTAURANT_OWNER)
                 .build();
 
         employee = new UserBuilder()
+                .withDefaults()
                 .withId(employeeId)
                 .build();
     }
@@ -112,7 +106,6 @@ class CreateRestaurantUseCaseTest {
 
         MenuItemInput menuItemInput = new MenuItemBuilder().buildInput();
         MenuItem menuItem = new MenuItemBuilder().build();
-
         Set<MenuItemInput> menuItemsInput = Set.of(menuItemInput);
         Set<MenuItem> menuItems = Set.of(menuItem);
 
@@ -127,12 +120,13 @@ class CreateRestaurantUseCaseTest {
         );
 
         Restaurant savedFromGateway = new RestaurantBuilder()
+                .withDefaults()
                 .withId(1L)
                 .withName(restaurantName)
                 .withAddress(address)
                 .withCuisineType(cuisineType)
                 .withOwner(owner)
-                .withEmployee(Set.of(employee))
+                .withEmployees(Set.of(employee)) // ✅ aqui
                 .withOpeningHours(openingHours)
                 .withMenu(menuItems)
                 .build();
@@ -160,7 +154,6 @@ class CreateRestaurantUseCaseTest {
         assertThat(captured).isNotNull();
         assertThat(captured.getId()).isNull(); // novo restaurante
 
-        // compara estrutura do agregado salvo (ignorando ids internos gerados)
         assertThat(captured)
                 .usingRecursiveComparison()
                 .ignoringFields("id", "menu.id", "openingHours.id")
@@ -182,12 +175,13 @@ class CreateRestaurantUseCaseTest {
         );
 
         Restaurant savedFromGateway = new RestaurantBuilder()
+                .withDefaults()
                 .withId(1L)
                 .withName(restaurantName)
                 .withAddress(address)
                 .withCuisineType(cuisineType)
                 .withOwner(owner)
-                .withEmployee(Set.of())
+                .withEmployees(Set.of()) // ✅ aqui
                 .withOpeningHours(Set.of())
                 .withMenu(Set.of())
                 .build();
@@ -233,12 +227,13 @@ class CreateRestaurantUseCaseTest {
         );
 
         Restaurant savedFromGateway = new RestaurantBuilder()
+                .withDefaults()
                 .withId(1L)
                 .withName(restaurantName)
                 .withAddress(address)
                 .withCuisineType(cuisineType)
                 .withOwner(owner)
-                .withEmployee(Set.of())
+                .withEmployees(Set.of()) // ✅ aqui
                 .withOpeningHours(Set.of())
                 .withMenu(Set.of())
                 .build();
@@ -279,12 +274,13 @@ class CreateRestaurantUseCaseTest {
         );
 
         Restaurant savedFromGateway = new RestaurantBuilder()
+                .withDefaults()
                 .withId(1L)
                 .withName(restaurantName)
                 .withAddress(address)
                 .withCuisineType(cuisineType)
                 .withOwner(owner)
-                .withEmployee(Set.of(owner))
+                .withEmployees(Set.of(owner)) // ✅ aqui
                 .withOpeningHours(Set.of())
                 .withMenu(Set.of())
                 .build();
@@ -385,7 +381,9 @@ class CreateRestaurantUseCaseTest {
     void shouldThrowExceptionWhenUserCannotBeOwner() {
         // Arrange
         UUID ordinaryUserId = UUID.randomUUID();
+
         User ordinaryUser = new UserBuilder()
+                .withDefaults()
                 .withId(ordinaryUserId)
                 .build();
 
@@ -447,7 +445,6 @@ class CreateRestaurantUseCaseTest {
     @Test
     @DisplayName("Deve lançar NullPointerException quando input é nulo (UseCaseBase)")
     void shouldThrowExceptionWhenInputIsNull() {
-        // Arrange / Act / Assert
         assertThatThrownBy(() -> createRestaurantUseCase.execute(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("Input cannot be null.");

@@ -448,7 +448,7 @@ class RestaurantControllerTest {
         int pageSize = 10;
 
         Restaurant restaurant = new RestaurantBuilder().withCuisineType(cuisineType).build();
-        Page<Restaurant> restaurantPage = new Page<>(pageNumber, pageSize, 1, 1, List.of(restaurant));
+        Page<Restaurant> restaurantPage = new Page<>(pageNumber, pageSize, 1L, List.of(restaurant));
 
         given(listRestaurantsByCuisineTypeUseCase.execute(any())).willReturn(restaurantPage);
 
@@ -457,7 +457,7 @@ class RestaurantControllerTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.currentPage()).isEqualTo(pageNumber);
+        assertThat(result.pageNumber()).isEqualTo(pageNumber);
         assertThat(result.pageSize()).isEqualTo(pageSize);
         assertThat(result.totalElements()).isOne();
         assertThat(result.totalPages()).isOne();
@@ -479,8 +479,7 @@ class RestaurantControllerTest {
         int pageNumber = 0;
         int pageSize = 10;
 
-        Page<Restaurant> emptyPage = new Page<>(pageNumber, pageSize, 0, 1, List.of());
-
+        Page<Restaurant> emptyPage = new Page<>(pageNumber, pageSize, 0L, List.of());
         given(listRestaurantsByCuisineTypeUseCase.execute(any())).willReturn(emptyPage);
 
         // Act
@@ -488,10 +487,10 @@ class RestaurantControllerTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.currentPage()).isEqualTo(pageNumber);
+        assertThat(result.pageNumber()).isEqualTo(pageNumber);
         assertThat(result.pageSize()).isEqualTo(pageSize);
         assertThat(result.totalElements()).isZero();
-        assertThat(result.totalPages()).isOne();
+        assertThat(result.totalPages()).isZero();
         assertThat(result.content()).isEmpty();
 
         then(listRestaurantsByCuisineTypeUseCase).should().execute(any());

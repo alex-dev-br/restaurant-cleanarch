@@ -43,14 +43,9 @@ import static org.mockito.Mockito.times;
 @DisplayName("Testes para UpdateRestaurantUseCase")
 class UpdateRestaurantUseCaseTest {
 
-    @Mock
-    private LoggedUserGateway loggedUserGateway;
-
-    @Mock
-    private RestaurantGateway restaurantGateway;
-
-    @Mock
-    private UserGateway userGateway;
+    @Mock private LoggedUserGateway loggedUserGateway;
+    @Mock private RestaurantGateway restaurantGateway;
+    @Mock private UserGateway userGateway;
 
     @InjectMocks
     private UpdateRestaurantUseCase updateRestaurantUseCase;
@@ -67,31 +62,36 @@ class UpdateRestaurantUseCaseTest {
         Address oldAddress = new AddressBuilder().build();
 
         User oldOwner = new UserBuilder()
+                .withDefaults()
                 .withRole(UserRoles.RESTAURANT_OWNER)
                 .build();
 
         UUID oldEmployeeId = UUID.randomUUID();
         User oldEmployee = new UserBuilder()
+                .withDefaults()
                 .withId(oldEmployeeId)
                 .build();
 
         Restaurant current = new RestaurantBuilder()
+                .withDefaults()
                 .withId(restaurantId)
                 .withName("Old Name")
                 .withAddress(oldAddress)
                 .withCuisineType("Old Cuisine")
                 .withOwner(oldOwner)
-                .withEmployee(Set.of(oldEmployee))
+                .withEmployees(Set.of(oldEmployee)) // ✅ CORRIGIDO
                 .build();
 
         UUID newOwnerId = UUID.randomUUID();
         User newOwner = new UserBuilder()
+                .withDefaults()
                 .withId(newOwnerId)
                 .withRole(UserRoles.RESTAURANT_OWNER)
                 .build();
 
         UUID newEmployeeId = UUID.randomUUID();
         User newEmployee = new UserBuilder()
+                .withDefaults()
                 .withId(newEmployeeId)
                 .build();
 
@@ -139,21 +139,24 @@ class UpdateRestaurantUseCaseTest {
         Long restaurantId = 1L;
 
         User owner = new UserBuilder()
+                .withDefaults()
                 .withRole(UserRoles.RESTAURANT_OWNER)
                 .build();
 
         UUID employeeId = UUID.randomUUID();
         User employee = new UserBuilder()
+                .withDefaults()
                 .withId(employeeId)
                 .build();
 
         Restaurant current = new RestaurantBuilder()
+                .withDefaults()
                 .withId(restaurantId)
                 .withName("Old Name")
                 .withAddress(new AddressBuilder().build())
                 .withCuisineType("Old Cuisine")
                 .withOwner(owner)
-                .withEmployee(Set.of(employee))
+                .withEmployees(Set.of(employee)) //
                 .build();
 
         UpdateRestaurantInput input = new UpdateRestaurantInput(
@@ -192,17 +195,19 @@ class UpdateRestaurantUseCaseTest {
 
         UUID ownerId = UUID.randomUUID();
         User owner = new UserBuilder()
+                .withDefaults()
                 .withId(ownerId)
                 .withRole(UserRoles.RESTAURANT_OWNER)
                 .build();
 
         Restaurant current = new RestaurantBuilder()
+                .withDefaults()
                 .withId(restaurantId)
                 .withName("Old Name")
                 .withAddress(new AddressBuilder().build())
                 .withCuisineType("Old Cuisine")
                 .withOwner(owner)
-                .withEmployee(Set.of())
+                .withEmployees(Set.of()) // ✅ CORRIGIDO
                 .build();
 
         UUID missingEmployeeId = UUID.randomUUID();
@@ -257,17 +262,19 @@ class UpdateRestaurantUseCaseTest {
 
         UUID ownerId = UUID.randomUUID();
         User owner = new UserBuilder()
+                .withDefaults()
                 .withId(ownerId)
                 .withRole(UserRoles.RESTAURANT_OWNER)
                 .build();
 
         Restaurant current = new RestaurantBuilder()
+                .withDefaults()
                 .withId(restaurantId)
                 .withName("Old Name")
                 .withAddress(new AddressBuilder().build())
                 .withCuisineType("Old Cuisine")
                 .withOwner(owner)
-                .withEmployee(Set.of()) // tanto faz aqui
+                .withEmployees(Set.of()) // ✅ CORRIGIDO
                 .build();
 
         UpdateRestaurantInput input = new UpdateRestaurantInput(

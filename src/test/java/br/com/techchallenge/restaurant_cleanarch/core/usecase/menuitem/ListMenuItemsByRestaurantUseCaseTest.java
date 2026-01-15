@@ -33,17 +33,12 @@ import static org.mockito.Mockito.never;
 @DisplayName("Testes para ListMenuItemsByRestaurantUseCase")
 class ListMenuItemsByRestaurantUseCaseTest {
 
-    @Mock
-    private MenuItemGateway menuItemGateway;
-
-    @Mock
-    private RestaurantGateway restaurantGateway;
-
-    @Mock
-    private LoggedUserGateway loggedUserGateway;
+    @Mock private MenuItemGateway menuItemGateway;
+    @Mock private RestaurantGateway restaurantGateway;
+    @Mock private LoggedUserGateway loggedUserGateway;
 
     @Captor
-    private ArgumentCaptor<PagedQuery<Long>> restaurantIdCaptor;
+    private ArgumentCaptor<PagedQuery<Long>> pagedQueryCaptor;
 
     @InjectMocks
     private ListMenuItemsByRestaurantUseCase listMenuItemsByRestaurantUseCase;
@@ -54,35 +49,35 @@ class ListMenuItemsByRestaurantUseCaseTest {
         // Arrange
         Long restaurantId = 1L;
         Restaurant restaurant = new RestaurantBuilder().withId(restaurantId).build();
-        MenuItem menuItem = new MenuItemBuilder().build();
-        int currentPage = 0;
+
+        int pageNumber = 0;
         int pageSize = 1;
-        int totalElements = 10;
-        int totalPages = 1;
-        var pagedQuery = new PagedQuery<>(restaurantId, currentPage, pageSize);
-        Page<MenuItem> expectedPage = new Page<>(currentPage, pageSize, totalElements, totalPages, List.of(menuItem));
+        long totalElements = 10L;
+
+        MenuItem menuItem = new MenuItemBuilder().build();
+        var query = new PagedQuery<>(restaurantId, pageNumber, pageSize);
+
+        Page<MenuItem> expectedPage = new Page<>(pageNumber, pageSize, totalElements, List.of(menuItem));
 
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(restaurant));
-        given(menuItemGateway.findByRestaurant(pagedQuery)).willReturn(expectedPage);
+        given(menuItemGateway.findByRestaurant(query)).willReturn(expectedPage);
 
         // Act
-        Page<MenuItem> result = listMenuItemsByRestaurantUseCase.execute(pagedQuery);
+        Page<MenuItem> result = listMenuItemsByRestaurantUseCase.execute(query);
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.currentPage()).isEqualTo(currentPage);
+        assertThat(result.pageNumber()).isEqualTo(pageNumber);
         assertThat(result.pageSize()).isEqualTo(pageSize);
         assertThat(result.totalElements()).isEqualTo(totalElements);
-        assertThat(result.totalPages()).isEqualTo(totalPages);
-        assertThat(result.content()).hasSize(1);
-        assertThat(result.content().getFirst()).isEqualTo(menuItem);
+        assertThat(result.totalPages()).isEqualTo(10); // ceil(10/1) = 10 (derivado)
+        assertThat(result.content()).containsExactly(menuItem);
 
         then(restaurantGateway).should().findById(restaurantId);
-        then(menuItemGateway).should().findByRestaurant(restaurantIdCaptor.capture());
+        then(menuItemGateway).should().findByRestaurant(pagedQueryCaptor.capture());
         then(loggedUserGateway).should(never()).hasRole(any());
 
-        assertThat(restaurantIdCaptor.getValue().filter()).isNotNull().isEqualTo(pagedQuery.filter());
-
+        assertThat(pagedQueryCaptor.getValue()).isEqualTo(query);
     }
 
     @Test
@@ -91,33 +86,33 @@ class ListMenuItemsByRestaurantUseCaseTest {
         // Arrange
         Long restaurantId = 1L;
         Restaurant restaurant = new RestaurantBuilder().withId(restaurantId).build();
-        int currentPage = 0;
+
+        int pageNumber = 0;
         int pageSize = 1;
-        int totalElements = 10;
-        int totalPages = 1;
-        Page<MenuItem> expectedPage = new Page<>(currentPage, pageSize, totalElements, totalPages, List.of());
-        var pagedQuery = new PagedQuery<>(restaurantId, currentPage, pageSize);
+        long totalElements = 0L;
+
+        var query = new PagedQuery<>(restaurantId, pageNumber, pageSize);
+        Page<MenuItem> expectedPage = new Page<>(pageNumber, pageSize, totalElements, List.of());
 
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(restaurant));
-        given(menuItemGateway.findByRestaurant(pagedQuery)).willReturn(expectedPage);
+        given(menuItemGateway.findByRestaurant(query)).willReturn(expectedPage);
 
         // Act
-        Page<MenuItem> result = listMenuItemsByRestaurantUseCase.execute(pagedQuery);
+        Page<MenuItem> result = listMenuItemsByRestaurantUseCase.execute(query);
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.currentPage()).isEqualTo(currentPage);
+        assertThat(result.pageNumber()).isEqualTo(pageNumber);
         assertThat(result.pageSize()).isEqualTo(pageSize);
-        assertThat(result.totalElements()).isEqualTo(totalElements);
-        assertThat(result.totalPages()).isEqualTo(totalPages);
+        assertThat(result.totalElements()).isZero();
+        assertThat(result.totalPages()).isZero(); // totalElements=0 => 0 (derivado)
         assertThat(result.content()).isEmpty();
 
         then(restaurantGateway).should().findById(restaurantId);
-        then(menuItemGateway).should().findByRestaurant(restaurantIdCaptor.capture());
+        then(menuItemGateway).should().findByRestaurant(pagedQueryCaptor.capture());
         then(loggedUserGateway).should(never()).hasRole(any());
 
-        assertThat(restaurantIdCaptor.getValue().filter()).isNotNull().isEqualTo(pagedQuery.filter());
-
+        assertThat(pagedQueryCaptor.getValue()).isEqualTo(query);
     }
 
     @Test
@@ -125,29 +120,30 @@ class ListMenuItemsByRestaurantUseCaseTest {
     void shouldThrowExceptionWhenRestaurantNotFound() {
         // Arrange
         Long restaurantId = 1L;
-        given(restaurantGateway.findById(restaurantId)).willReturn(Optional.empty());
-        var pagedQuery = new PagedQuery<>(restaurantId, 0, 10);
+        var query = new PagedQuery<>(restaurantId, 0, 10);
 
-        // Act & Assert
-        assertThatThrownBy(() -> listMenuItemsByRestaurantUseCase.execute(pagedQuery))
+        given(restaurantGateway.findById(restaurantId)).willReturn(Optional.empty());
+
+        // Act / Assert
+        assertThatThrownBy(() -> listMenuItemsByRestaurantUseCase.execute(query))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("Restaurante not found");
+                .hasMessage("Restaurant not found");
 
         then(restaurantGateway).should().findById(restaurantId);
-        then(menuItemGateway).should(never()).findByRestaurant(pagedQuery);
+        then(menuItemGateway).should(never()).findByRestaurant(any());
         then(loggedUserGateway).should(never()).hasRole(any());
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando o ID do restaurante for nulo")
-    void shouldThrowExceptionWhenRestaurantIdIsNull() {
-        // Act & Assert
+    @DisplayName("Deve lançar exceção quando o input for nulo")
+    void shouldThrowExceptionWhenInputIsNull() {
+        // Act / Assert
         assertThatThrownBy(() -> listMenuItemsByRestaurantUseCase.execute(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("Input cannot be null.");
 
-        then(restaurantGateway).should(never()).findById(null);
-        then(menuItemGateway).should(never()).findByRestaurant(null);
-        then(loggedUserGateway).should(never()).hasRole(any());
+        then(restaurantGateway).shouldHaveNoInteractions();
+        then(menuItemGateway).shouldHaveNoInteractions();
+        then(loggedUserGateway).shouldHaveNoInteractions();
     }
 }
