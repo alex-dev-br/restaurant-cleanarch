@@ -1,7 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserTypeBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
@@ -16,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,7 +40,7 @@ class DeleteUserTypeUseCaseTest {
     @DisplayName("Deve deletar UserType com sucesso")
     void shouldDeleteUserTypeSuccessfully() {
         Long id = 1L;
-        UserType userType = new UserType(id, "Administrator", Set.of(new Role(1L, "ADMIN")));
+        UserType userType = new UserTypeBuilder().withDefaults().withId(id).build();
 
         given(loggedUserGateway.hasRole(UserTypeRoles.DELETE_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.of(userType));
@@ -63,7 +62,7 @@ class DeleteUserTypeUseCaseTest {
 
         assertThatThrownBy(() -> deleteUserTypeUseCase.execute(id))
                 .isInstanceOf(OperationNotAllowedException.class)
-                .hasMessage("The current user does not have permission to delete user types.");
+                .hasMessage("The current user does not have permission to perform this action.");
 
         then(loggedUserGateway).should().hasRole(UserTypeRoles.DELETE_USER_TYPE);
         then(userTypeGateway).should(never()).findById(any());
@@ -92,7 +91,7 @@ class DeleteUserTypeUseCaseTest {
     @DisplayName("Deve lançar exceção quando UserType está em uso")
     void shouldThrowExceptionWhenUserTypeIsInUse() {
         Long id = 1L;
-        UserType userType = new UserType(id, "Administrator", Set.of(new Role(1L, "ADMIN")));
+        UserType userType = new UserTypeBuilder().withDefaults().withId(id).build();
 
         given(loggedUserGateway.hasRole(UserTypeRoles.DELETE_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.of(userType));
@@ -112,7 +111,7 @@ class DeleteUserTypeUseCaseTest {
     void shouldThrowExceptionWhenIdIsNull() {
         assertThatThrownBy(() -> deleteUserTypeUseCase.execute(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessage("Id of user type cannot be null.");
+                .hasMessage("Input cannot be null.");
 
         then(loggedUserGateway).should(never()).hasRole(any());
         then(userTypeGateway).should(never()).findById(any());

@@ -1,30 +1,42 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserTypeGateway;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.NoInput;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
 
 import java.util.Objects;
 import java.util.Set;
 
-public class ListUserTypesUseCase {
+
+public class ListUserTypesUseCase extends UseCaseBase<NoInput, Set<UserType>> {
 
     private final UserTypeGateway userTypeGateway;
-    private final LoggedUserGateway loggedUserGateway;
+
+
 
     public ListUserTypesUseCase(UserTypeGateway userTypeGateway, LoggedUserGateway loggedUserGateway) {
-        Objects.requireNonNull(userTypeGateway, "UserTypeGateway cannot be null");
-        Objects.requireNonNull(loggedUserGateway, "LoggerUserGateway cannot be null");
-        this.userTypeGateway = userTypeGateway;
-        this.loggedUserGateway = loggedUserGateway;
+        super(Objects.requireNonNull(loggedUserGateway, "LoggedUserGateway cannot be null."));
+        this.userTypeGateway = Objects.requireNonNull(userTypeGateway, "UserTypeGateway cannot be null.");
     }
 
+    // mantém API antiga (sem input)
     public Set<UserType> execute() {
-        if (!loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)) {
-            throw new OperationNotAllowedException("The current user does not have permission to get all user types.");
-        }
+        return super.execute(new NoInput());
+    }
+
+    @Override
+    protected ForGettingRoleName getRequiredRole() {
+        return UserTypeRoles.VIEW_USER_TYPE;
+    }
+
+    @Override
+    protected Set<UserType> doExecute(NoInput input) {
         return userTypeGateway.findAll();
     }
+
+
 }

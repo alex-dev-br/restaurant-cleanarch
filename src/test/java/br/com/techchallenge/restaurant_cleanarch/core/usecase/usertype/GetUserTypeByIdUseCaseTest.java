@@ -1,7 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserTypeBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
@@ -15,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -25,7 +24,7 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Testes para GetByIdUserTypeUseCase")
+@DisplayName("Testes para GetUserTypeByIdUseCase")
 class GetUserTypeByIdUseCaseTest {
 
     @Mock
@@ -41,7 +40,7 @@ class GetUserTypeByIdUseCaseTest {
     @DisplayName("Deve retornar UserType com sucesso quando encontrado")
     void shouldReturnUserTypeSuccessfully() {
         Long id = 1L;
-        UserType expectedUserType = new UserType(id, "Administrator", Set.of(new Role(1L, "ADMIN")));
+        UserType expectedUserType = new UserTypeBuilder().withDefaults().withId(id).build();
 
         given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.of(expectedUserType));
@@ -58,11 +57,12 @@ class GetUserTypeByIdUseCaseTest {
     @DisplayName("Deve lançar exceção quando usuário não tem permissão")
     void shouldThrowExceptionWhenUserHasNoPermission() {
         Long id = 1L;
+
         given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(false);
 
         assertThatThrownBy(() -> getUserTypeByIdUseCase.execute(id))
                 .isInstanceOf(OperationNotAllowedException.class)
-                .hasMessage("The current user does not have permission to get user types.");
+                .hasMessage("The current user does not have permission to perform this action.");
 
         then(loggedUserGateway).should().hasRole(UserTypeRoles.VIEW_USER_TYPE);
         then(userTypeGateway).should(never()).findById(any());
@@ -72,6 +72,7 @@ class GetUserTypeByIdUseCaseTest {
     @DisplayName("Deve lançar exceção quando UserType não é encontrado")
     void shouldThrowExceptionWhenUserTypeNotFound() {
         Long id = 1L;
+
         given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.empty());
 
@@ -88,7 +89,7 @@ class GetUserTypeByIdUseCaseTest {
     void shouldThrowExceptionWhenIdIsNull() {
         assertThatThrownBy(() -> getUserTypeByIdUseCase.execute(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessage("Id of user type cannot be null.");
+                .hasMessage("Input cannot be null.");
 
         then(loggedUserGateway).should(never()).hasRole(any());
         then(userTypeGateway).should(never()).findById(any());
