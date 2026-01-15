@@ -60,8 +60,6 @@ public class RestaurantGatewayAdapter implements RestaurantGateway {
 
         saved = restaurantRepository.save(saved);
 
-        // saved aqui pode não estar com fetch join; se você quiser garantir,
-        // poderia recarregar via findByIdWithManagement(saved.getId()).
         return restaurantMapper.toDomain(saved);
     }
 
@@ -114,14 +112,10 @@ public class RestaurantGatewayAdapter implements RestaurantGateway {
                 .anyMatch(e -> e.getId() != null && !e.getId().equals(excludingId));
     }
 
-    /**
-     * Compatibilidade: mantém o contrato antigo, mas com um limite.
-     * (Sugestão: use controller paginado e deixe esse método só para uso interno pontual.)
-     */
     @Override
     @Transactional(readOnly = true)
     public List<Restaurant> findAll() {
-        var page = findAll(new PagedQuery<>(null, 0, 100));
+        var page = findAll(new PagedQuery<>((Void) null, 0, 100));
         return page.content();
     }
 
@@ -145,7 +139,6 @@ public class RestaurantGatewayAdapter implements RestaurantGateway {
                     idPage.getNumber(),
                     idPage.getSize(),
                     idPage.getTotalElements(),
-                    idPage.getTotalPages(),
                     List.of()
             );
         }
@@ -166,7 +159,6 @@ public class RestaurantGatewayAdapter implements RestaurantGateway {
                 idPage.getNumber(),
                 idPage.getSize(),
                 idPage.getTotalElements(),
-                idPage.getTotalPages(),
                 orderedEntities
         );
 
@@ -199,7 +191,6 @@ public class RestaurantGatewayAdapter implements RestaurantGateway {
                     idPage.getNumber(),
                     idPage.getSize(),
                     idPage.getTotalElements(),
-                    idPage.getTotalPages(),
                     List.of()
             );
         }
@@ -218,7 +209,6 @@ public class RestaurantGatewayAdapter implements RestaurantGateway {
                 idPage.getNumber(),
                 idPage.getSize(),
                 idPage.getTotalElements(),
-                idPage.getTotalPages(),
                 orderedEntities
         );
 

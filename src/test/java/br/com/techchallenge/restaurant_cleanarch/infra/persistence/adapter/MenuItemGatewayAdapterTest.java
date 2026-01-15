@@ -267,10 +267,10 @@ class MenuItemGatewayAdapterTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.currentPage()).isEqualTo(pageNumber);
+        assertThat(result.pageNumber()).isEqualTo(pageNumber);
         assertThat(result.pageSize()).isEqualTo(pageSize);
         assertThat(result.totalPages()).isOne();
-        assertThat(result.totalElements()).isEqualTo(2);
+        assertThat(result.totalElements()).isEqualTo(2L);
         assertThat(result.content()).hasSize(2);
     }
 }

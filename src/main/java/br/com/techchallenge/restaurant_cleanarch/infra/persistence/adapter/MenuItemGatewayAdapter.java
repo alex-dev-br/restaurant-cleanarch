@@ -34,6 +34,7 @@ public class MenuItemGatewayAdapter implements MenuItemGateway {
         RestaurantEntity restaurantEntity = restaurantRepository
                 .findById(restaurantId)
                 .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + restaurantId));
+
         MenuItemEntity entity = mapper.toEntity(menuItem, restaurantEntity);
         entity = menuItemRepository.save(entity);
         return mapper.toDomain(entity);
@@ -71,13 +72,13 @@ public class MenuItemGatewayAdapter implements MenuItemGateway {
 
     @Override
     public Page<MenuItem> findByRestaurant(PagedQuery<Long> query) {
-        var page = PageRequest.of(query.pageNumber(), query.pageSize());
-        var pagedResult = menuItemRepository.findByRestaurantId(query.filter(), page);
+        var pageable = PageRequest.of(query.pageNumber(), query.pageSize());
+        var pagedResult = menuItemRepository.findByRestaurantId(query.filter(), pageable);
+
         return new Page<> (
                 pagedResult.getNumber(),
                 pagedResult.getSize(),
                 pagedResult.getTotalElements(),
-                pagedResult.getTotalPages(),
                 pagedResult.getContent().stream().map(mapper::toDomain).toList()
         );
     }

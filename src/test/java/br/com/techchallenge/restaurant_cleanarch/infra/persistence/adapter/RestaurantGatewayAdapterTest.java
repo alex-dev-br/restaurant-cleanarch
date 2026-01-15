@@ -21,10 +21,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -64,7 +62,7 @@ class RestaurantGatewayAdapterTest {
     void setUp() {
         var userTypeEntity = userTypeRepository.findByName("RESTAURANT_OWNER")
                 .orElseThrow(() -> new RuntimeException("UserType not found"));
-        // Setup UserEntity
+
         var ownerEntity = new UserEntity();
         ownerEntity.setUserType(userTypeEntity);
         ownerEntity.setName("Owner");
@@ -72,7 +70,6 @@ class RestaurantGatewayAdapterTest {
         ownerEntity.setPasswordHash("HASHED_TEST");
 
         ownerEntity = userRepository.save(ownerEntity);
-
         ownerDomain = userMapper.toDomain(ownerEntity);
     }
 
@@ -95,8 +92,7 @@ class RestaurantGatewayAdapterTest {
         assertThat(savedRestaurant).isNotNull();
         assertThat(savedRestaurant.getId()).isNotNull();
         assertThat(savedRestaurant.getName()).isEqualTo("Tasty Food");
-        
-        // Verify persistence
+
         assertThat(restaurantRepository.findById(savedRestaurant.getId())).isPresent();
     }
 
@@ -123,7 +119,6 @@ class RestaurantGatewayAdapterTest {
         );
         restaurant.addOpeningHours(savedRestaurant.getOpeningHours());
         restaurant.addMenuItems(savedRestaurant.getMenuItems());
-
 
         // When
         Restaurant result = adapter.save(updatedRestaurantDomain);
@@ -311,13 +306,13 @@ class RestaurantGatewayAdapterTest {
 
         // Then
         assertThat(firstPage.content()).hasSize(2);
-        assertThat(firstPage.totalElements()).isEqualTo(3);
+        assertThat(firstPage.totalElements()).isEqualTo(3L);
         assertThat(firstPage.totalPages()).isEqualTo(2);
-        assertThat(firstPage.currentPage()).isZero();
+        assertThat(firstPage.pageNumber()).isZero();
 
         assertThat(secondPage.content()).hasSize(1);
-        assertThat(secondPage.totalElements()).isEqualTo(3);
+        assertThat(secondPage.totalElements()).isEqualTo(3L);
         assertThat(secondPage.totalPages()).isEqualTo(2);
-        assertThat(secondPage.currentPage()).isOne();
+        assertThat(secondPage.pageNumber()).isOne();
     }
 }
