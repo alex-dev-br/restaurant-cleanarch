@@ -1,53 +1,63 @@
-# Arquitetura
+# Arquitetura do Projeto
 
-## Estrutura do código
-A arquitura utilizada para o desenvolvimento do projeto foi a clean architecture (Arquitura Limpa),
-nessa arquitura o código deve ser estruturado de forma que as regras de negócio permaneçam isoladas de detalhes técnicos, 
-como bancos de dados, mensagerias, frameworks ou interfaces de usuário.
-Neste projeto a separação foi feita pelo pacotes do java, a principal divisão está nos pacotes core e infra. 
-O pacote core contém o código focado na regra de negócio, nele não foi utilizados classes de frameworks ou bibliotecas, com
-exceção do lombok que ajuda a reduzir código boilerplate e que foi autorizado previamente o uso dentro do core.
-O pacote de infra contém o classes com implementações das interfaces do core, que não tem interesse no como vai ser implementado,
-implementações de acesso ao banco, segurança e interfaces de acesso para os usuários, que nesse caso é uma rest api.
+Este projeto utiliza a **Clean Architecture** para separar as regras de negócio dos detalhes de implementação. A estrutura é dividida em duas camadas principais: `core` e `infra`.
 
-### Core
-O pacote core se segmenta nos seguintes pacotes, domain, exception, usecase, gateway, inbound, outbound, presenter e controller.
-- Domain: Esse pacote as classes que representam as principais entidades do sistema como Restaurant (restaurante) 
-e User (usuário). Essas classes possuem regras de validação que não permitem que um objeto delas seja criado de forma 
-inválida, contém métodos que representam comportamentos entidade e não permitem manipulação dos seus atributos interno, 
-um exemplo disso é que a maioria não possuem metodos setters, os atributos são final e em casos de listas (List) e 
-conjutos (Set) quando buscados por um getter é retornado uma cópia assim, não permitindo que classes de fora manipulem 
-seus objetos. Outro ponto importante dentro do domain é o subpacote roles, que contém enums nomes de roles que são utilizadas
-no sistema para controlar acesso
-- Exception: Esse pacote contém as classes de exceções de negocio, todas elas tem como super classe a BusinessException
-- Usecase: As classes desse pacote que contém as regras da aplicação, elas orquestram as interações entras entidades.
-- Gateway: Esse pacote contém apenas interfaces java, nele ficam os pontos de contato com a infraestrutura, as interfaces
-possuem ações que dependem da implementação feita pela infraestrutura, mas não importando como isso é feito.
-- Inbound: Esse pacote contém as classes para entradas de dados para o domain da aplicação, onde essas classes possuem 
-todos os atributos necessário para execução da ação solicitada
-- Outbound: Esse pacote contém as classes para saidas de dados para o domain da aplicação, essas classes já tem um 
-tratamento para somente o necessário seja devolvido
-- Presenter: Neste pacotes estão localizados as classes que fazem a coversão das classes de entrada de dados (Inbound) 
-para classes de dominio (domain), e das classes de dominio (domain) para classes para de saida  de dados (Outbound).
-- Controller: Esse pacote serve como orquestrador dos usescase, ele sabe a ordem que deve chamar, além de qual presenter
-deve utilizado para o que foi requisitado.
+- **`core`**: Contém a lógica de negócio pura, sem dependências de frameworks externos.
+- **`infra`**: Fornece as implementações técnicas, como acesso a banco de dados e a API REST, dependendo do `core`.
 
-### Infra
-O pacote de infra contém as configurações do framework que no nosso caso é a stack do spring-boot e implementações das
-interfaces do core. Os principais sub-pacotes dentro da infra são:
-- Config: como o nome sugere esse pacote possuis as configurações do projeto, como criação de beans e configurações do 
-spring-security
-- Controller: no controller ficam abrigadas as classes de controle rest api do spring
-- Mapper: o mapper contém as configurações de mapeado da biblioteca map struct
-- Persistence: Neste contém as implementações dos gateweys de acesso e persistencia de dados, configuração do JPA(entidades),
-configurações de repositories do spring-data-jpa.
+A comunicação entre as camadas ocorre por meio de **interfaces** (abstrações) definidas no `core` e implementadas na `infra`. Isso é conhecido como **Inversão de Dependência**.
 
+## Diagrama de Camadas
 
-## Tests
-A grande maioria das classes do projeto possuem uma classe de teste, alguns casos não possuem por serem inteface, por não terem
-lógicas dentro, um exemplo disso são as classes de entidade do JPA que são utilizadas apenas para mapeamento das tabelas do 
-banco de dados, classes de configuração, classes de value object que apenas guardam dados e classes geradas por framework,
-como as dos map struct.
-Para os teste utilizamos principalmente o assertJ, uma biblioteca de testes que foca na legibilidade dos testes, 
-o mockito para criação de mock para mockar comportamento de classes que não são o foco para a classe
-sendo testada e os frameworks de teste da stack do spring, o spring-boot-starter-test e spring-boot-starter-data-jpa-test.
+```
++----------------------------------------------------------------------+
+|                                 Infra                                |
+|    +----------------+   +-----------------+   +-------------------+  |
+|    |   Controller   |   |   Persistence   |   |      Config       |  |
+|    |    (API REST)  |   | (JPA, Repos...) |   | (Spring, Sec...)  |  |
+|    +-------+--------+   +--------+--------+   +-------------------+  |
++------------|---------------------|-----------------------------------+
+             | (depende de)        | (implementa)
+             v                     v
++------------|---------------------|-----------------------------------+
+|                                 Core                                 |
+|      +-----+------+      +-------+-------+      +---------+         |
+|      |  Controller|----->|    Gateway    |<-----| Presenter|         |
+|      +-----+------+      +-------+-------+      +----+----+         |
+|            |                     ^                   |               |
+|            v                     |                   v               |
+|      +-----+------+      +-------+-------+      +----+----+         |
+|      |   UseCase  |----->|     Domain    |<-----| In/Out   |         |
+|      +------------+      +---------------+      +----------+         |
+|                                                                      |
++----------------------------------------------------------------------+
+```
+
+## Camada Core
+
+O `core` é o coração da aplicação e é subdividido em:
+
+- **`domain`**: Contém as entidades de negócio (`Restaurant`, `User`) e suas regras de validação. Garante que os objetos de negócio estejam sempre em um estado válido.
+- **`gateway`**: Define as interfaces (contratos) para operações externas, como persistência de dados (ex: `SalvarRestauranteGateway`).
+- **`usecase`**: Orquestra as regras de negócio da aplicação, utilizando o `domain` e os `gateways` para executar ações específicas (ex: `CadastrarRestauranteUseCase`).
+- **`inbound` / `outbound`**: DTOs (Data Transfer Objects) que definem a fronteira de dados para os `usecases`.
+- **`presenter`**: Interfaces responsáveis por converter objetos do `domain` para o formato de saída (`outbound`).
+- **`controller`**: Ponto de entrada para o `core`. Recebe solicitações, chama os `usecases` apropriados e gerencia o fluxo de negócio.
+
+## Camada Infra
+
+A `infra` implementa as interfaces do `core` e lida com as tecnologias externas.
+
+- **`config`**: Configurações do Spring Framework, como injeção de dependência (Beans) e segurança.
+- **`controller`**: Controladores da API REST (Spring MVC). Recebem requisições HTTP e as delegam para o `controller` do `core`.
+- **`mapper`**: Conversores (usando MapStruct) que transformam os DTOs da API nos DTOs do `core` e vice-versa.
+- **`persistence`**: Implementação dos `gateways` de persistência. Contém as entidades JPA e os repositórios Spring Data que interagem com o banco de dados.
+
+## Testes
+
+A estratégia de testes garante a qualidade em ambas as camadas:
+
+- **Testes de Unidade**: Focam na camada `core` (`domain`, `usecases`), utilizando mocks (Mockito) para simular as dependências externas (gateways).
+- **Testes de Integração**: Validam a camada `infra`, testando a integração com o banco de dados (`@DataJpaTest`) e a API REST (`@SpringBootTest`).
+
+**Ferramentas:** JUnit, AssertJ, Mockito e Spring Boot Test.
