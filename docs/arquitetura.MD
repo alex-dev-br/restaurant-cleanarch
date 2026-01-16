@@ -1,10 +1,11 @@
-## Arquitetura
+# Arquitetura
 
+## Estrutura do código
 A arquitura utilizada para o desenvolvimento do projeto foi a clean architecture (Arquitura Limpa),
 nessa arquitura o código deve ser estruturado de forma que as regras de negócio permaneçam isoladas de detalhes técnicos, 
 como bancos de dados, mensagerias, frameworks ou interfaces de usuário.
 Neste projeto a separação foi feita pelo pacotes do java, a principal divisão está nos pacotes core e infra. 
-O pacote core contém o código focado na regra de negocio, nele não foi utilizados classes de frameworks ou bibliotecas, com
+O pacote core contém o código focado na regra de negócio, nele não foi utilizados classes de frameworks ou bibliotecas, com
 exceção do lombok que ajuda a reduzir código boilerplate e que foi autorizado previamente o uso dentro do core.
 O pacote de infra contém o classes com implementações das interfaces do core, que não tem interesse no como vai ser implementado,
 implementações de acesso ao banco, segurança e interfaces de acesso para os usuários, que nesse caso é uma rest api.
@@ -40,3 +41,13 @@ spring-security
 - Mapper: o mapper contém as configurações de mapeado da biblioteca map struct
 - Persistence: Neste contém as implementações dos gateweys de acesso e persistencia de dados, configuração do JPA(entidades),
 configurações de repositories do spring-data-jpa.
+
+
+## Tests
+A grande maioria das classes do projeto possuem uma classe de teste, alguns casos não possuem por serem inteface, por não terem
+lógicas dentro, um exemplo disso são as classes de entidade do JPA que são utilizadas apenas para mapeamento das tabelas do 
+banco de dados, classes de configuração, classes de value object que apenas guardam dados e classes geradas por framework,
+como as dos map struct.
+Para os teste utilizamos principalmente o assertJ, uma biblioteca de testes que foca na legibilidade dos testes, 
+o mockito para criação de mock para mockar comportamento de classes que não são o foco para a classe
+sendo testada e os frameworks de teste da stack do spring, o spring-boot-starter-test e spring-boot-starter-data-jpa-test.
