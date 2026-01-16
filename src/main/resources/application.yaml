@@ -2,4 +2,25 @@ spring:
   application:
     name: restaurant-cleanarch
 
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+
+server:
+  port: 8080
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+
+
+
 
