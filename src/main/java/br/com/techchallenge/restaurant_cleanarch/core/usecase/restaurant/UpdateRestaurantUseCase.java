@@ -8,6 +8,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.O
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.RestaurantNameIsAlreadyInUseException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.UserCannotBeRestaurantOwnerException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
@@ -46,6 +47,12 @@ public class UpdateRestaurantUseCase extends UseCaseBase<UpdateRestaurantInput, 
 
         Restaurant current = restaurantGateway.findById(restaurantId)
                 .orElseThrow(() -> new BusinessException("Restaurant not found."));
+
+        // ✅ regra nova do feat/employees (sem regredir patch semantics)
+        User currentUser = loggedUserGateway.requireCurrentUser();
+        if (!current.canBeManagedBy(currentUser)) {
+            throw new OperationNotAllowedException();
+        }
 
         // PATCH semantics
         String targetName = Optional.ofNullable(input.name()).orElse(current.getName());

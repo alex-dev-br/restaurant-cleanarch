@@ -38,4 +38,8 @@ public class UserPresenter {
         if (user == null) return null;
         return new UserSummaryOutput(user.getId(), user.getName());
     }
+
+    public static UserSummaryOutput toSummaryOutput(User user) {
+        return toSummary(user);
+    }
 }

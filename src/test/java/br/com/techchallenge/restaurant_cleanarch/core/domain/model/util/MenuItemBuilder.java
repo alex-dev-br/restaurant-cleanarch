@@ -4,8 +4,10 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateMenuItemInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.MenuItemInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateMenuItemInput;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.MenuItemOutput;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class MenuItemBuilder {
 
@@ -16,33 +18,33 @@ public class MenuItemBuilder {
     private Boolean restaurantOnly;
     private String photoPath;
 
+    // ✅ novo
     private Long restaurantId;
 
     public MenuItemBuilder() {
         withDefaults();
     }
 
-    /** Permite reutilizar o mesmo builder em vários testes sem “vazar” estado. */
     public MenuItemBuilder withDefaults() {
-        this.id = null;
-        this.name = "Pizza Margherita";
-        this.description = "Pizza clássica";
-        this.price = new BigDecimal("30");
+        this.id = 1L;
+        this.name = "Dish Name";
+        this.description = "Dish Description";
+        this.price = BigDecimal.valueOf(10.0);
         this.restaurantOnly = false;
-        this.photoPath = "/photos/pizza.jpg";
-        this.restaurantId = 1L;
+        this.photoPath = "photo.jpg";
+        this.restaurantId = 1L; // ✅ default
         return this;
     }
 
     public MenuItemBuilder copy() {
-        MenuItemBuilder b = new MenuItemBuilder();
+        var b = new MenuItemBuilder().withDefaults();
         b.id = this.id;
         b.name = this.name;
         b.description = this.description;
         b.price = this.price;
         b.restaurantOnly = this.restaurantOnly;
         b.photoPath = this.photoPath;
-        b.restaurantId = this.restaurantId;
+        b.restaurantId = this.restaurantId; // ✅ copia
         return b;
     }
 
@@ -81,65 +83,34 @@ public class MenuItemBuilder {
         return this;
     }
 
-    // novo
+    // ✅ novo
     public MenuItemBuilder withRestaurantId(Long restaurantId) {
         this.restaurantId = restaurantId;
         return this;
     }
 
     public MenuItem build() {
-        return new MenuItem(
-                id,
-                name,
-                description,
-                price,
-                restaurantOnly,
-                photoPath
-        );
+        return new MenuItem(id, name, description, price, restaurantOnly, photoPath);
     }
 
     public MenuItemInput buildInput() {
-        return new MenuItemInput(
-                name,
-                description,
-                price,
-                restaurantOnly,
-                photoPath
-        );
+        return new MenuItemInput(name, description, price, restaurantOnly, photoPath);
+    }
+
+    // ✅ novo: usado pelos seus testes
+    public CreateMenuItemInput buildCreateInput() {
+        return buildCreateInput(Objects.requireNonNull(restaurantId, "restaurantId cannot be null"));
+    }
+
+    public CreateMenuItemInput buildCreateInput(Long restaurantId) {
+        return new CreateMenuItemInput(name, description, price, restaurantOnly, photoPath, restaurantId);
     }
 
     public UpdateMenuItemInput buildUpdateInput() {
-        return new UpdateMenuItemInput(
-                id,
-                name,
-                description,
-                price,
-                restaurantOnly,
-                photoPath
-        );
+        return new UpdateMenuItemInput(id, name, description, price, restaurantOnly, photoPath);
     }
 
-
-    public CreateMenuItemInput buildCreateInput() {
-        return new CreateMenuItemInput(
-                name,
-                description,
-                price,
-                restaurantOnly,
-                photoPath,
-                restaurantId
-        );
-    }
-
-    // opcional: útil quando você quer passar restaurantId direto sem mutar o builder
-    public CreateMenuItemInput buildCreateInput(Long restaurantId) {
-        return new CreateMenuItemInput(
-                name,
-                description,
-                price,
-                restaurantOnly,
-                photoPath,
-                restaurantId
-        );
+    public MenuItemOutput buildOutput(Long restaurantId) {
+        return new MenuItemOutput(id, name, description, price, restaurantOnly, photoPath, restaurantId);
     }
 }

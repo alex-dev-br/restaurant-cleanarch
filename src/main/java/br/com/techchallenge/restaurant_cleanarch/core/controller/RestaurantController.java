@@ -4,7 +4,8 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateRestaurantInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateRestaurantInput;
-import br.com.techchallenge.restaurant_cleanarch.core.outbound.*;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantManagementOutput;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantPublicOutput;
 import br.com.techchallenge.restaurant_cleanarch.core.presenter.RestaurantPresenter;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.*;
 
@@ -70,7 +71,6 @@ public class RestaurantController {
         var restaurant = getRestaurantManagementByIdUseCase.execute(id);
         return RestaurantPresenter.toManagementOutput(restaurant);
     }
-
 
     // Mantido por compatibilidade
     public List<RestaurantPublicOutput> findAll() {

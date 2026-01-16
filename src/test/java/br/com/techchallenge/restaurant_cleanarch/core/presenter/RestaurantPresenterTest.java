@@ -28,7 +28,6 @@ class RestaurantPresenterTest {
 
         // OpeningHours
         OpeningHours openingHours = new OpeningHours(1L, DayOfWeek.MONDAY, LocalTime.of(10, 0), LocalTime.of(22, 0));
-        Set<OpeningHours> openingHoursSet = Set.of(openingHours);
 
         // MenuItem
         MenuItem menuItem = new MenuItemBuilder()
