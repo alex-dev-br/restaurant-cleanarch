@@ -7,17 +7,19 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.MenuItem
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.OpeningHoursBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.RestaurantBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.RestaurantNameIsAlreadyInUseException;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.UserCannotBeRestaurantOwnerException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateMenuItemInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateOpeningHoursInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateRestaurantInput;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +36,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
@@ -53,35 +56,51 @@ class UpdateRestaurantUseCaseTest {
     @Captor
     private ArgumentCaptor<Restaurant> restaurantCaptor;
 
-    @Test
-    @DisplayName("Deve atualizar restaurante e substituir coleções quando fornecidas")
-    void shouldUpdateRestaurantReplacingCollectionsWhenProvided() {
-        // Arrange
-        Long restaurantId = 1L;
+    private Long restaurantId;
 
-        Address oldAddress = new AddressBuilder().build();
+    private UUID ownerId;
+    private User owner;
 
-        User oldOwner = new UserBuilder()
+    private UUID oldEmployeeId;
+    private User oldEmployee;
+
+    private Restaurant current;
+
+    @BeforeEach
+    void setUp() {
+        restaurantId = 1L;
+
+        ownerId = UUID.randomUUID();
+        owner = new UserBuilder()
                 .withDefaults()
+                .withId(ownerId)
                 .withRole(UserRoles.RESTAURANT_OWNER)
                 .build();
 
-        UUID oldEmployeeId = UUID.randomUUID();
-        User oldEmployee = new UserBuilder()
+        oldEmployeeId = UUID.randomUUID();
+        oldEmployee = new UserBuilder()
                 .withDefaults()
                 .withId(oldEmployeeId)
                 .build();
 
-        Restaurant current = new RestaurantBuilder()
+        current = new RestaurantBuilder()
                 .withDefaults()
                 .withId(restaurantId)
                 .withName("Old Name")
-                .withAddress(oldAddress)
+                .withAddress(new AddressBuilder().build())
                 .withCuisineType("Old Cuisine")
-                .withOwner(oldOwner)
-                .withEmployees(Set.of(oldEmployee)) // ✅ CORRIGIDO
+                .withOwner(owner)
+                .withEmployees(Set.of(oldEmployee))
                 .build();
 
+        // deixa o restaurante “realista” (não é obrigatório para o use case, mas ajuda)
+        current.addOpeningHours(new OpeningHoursBuilder().build());
+        current.addMenuItem(new MenuItemBuilder().build());
+    }
+
+    @Test
+    @DisplayName("Deve atualizar restaurante e substituir coleções quando fornecidas")
+    void shouldUpdateRestaurantReplacingCollectionsWhenProvided() {
         UUID newOwnerId = UUID.randomUUID();
         User newOwner = new UserBuilder()
                 .withDefaults()
@@ -111,14 +130,13 @@ class UpdateRestaurantUseCaseTest {
 
         given(loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(current));
-        given(restaurantGateway.existsRestaurantWithName("New Name")).willReturn(false);
+        given(loggedUserGateway.requireCurrentUser()).willReturn(owner); // pode gerenciar (é dono)
         given(userGateway.findById(newOwnerId)).willReturn(Optional.of(newOwner));
+        given(restaurantGateway.existsRestaurantWithName("New Name")).willReturn(false);
         given(userGateway.findById(newEmployeeId)).willReturn(Optional.of(newEmployee));
 
-        // Act
         updateRestaurantUseCase.execute(input);
 
-        // Assert
         then(restaurantGateway).should().save(restaurantCaptor.capture());
         Restaurant saved = restaurantCaptor.getValue();
 
@@ -130,152 +148,154 @@ class UpdateRestaurantUseCaseTest {
         assertThat(saved.getEmployees()).containsExactlyInAnyOrder(newEmployee);
         assertThat(saved.getOpeningHours()).hasSize(1);
         assertThat(saved.getMenuItems()).hasSize(1);
+
+        then(loggedUserGateway).should().hasRole(RestaurantRoles.UPDATE_RESTAURANT);
+        then(restaurantGateway).should().findById(restaurantId);
+        then(loggedUserGateway).should().requireCurrentUser();
+        then(userGateway).should().findById(newOwnerId);
+        then(restaurantGateway).should().existsRestaurantWithName("New Name");
+        then(userGateway).should().findById(newEmployeeId);
     }
 
     @Test
-    @DisplayName("Deve manter employees atuais quando employees no input for null")
+    @DisplayName("Deve manter employees atuais quando employees no input for null (PATCH semantics)")
     void shouldKeepEmployeesWhenEmployeesIsNull() {
-        // Arrange
-        Long restaurantId = 1L;
-
-        User owner = new UserBuilder()
-                .withDefaults()
-                .withRole(UserRoles.RESTAURANT_OWNER)
-                .build();
-
-        UUID employeeId = UUID.randomUUID();
-        User employee = new UserBuilder()
-                .withDefaults()
-                .withId(employeeId)
-                .build();
-
-        Restaurant current = new RestaurantBuilder()
-                .withDefaults()
-                .withId(restaurantId)
-                .withName("Old Name")
-                .withAddress(new AddressBuilder().build())
-                .withCuisineType("Old Cuisine")
-                .withOwner(owner)
-                .withEmployees(Set.of(employee)) //
-                .build();
-
         UpdateRestaurantInput input = new UpdateRestaurantInput(
                 restaurantId,
-                "Old Name",
-                new AddressBuilder().buildInput(),
-                "Old Cuisine",
-                null,
-                null,
+                null, // mantém nome atual
+                null, // mantém address atual
+                null, // mantém cuisine atual
+                null, // mantém openingHours atual
+                null, // mantém menu atual
                 null, // employees null => mantém
-                owner.getId()
+                null  // owner null => mantém owner atual
         );
 
         given(loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(current));
-        given(userGateway.findById(owner.getId())).willReturn(Optional.of(owner));
+        given(loggedUserGateway.requireCurrentUser()).willReturn(owner);
+        given(userGateway.findById(ownerId)).willReturn(Optional.of(owner));
 
-        // Act
         updateRestaurantUseCase.execute(input);
-
-        // Assert
-        then(userGateway).should(times(1)).findById(owner.getId());
-        then(userGateway).shouldHaveNoMoreInteractions();
 
         then(restaurantGateway).should().save(restaurantCaptor.capture());
         Restaurant saved = restaurantCaptor.getValue();
 
-        assertThat(saved.getEmployees()).containsExactlyInAnyOrder(employee);
+        assertThat(saved.getEmployees()).containsExactlyInAnyOrder(oldEmployee);
+        assertThat(saved.getOwner()).isEqualTo(owner);
+
+        // nome não mudou -> NÃO deve consultar existsRestaurantWithName
+        then(restaurantGateway).should(never()).existsRestaurantWithName(anyString());
+
+        // employees null -> NÃO consulta employee no gateway
+        then(userGateway).should(times(1)).findById(ownerId);
+        then(userGateway).shouldHaveNoMoreInteractions();
     }
 
     @Test
     @DisplayName("Deve lançar BusinessException quando employee não existir e não salvar")
     void shouldThrowWhenEmployeeNotFound() {
-        // Arrange
-        Long restaurantId = 1L;
-
-        UUID ownerId = UUID.randomUUID();
-        User owner = new UserBuilder()
-                .withDefaults()
-                .withId(ownerId)
-                .withRole(UserRoles.RESTAURANT_OWNER)
-                .build();
-
-        Restaurant current = new RestaurantBuilder()
-                .withDefaults()
-                .withId(restaurantId)
-                .withName("Old Name")
-                .withAddress(new AddressBuilder().build())
-                .withCuisineType("Old Cuisine")
-                .withOwner(owner)
-                .withEmployees(Set.of()) // ✅ CORRIGIDO
-                .build();
-
         UUID missingEmployeeId = UUID.randomUUID();
 
         UpdateRestaurantInput input = new UpdateRestaurantInput(
                 restaurantId,
-                "Old Name",
-                new AddressBuilder().buildInput(),
-                "Old Cuisine",
+                null,
+                null,
+                null,
                 null,
                 null,
                 Set.of(missingEmployeeId),
-                ownerId
+                null
         );
 
         given(loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(current));
+        given(loggedUserGateway.requireCurrentUser()).willReturn(owner);
         given(userGateway.findById(ownerId)).willReturn(Optional.of(owner));
         given(userGateway.findById(missingEmployeeId)).willReturn(Optional.empty());
 
-        // Act / Assert
         assertThatThrownBy(() -> updateRestaurantUseCase.execute(input))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("Employee " + missingEmployeeId + " not found.");
 
-        then(restaurantGateway).should().findById(restaurantId);
-        then(restaurantGateway).should(never()).save(any());
+        then(restaurantGateway).should(never()).save(any(Restaurant.class));
     }
 
     @Test
     @DisplayName("Deve lançar OperationNotAllowedException quando usuário não tem role (UseCaseBase)")
     void shouldThrowOperationNotAllowedWhenUserHasNoRole() {
-        // Arrange
         given(loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT)).willReturn(false);
 
-        // Act / Assert
         assertThatThrownBy(() -> updateRestaurantUseCase.execute(
-                new UpdateRestaurantInput(1L, "x", null, "y", null, null, null, null)
+                new UpdateRestaurantInput(restaurantId, "x", null, "y", null, null, null, null)
         ))
                 .isInstanceOf(OperationNotAllowedException.class)
-                .hasMessageContaining("The current user does not have permission to perform this action.");
+                .hasMessageContaining("permission to perform this action");
 
         then(restaurantGateway).shouldHaveNoInteractions();
         then(userGateway).shouldHaveNoInteractions();
+        then(loggedUserGateway).should(never()).requireCurrentUser();
     }
 
     @Test
-    @DisplayName("Deve permitir owner estar em employees e evitar dupla consulta via cache")
-    void shouldAllowOwnerToBeInEmployees() {
-        // Arrange
-        Long restaurantId = 1L;
+    @DisplayName("Deve lançar OperationNotAllowedException quando usuário logado não é owner nem employee")
+    void shouldThrowOperationNotAllowedWhenCurrentUserCannotManage() {
+        User outsider = new UserBuilder().withDefaults().withId(UUID.randomUUID()).build();
 
-        UUID ownerId = UUID.randomUUID();
-        User owner = new UserBuilder()
-                .withDefaults()
-                .withId(ownerId)
-                .withRole(UserRoles.RESTAURANT_OWNER)
-                .build();
+        UpdateRestaurantInput input = new UpdateRestaurantInput(
+                restaurantId,
+                "Any",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
 
-        Restaurant current = new RestaurantBuilder()
-                .withDefaults()
-                .withId(restaurantId)
-                .withName("Old Name")
-                .withAddress(new AddressBuilder().build())
-                .withCuisineType("Old Cuisine")
-                .withOwner(owner)
-                .withEmployees(Set.of()) // ✅ CORRIGIDO
-                .build();
+        given(loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT)).willReturn(true);
+        given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(current));
+        given(loggedUserGateway.requireCurrentUser()).willReturn(outsider);
+
+        assertThatThrownBy(() -> updateRestaurantUseCase.execute(input))
+                .isInstanceOf(OperationNotAllowedException.class)
+                .hasMessageContaining("permission to perform this action");
+
+        then(userGateway).shouldHaveNoInteractions();
+        then(restaurantGateway).should(never()).existsRestaurantWithName(anyString());
+        then(restaurantGateway).should(never()).save(any(Restaurant.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar RestaurantNameIsAlreadyInUseException quando nome mudar e já existir")
+    void shouldThrowWhenRestaurantNameAlreadyInUse() {
+        UpdateRestaurantInput input = new UpdateRestaurantInput(
+                restaurantId,
+                "New Name",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+
+        given(loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT)).willReturn(true);
+        given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(current));
+        given(loggedUserGateway.requireCurrentUser()).willReturn(owner);
+        given(userGateway.findById(ownerId)).willReturn(Optional.of(owner));
+        given(restaurantGateway.existsRestaurantWithName("New Name")).willReturn(true);
+
+        assertThatThrownBy(() -> updateRestaurantUseCase.execute(input))
+                .isInstanceOf(RestaurantNameIsAlreadyInUseException.class);
+
+        then(restaurantGateway).should(never()).save(any(Restaurant.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar BusinessException quando novo owner não for encontrado")
+    void shouldThrowWhenNewOwnerNotFound() {
+        UUID newOwnerId = UUID.randomUUID();
 
         UpdateRestaurantInput input = new UpdateRestaurantInput(
                 restaurantId,
@@ -284,34 +304,58 @@ class UpdateRestaurantUseCaseTest {
                 null,
                 null,
                 null,
-                Set.of(ownerId), // owner tb em employees
-                ownerId
+                null,
+                newOwnerId
         );
 
         given(loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(current));
-        given(userGateway.findById(ownerId)).willReturn(Optional.of(owner));
+        given(loggedUserGateway.requireCurrentUser()).willReturn(owner);
+        given(userGateway.findById(newOwnerId)).willReturn(Optional.empty());
 
-        // Act
-        updateRestaurantUseCase.execute(input);
+        assertThatThrownBy(() -> updateRestaurantUseCase.execute(input))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("Owner not found.");
 
-        // Assert
-        then(userGateway).should(times(1)).findById(ownerId); // cache evita 2x
-        then(userGateway).shouldHaveNoMoreInteractions();
+        then(restaurantGateway).should(never()).existsRestaurantWithName(anyString());
+        then(restaurantGateway).should(never()).save(any(Restaurant.class));
+    }
 
-        then(restaurantGateway).should().save(restaurantCaptor.capture());
-        Restaurant saved = restaurantCaptor.getValue();
+    @Test
+    @DisplayName("Deve lançar UserCannotBeRestaurantOwnerException quando novo owner não pode ser dono")
+    void shouldThrowWhenUserCannotBeOwner() {
+        UUID newOwnerId = UUID.randomUUID();
+        User newOwner = new UserBuilder().withDefaults().withId(newOwnerId).build(); // sem role de owner
 
-        assertThat(saved.getEmployees()).contains(owner);
+        UpdateRestaurantInput input = new UpdateRestaurantInput(
+                restaurantId,
+                null, // nome não muda
+                null,
+                null,
+                null,
+                null,
+                null,
+                newOwnerId
+        );
+
+        given(loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT)).willReturn(true);
+        given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(current));
+        given(loggedUserGateway.requireCurrentUser()).willReturn(owner);
+        given(userGateway.findById(newOwnerId)).willReturn(Optional.of(newOwner));
+
+        assertThatThrownBy(() -> updateRestaurantUseCase.execute(input))
+                .isInstanceOf(UserCannotBeRestaurantOwnerException.class);
+
+        then(restaurantGateway).should(never()).existsRestaurantWithName(anyString());
+        then(restaurantGateway).should(never()).save(any(Restaurant.class));
     }
 
     @Test
     @DisplayName("Deve lançar NullPointerException quando input for null (UseCaseBase)")
     void shouldThrowWhenInputIsNull() {
-        // Arrange / Act / Assert
         assertThatThrownBy(() -> updateRestaurantUseCase.execute(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("Input cannot be null.");
+                .hasMessageContaining("Input cannot be null");
 
         then(loggedUserGateway).shouldHaveNoInteractions();
         then(restaurantGateway).shouldHaveNoInteractions();

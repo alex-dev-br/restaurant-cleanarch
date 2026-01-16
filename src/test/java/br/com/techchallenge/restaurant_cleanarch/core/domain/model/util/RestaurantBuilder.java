@@ -6,10 +6,16 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.AddressOutput;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.MenuItemOutput;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.OpeningHoursOutput;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantPublicOutput;
 
-import java.time.DayOfWeek;
-import java.time.LocalTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class RestaurantBuilder {
 
@@ -18,7 +24,7 @@ public class RestaurantBuilder {
     private Address address;
     private String cuisineType;
     private Set<OpeningHours> openingHours;
-    private Set<MenuItem> menu;
+    private Set<MenuItem> menuItems;
     private Set<User> employees;
     private User owner;
 
@@ -27,44 +33,28 @@ public class RestaurantBuilder {
     }
 
     public RestaurantBuilder withDefaults() {
-        this.id = null;
-        this.name = "Restaurante Exemplo";
+        this.id = 1L;
+        this.name = "Restaurant Name";
         this.address = new AddressBuilder().build();
-        this.cuisineType = "Italiana";
-
-        this.openingHours = new HashSet<>(Set.of(
-                new OpeningHours(1L, DayOfWeek.MONDAY, LocalTime.of(11, 0), LocalTime.of(20, 30)),
-                new OpeningHours(2L, DayOfWeek.TUESDAY, LocalTime.of(11, 0), LocalTime.of(20, 0)),
-                new OpeningHours(3L, DayOfWeek.WEDNESDAY, LocalTime.of(11, 0), LocalTime.of(20, 0)),
-                new OpeningHours(4L, DayOfWeek.THURSDAY, LocalTime.of(11, 0), LocalTime.of(20, 0)),
-                new OpeningHours(5L, DayOfWeek.FRIDAY, LocalTime.of(11, 0), LocalTime.of(22, 0)),
-                new OpeningHours(6L, DayOfWeek.SATURDAY, LocalTime.of(11, 0), LocalTime.of(22, 0))
-        ));
-
-        this.menu = new HashSet<>();
+        this.cuisineType = "Cuisine Type";
+        this.openingHours = new HashSet<>();
+        this.menuItems = new HashSet<>();
         this.employees = new HashSet<>();
-
         this.owner = new UserBuilder()
-                .withDefaults()
                 .withRole(UserRoles.RESTAURANT_OWNER)
-                .withName("Dono do Restaurante")
-                .withEmail("dono@exemplo.com")
                 .build();
-
         return this;
     }
 
     public RestaurantBuilder copy() {
-        RestaurantBuilder b = new RestaurantBuilder().withDefaults();
+        var b = new RestaurantBuilder().withDefaults();
         b.id = this.id;
         b.name = this.name;
         b.address = this.address;
         b.cuisineType = this.cuisineType;
-
         b.openingHours = new HashSet<>(this.openingHours);
-        b.menu = new HashSet<>(this.menu);
+        b.menuItems = new HashSet<>(this.menuItems);
         b.employees = new HashSet<>(this.employees);
-
         b.owner = this.owner;
         return b;
     }
@@ -99,8 +89,8 @@ public class RestaurantBuilder {
         return this;
     }
 
-    public RestaurantBuilder withMenu(Set<MenuItem> menu) {
-        this.menu = (menu == null) ? new HashSet<>() : new HashSet<>(menu);
+    public RestaurantBuilder withMenuItems(Set<MenuItem> menuItems) {
+        this.menuItems = (menuItems == null) ? new HashSet<>() : new HashSet<>(menuItems);
         return this;
     }
 
@@ -109,7 +99,6 @@ public class RestaurantBuilder {
         return this;
     }
 
-    /** Atalho super útil para testes de autorização por UUID */
     public RestaurantBuilder withOwnerId(UUID ownerId) {
         this.owner = new UserBuilder()
                 .withDefaults()
@@ -120,7 +109,7 @@ public class RestaurantBuilder {
     }
 
     public RestaurantBuilder withEmployee(User employee) {
-        this.employees.add(employee);
+        if (employee != null) this.employees.add(employee);
         return this;
     }
 
@@ -132,11 +121,42 @@ public class RestaurantBuilder {
     public Restaurant build() {
         var restaurant = new Restaurant(id, name, address, cuisineType, owner);
 
-        // evita NPE se alguém setar null via builder
         restaurant.addOpeningHours(openingHours == null ? Set.of() : openingHours);
-        restaurant.addMenuItems(menu == null ? Set.of() : menu);
+        restaurant.addMenuItems(menuItems == null ? Set.of() : menuItems);
         restaurant.addEmployees(employees == null ? Set.of() : employees);
 
         return restaurant;
+    }
+
+    public RestaurantPublicOutput buildPublicOutput() {
+        var addressOutput = address == null
+                ? null
+                : new AddressOutput(
+                address.getStreet(),
+                address.getNumber(),
+                address.getCity(),
+                address.getState(),
+                address.getZipCode(),
+                address.getComplement()
+        );
+
+        Set<OpeningHoursOutput> openingHoursOutput = openingHours == null ? Set.of() :
+                openingHours.stream()
+                        .map(oh -> new OpeningHoursOutput(oh.getId(), oh.getDayOfWeek(), oh.getOpenHour(), oh.getCloseHour()))
+                        .collect(Collectors.toSet());
+
+        Set<MenuItemOutput> menuItemsOutput = menuItems == null ? Set.of() :
+                menuItems.stream()
+                        .map(m -> new MenuItemOutput(m.getId(), m.getName(), m.getDescription(), m.getPrice(), m.getRestaurantOnly(), m.getPhotoPath(), id))
+                        .collect(Collectors.toSet());
+
+        return new RestaurantPublicOutput(
+                id,
+                name,
+                addressOutput,
+                cuisineType,
+                openingHoursOutput,
+                menuItemsOutput
+        );
     }
 }

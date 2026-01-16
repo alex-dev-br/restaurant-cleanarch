@@ -2,7 +2,9 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.RestaurantBuilder;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
@@ -36,17 +38,19 @@ class ListRestaurantsUseCaseTest {
     @Test
     @DisplayName("Deve retornar lista de restaurantes quando usuário tiver permissão")
     void shouldReturnRestaurantsWhenUserHasPermission() {
-        // Arrange
-        Restaurant r1 = new RestaurantBuilder().withName("R1").build();
-        Restaurant r2 = new RestaurantBuilder().withName("R2").build();
+        var owner = new UserBuilder()
+                .withDefaults()
+                .withRole(UserRoles.RESTAURANT_OWNER)
+                .build();
+
+        Restaurant r1 = new RestaurantBuilder().withDefaults().withName("R1").withOwner(owner).build();
+        Restaurant r2 = new RestaurantBuilder().withDefaults().withName("R2").withOwner(owner).build();
 
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findAll()).willReturn(List.of(r1, r2));
 
-        // Act
         List<Restaurant> result = useCase.execute();
 
-        // Assert
         assertThat(result).containsExactly(r1, r2);
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
@@ -56,13 +60,11 @@ class ListRestaurantsUseCaseTest {
     @Test
     @DisplayName("Deve lançar OperationNotAllowedException quando usuário não tiver permissão")
     void shouldThrowOperationNotAllowedWhenUserHasNoPermission() {
-        // Arrange
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(false);
 
-        // Act & Assert
         assertThatThrownBy(() -> useCase.execute())
                 .isInstanceOf(OperationNotAllowedException.class)
-                .hasMessageContaining("does not have permission to perform this action");
+                .hasMessageContaining("The current user does not have permission");
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
         then(restaurantGateway).shouldHaveNoInteractions();

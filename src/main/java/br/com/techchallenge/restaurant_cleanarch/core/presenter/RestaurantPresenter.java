@@ -43,9 +43,9 @@ public class RestaurantPresenter {
                         .map(menuItem -> MenuItemPresenter.toOutput(menuItem, restaurantId))
                         .collect(Collectors.toUnmodifiableSet()),
                 restaurant.getEmployees().stream()
-                        .map(u -> new UserSummaryOutput(u.getId(), u.getName()))
+                        .map(UserPresenter::toSummaryOutput)
                         .collect(Collectors.toUnmodifiableSet()),
-            restaurant.getOwner().getId()
+                UserPresenter.toSummaryOutput(restaurant.getOwner())
         );
     }
 }

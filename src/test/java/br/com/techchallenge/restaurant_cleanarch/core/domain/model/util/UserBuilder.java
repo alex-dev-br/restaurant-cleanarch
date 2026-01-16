@@ -5,6 +5,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.UserSummaryOutput;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,7 +20,6 @@ public class UserBuilder {
     private String email;
     private Address address;
 
-    /** Metadata do tipo (id/nome) – roles vêm do builder */
     private Long userTypeId;
     private String userTypeName;
 
@@ -30,7 +30,6 @@ public class UserBuilder {
         withDefaults();
     }
 
-    /** Permite reutilizar o mesmo builder em vários testes sem “vazar” estado. */
     public UserBuilder withDefaults() {
         this.id = UUID.randomUUID();
         this.name = "João Silva";
@@ -40,13 +39,13 @@ public class UserBuilder {
         this.userTypeId = 1L;
         this.userTypeName = "Usuário";
 
-        this.roles.clear(); // sem ADMIN por padrão (ok)
+        this.roles.clear();
         this.passwordHash = "HASHED_DEFAULT";
         return this;
     }
 
     public UserBuilder copy() {
-        UserBuilder b = new UserBuilder().withDefaults();
+        var b = new UserBuilder().withDefaults();
         b.id = this.id;
         b.name = this.name;
         b.email = this.email;
@@ -60,8 +59,8 @@ public class UserBuilder {
         return b;
     }
 
-    public UserBuilder withRole(ForGettingRoleName forGettingRoleName) {
-        this.roles.add(new Role(null, forGettingRoleName.getRoleName()));
+    public UserBuilder withRole(ForGettingRoleName roleName) {
+        this.roles.add(new Role(null, roleName.getRoleName()));
         return this;
     }
 
@@ -119,9 +118,7 @@ public class UserBuilder {
         this.userTypeName = userType.getName();
 
         this.roles.clear();
-        if (userType.getRoles() != null) {
-            this.roles.addAll(userType.getRoles());
-        }
+        if (userType.getRoles() != null) this.roles.addAll(userType.getRoles());
         return this;
     }
 
@@ -131,14 +128,15 @@ public class UserBuilder {
     }
 
     public User build() {
-        // garante invariantes do domínio (UserType precisa ter >= 1 role)
         Set<Role> rolesCopy = new HashSet<>(roles);
         if (rolesCopy.isEmpty()) {
             rolesCopy.add(new Role(null, DEFAULT_ROLE));
         }
-
         UserType type = new UserType(userTypeId, userTypeName, rolesCopy);
-
         return new User(id, name, email, address, type, passwordHash);
+    }
+
+    public UserSummaryOutput buildSummaryOutput() {
+        return new UserSummaryOutput(id, name);
     }
 }

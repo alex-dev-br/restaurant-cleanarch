@@ -39,25 +39,24 @@ class GetRestaurantByIdUseCaseTest {
     @Test
     @DisplayName("Deve retornar restaurante quando existir e usuário tiver permissão")
     void shouldReturnRestaurantWhenExistsAndUserHasPermission() {
-        // Arrange
         Long restaurantId = 1L;
 
         var owner = new UserBuilder()
-                .withRole(UserRoles.RESTAURANT_OWNER) // importante pro domínio
+                .withDefaults()
+                .withRole(UserRoles.RESTAURANT_OWNER)
                 .build();
 
         Restaurant restaurant = new RestaurantBuilder()
+                .withDefaults()
                 .withId(restaurantId)
-                .withOwner(owner) // garante construção válida
+                .withOwner(owner)
                 .build();
 
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(restaurant));
 
-        // Act
         Restaurant result = getRestaurantByIdUseCase.execute(restaurantId);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(restaurantId);
 
@@ -68,14 +67,12 @@ class GetRestaurantByIdUseCaseTest {
     @Test
     @DisplayName("Deve lançar OperationNotAllowedException quando usuário não tem permissão")
     void shouldThrowOperationNotAllowedWhenUserHasNoPermission() {
-        // Arrange
         Long restaurantId = 1L;
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(false);
 
-        // Act / Assert
         assertThatThrownBy(() -> getRestaurantByIdUseCase.execute(restaurantId))
                 .isInstanceOf(OperationNotAllowedException.class)
-                .hasMessageContaining("does not have permission to perform this action");
+                .hasMessageContaining("The current user does not have permission");
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
         then(restaurantGateway).shouldHaveNoInteractions();
@@ -84,13 +81,11 @@ class GetRestaurantByIdUseCaseTest {
     @Test
     @DisplayName("Deve lançar BusinessException quando restaurante não existir")
     void shouldThrowBusinessExceptionWhenRestaurantNotFound() {
-        // Arrange
         Long restaurantId = 1L;
 
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.empty());
 
-        // Act / Assert
         assertThatThrownBy(() -> getRestaurantByIdUseCase.execute(restaurantId))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("Restaurant not found.");
@@ -100,12 +95,11 @@ class GetRestaurantByIdUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve lançar NullPointerException quando input é nulo (validação do UseCaseBase)")
+    @DisplayName("Deve lançar NullPointerException quando input é nulo (UseCaseBase)")
     void shouldThrowNullPointerExceptionWhenInputIsNull() {
-        // Act / Assert
         assertThatThrownBy(() -> getRestaurantByIdUseCase.execute(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("Input cannot be null.");
+                .hasMessageContaining("Input cannot be null");
 
         then(loggedUserGateway).shouldHaveNoInteractions();
         then(restaurantGateway).shouldHaveNoInteractions();

@@ -2,6 +2,7 @@ package br.com.techchallenge.restaurant_cleanarch.core.domain.model.util;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.AddressInput;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.AddressOutput;
 
 public class AddressBuilder {
 
@@ -13,12 +14,28 @@ public class AddressBuilder {
     private String complement;
 
     public AddressBuilder() {
-        this.street = "Rua Exemplo";
+        withDefaults();
+    }
+
+    public AddressBuilder withDefaults() {
+        this.street = "Street";
         this.number = "123";
-        this.city = "São Paulo";
-        this.state = "SP";
-        this.zipCode = "01000-000";
-        this.complement = "Apto 101";
+        this.city = "City";
+        this.state = "State";
+        this.zipCode = "12345678";
+        this.complement = "Complement";
+        return this;
+    }
+
+    public AddressBuilder copy() {
+        var b = new AddressBuilder().withDefaults();
+        b.street = this.street;
+        b.number = this.number;
+        b.city = this.city;
+        b.state = this.state;
+        b.zipCode = this.zipCode;
+        b.complement = this.complement;
+        return b;
     }
 
     public AddressBuilder withStreet(String street) {
@@ -57,5 +74,9 @@ public class AddressBuilder {
 
     public AddressInput buildInput() {
         return new AddressInput(street, number, city, state, zipCode, complement);
+    }
+
+    public AddressOutput buildOutput() {
+        return new AddressOutput(street, number, city, state, zipCode, complement);
     }
 }
