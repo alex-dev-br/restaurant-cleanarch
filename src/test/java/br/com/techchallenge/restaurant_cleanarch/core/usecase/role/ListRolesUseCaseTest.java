@@ -73,7 +73,7 @@ class ListRolesUseCaseTest {
 
         assertThatThrownBy(() -> listRolesUseCase.execute())
                 .isInstanceOf(OperationNotAllowedException.class)
-                .hasMessage("The current user does not have permission to get all roles.");
+                .hasMessage("The current user does not have permission to perform this action.");
 
         then(loggedUserGateway).should().hasRole(RoleRoles.VIEW_ROLE);
         then(roleGateway).should(never()).findAll();

@@ -4,17 +4,17 @@ import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 
 import java.util.Objects;
 
-public abstract class UseCaseBase<T, R> extends UseCase {
+public abstract class UseCaseWithoutOutput<T> extends UseCase {
 
-    protected UseCaseBase(LoggedUserGateway loggedUserGateway) {
+    protected UseCaseWithoutOutput(LoggedUserGateway loggedUserGateway) {
         super(loggedUserGateway);
     }
 
-    public R execute(T input) {
+    public void execute(T input) {
         Objects.requireNonNull(input,  "Input cannot be null.");
         validateAccess();
-        return doExecute(input);
+        doExecute(input);
     }
 
-    protected abstract R doExecute(T input);
+    protected abstract void doExecute(T input);
 }
