@@ -12,12 +12,12 @@ import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RoleGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserTypeGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateUserTypeInput;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseWithoutOutput;
 
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class UpdateUserTypeUseCase extends UseCaseBase<UpdateUserTypeInput, Void> {
+public class UpdateUserTypeUseCase extends UseCaseWithoutOutput<UpdateUserTypeInput> {
 
     private final RoleGateway roleGateway;
     private final UserTypeGateway userTypeGateway;
@@ -29,17 +29,12 @@ public class UpdateUserTypeUseCase extends UseCaseBase<UpdateUserTypeInput, Void
     }
 
     @Override
-    public Void execute(UpdateUserTypeInput input) {
-        return super.execute(input);
-    }
-
-    @Override
     protected ForGettingRoleName getRequiredRole() {
         return UserTypeRoles.UPDATE_USER_TYPE;
     }
 
     @Override
-    protected Void doExecute(UpdateUserTypeInput input) {
+    protected void doExecute(UpdateUserTypeInput input) {
         userTypeGateway.findById(input.id())
                 .orElseThrow(() -> new BusinessException("User type not found."));
 
@@ -66,6 +61,5 @@ public class UpdateUserTypeUseCase extends UseCaseBase<UpdateUserTypeInput, Void
         });
 
         userTypeGateway.save(new UserType(input.id(), input.name(), roles));
-        return null;
     }
 }

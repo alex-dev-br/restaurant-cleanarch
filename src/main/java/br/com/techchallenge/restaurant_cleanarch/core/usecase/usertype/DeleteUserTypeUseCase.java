@@ -20,11 +20,6 @@ public class DeleteUserTypeUseCase extends UseCaseBase<Long, Void> {
     }
 
     @Override
-    public Void execute(Long id) {
-        return super.execute(id);
-    }
-
-    @Override
     protected ForGettingRoleName getRequiredRole() {
         return UserTypeRoles.DELETE_USER_TYPE;
     }

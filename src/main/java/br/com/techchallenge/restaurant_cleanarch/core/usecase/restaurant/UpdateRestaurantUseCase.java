@@ -14,13 +14,16 @@ import br.com.techchallenge.restaurant_cleanarch.core.exception.UserCannotBeRest
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
-import br.com.techchallenge.restaurant_cleanarch.core.inbound.*;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.AddressInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateMenuItemInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateOpeningHoursInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateRestaurantInput;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseWithoutOutput;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class UpdateRestaurantUseCase extends UseCaseBase<UpdateRestaurantInput, Void> {
+public class UpdateRestaurantUseCase extends UseCaseWithoutOutput<UpdateRestaurantInput> {
 
     private final RestaurantGateway restaurantGateway;
     private final UserGateway userGateway;
@@ -41,7 +44,7 @@ public class UpdateRestaurantUseCase extends UseCaseBase<UpdateRestaurantInput, 
     }
 
     @Override
-    protected Void doExecute(UpdateRestaurantInput input) {
+    protected void doExecute(UpdateRestaurantInput input) {
         Objects.requireNonNull(input, "UpdateRestaurantInput cannot be null.");
         Long restaurantId = Objects.requireNonNull(input.id(), "Restaurant id cannot be null.");
 
@@ -97,7 +100,6 @@ public class UpdateRestaurantUseCase extends UseCaseBase<UpdateRestaurantInput, 
         updated.addEmployees(targetEmployees);
 
         restaurantGateway.save(updated);
-        return null;
     }
 
     private OpeningHours buildOpeningHours(UpdateOpeningHoursInput input) {

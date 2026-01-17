@@ -11,7 +11,6 @@ import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
 
 import java.util.Objects;
-import java.util.UUID;
 
 public class GetRestaurantManagementByIdUseCase extends UseCaseBase<Long, Restaurant> {
 
@@ -38,18 +37,8 @@ public class GetRestaurantManagementByIdUseCase extends UseCaseBase<Long, Restau
                 .orElseThrow(() -> new BusinessException("Restaurant not found."));
 
         User currentUser = loggedUserGateway.requireCurrentUser();
-        UUID currentUserId = currentUser.getId();
 
-        boolean isOwner = restaurant.getOwner() != null
-                && restaurant.getOwner().getId() != null
-                && restaurant.getOwner().getId().equals(currentUserId);
-
-        boolean isEmployee = restaurant.getEmployees() != null
-                && restaurant.getEmployees().stream()
-                .map(User::getId)
-                .anyMatch(currentUserId::equals);
-
-        if (!isOwner && !isEmployee) {
+        if (!restaurant.canBeManagedBy(currentUser)) {
             throw new OperationNotAllowedException(
                     "Access denied. User is neither owner nor employee of the restaurant."
             );
