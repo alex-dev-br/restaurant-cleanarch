@@ -2,41 +2,40 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase.user;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserManagementRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.*;
-import br.com.techchallenge.restaurant_cleanarch.core.gateway.*;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.ResourceNotFoundException;
+import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
+import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
+import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserTypeGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateUserInput;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseWithoutOutput;
 
-import java.util.*;
+import java.util.Objects;
+import java.util.UUID;
 
-public class UpdateUserUseCase {
+public class UpdateUserUseCase extends UseCaseWithoutOutput<UpdateUserInput> {
 
     private final UserGateway userGateway;
     private final UserTypeGateway userTypeGateway;
-    private final LoggedUserGateway loggedUserGateway;
 
-    public UpdateUserUseCase(
-            UserGateway userGateway,
-            UserTypeGateway userTypeGateway,
-            LoggedUserGateway loggedUserGateway
-    ) {
+    public UpdateUserUseCase(UserGateway userGateway, UserTypeGateway userTypeGateway, LoggedUserGateway loggedUserGateway) {
+        super(loggedUserGateway);
         Objects.requireNonNull(userGateway, "userGateway must not be null");
         Objects.requireNonNull(userTypeGateway, "userTypeGateway must not be null");
-        Objects.requireNonNull(loggedUserGateway, "loggedUserGateway must not be null");
-
         this.userGateway = userGateway;
         this.userTypeGateway = userTypeGateway;
-        this.loggedUserGateway = loggedUserGateway;
     }
 
-    public User execute(UUID id, UpdateUserInput input) {
-        Objects.requireNonNull(id, "User ID must not be null");
-        Objects.requireNonNull(input, "UpdateUserInput must not be null");
+    @Override
+    protected ForGettingRoleName getRequiredRole() {
+        return UserManagementRoles.UPDATE_USER;
+    }
 
-        if(!loggedUserGateway.hasRole(UserManagementRoles.UPDATE_USER)) {
-            throw new OperationNotAllowedException("The current user does not have permission to update users.");
-        }
-
+    @Override
+    public void doExecute(UpdateUserInput input) {
+        UUID id = Objects.requireNonNull(input.id(), "User UUID cannot be null.");
         User currentUser = userGateway.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with ID " + id + " not found."));
 
@@ -80,7 +79,7 @@ public class UpdateUserUseCase {
                 currentUser.getPasswordHash()   // senha não é alterada aqui (fluxo separado para isso)
         );
 
-        return userGateway.save(updatedUser);
+        userGateway.save(updatedUser);
     }
 
 }

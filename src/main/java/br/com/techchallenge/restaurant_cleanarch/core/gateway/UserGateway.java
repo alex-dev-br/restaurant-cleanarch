@@ -1,6 +1,8 @@
 package br.com.techchallenge.restaurant_cleanarch.core.gateway;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 
 import java.util.*;
 
@@ -11,7 +13,7 @@ public interface UserGateway {
 
     User save(User user);
 
-    List<User> findAll();
+    Page<User> findAll(PagedQuery<Void> input);
 
     boolean existsByEmail(String email);
 
