@@ -25,4 +25,5 @@ public class ListRestaurantsPagedUseCase extends UseCaseBase<PagedQuery<Void>, P
     protected ForGettingRoleName getRequiredRole() {
         return RestaurantRoles.VIEW_RESTAURANT;
     }
+
 }

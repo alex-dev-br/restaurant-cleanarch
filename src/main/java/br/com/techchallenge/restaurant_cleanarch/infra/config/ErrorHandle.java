@@ -7,6 +7,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -35,6 +36,12 @@ public class ErrorHandle {
     @ExceptionHandler(AccessDeniedException.class)
     public SimpleErroResponse handleAccessDeniedException(AccessDeniedException e) {
         return new SimpleErroResponse("Acesso negado.");
+    }
+
+    @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public SimpleErroResponse handleUsernameNotFoundException(UsernameNotFoundException e) {
+        return new SimpleErroResponse(e.getMessage());
     }
 
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
