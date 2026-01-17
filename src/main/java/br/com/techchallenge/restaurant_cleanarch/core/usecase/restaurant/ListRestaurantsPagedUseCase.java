@@ -26,8 +26,4 @@ public class ListRestaurantsPagedUseCase extends UseCaseBase<PagedQuery<Void>, P
         return RestaurantRoles.VIEW_RESTAURANT;
     }
 
-    @Override
-    protected boolean isPublicAccessAllowed() {
-        return true;
-    }
 }
