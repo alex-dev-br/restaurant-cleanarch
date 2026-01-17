@@ -9,7 +9,6 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Set;
 
@@ -21,8 +20,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Import({RoleGateWayAdapter.class})
 @ComponentScan(basePackageClasses = {RoleMapper.class})
 @DisplayName("Testes de Integração para RoleAdapter")
-@Sql(scripts = "/roles/CREATE_ROLES.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-@Sql(scripts = "/roles/CLEAR_ROLES.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class RoleGateWayAdapterTest {
 
     @Autowired

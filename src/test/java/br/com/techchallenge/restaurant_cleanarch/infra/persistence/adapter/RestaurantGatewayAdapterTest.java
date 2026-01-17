@@ -19,7 +19,6 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,8 +35,6 @@ import static org.assertj.core.api.Assertions.assertThat;
         UserTypeMapper.class,
         RoleMapper.class
 })
-@Sql(scripts = {"/roles/CREATE_ROLES.sql", "/user_type/CREATE_USER_TYPE.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@Sql(scripts = {"/user_type/CLEAR_USER_TYPE.sql", "/roles/CLEAR_ROLES.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 @DisplayName("Testes de Integração para RestaurantGatewayAdapter")
 class RestaurantGatewayAdapterTest {
 

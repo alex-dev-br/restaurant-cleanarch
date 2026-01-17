@@ -19,7 +19,6 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Optional;
 import java.util.Set;
@@ -30,8 +29,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @Import({UserTypeGatewayAdapter.class})
 @ComponentScan(basePackageClasses = {UserTypeMapper.class, RoleMapper.class})
-@Sql(scripts = {"/roles/CREATE_ROLES.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@Sql(scripts = {"/roles/CLEAR_ROLES.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 @DisplayName("Testes de Integração para UserTypeGatewayAdapter")
 class UserTypeGatewayAdapterTest {
 
