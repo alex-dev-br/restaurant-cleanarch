@@ -45,19 +45,14 @@ public class RestaurantRestController {
 
     @GetMapping
     public Page<RestaurantPublicOutput> listPaged(
+            @RequestParam(required = false) String cuisineType,
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize
     ) {
+        if (cuisineType != null && !cuisineType.isBlank()) {
+            return controller.findByCuisineType(cuisineType, pageNumber, pageSize);
+        }
         return controller.findAll(pageNumber, pageSize);
-    }
-
-    @GetMapping("/by-cuisine")
-    public Page<RestaurantPublicOutput> listByCuisine(
-            @RequestParam String cuisineType,
-            @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "10") int pageSize
-    ) {
-        return controller.findByCuisineType(cuisineType, pageNumber, pageSize);
     }
 
     @DeleteMapping("/{id}")
