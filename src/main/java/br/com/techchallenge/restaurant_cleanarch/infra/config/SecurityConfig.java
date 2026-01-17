@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 
@@ -22,27 +23,33 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 @EnableMethodSecurity(securedEnabled = true) // Habilita segurança em métodos
 public class SecurityConfig {
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
-        http.csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults())
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .formLogin(AbstractHttpConfigurer::disable)
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(req -> req
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers(
-                            "/v3/api-docs/**",
-                            "/swagger-ui/**",
-                            "/swagger-ui.html",
-                            "/actuator/health",
-                            "/api/v1/_ping"
-                    ).permitAll()
-                    .requestMatchers(HttpMethod.GET, "/restaurants", "/restaurants/*").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/roles").hasAuthority(RoleRoles.VIEW_ROLE.getRoleName())
-                    .anyRequest().authenticated() // Boa prática: fechar com uma regra padrão
-                );
-        http.exceptionHandling(customizer -> customizer.accessDeniedHandler(accessDeniedHandler()));
+        http
+            .cors(Customizer.withDefaults())
+            .formLogin(AbstractHttpConfigurer::disable)
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(req -> req
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/actuator/health",
+                        "/api/v1/_ping"
+                ).permitAll()
+                .requestMatchers(HttpMethod.GET, "/restaurants", "/restaurants/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/roles").hasAuthority(RoleRoles.VIEW_ROLE.getRoleName())
+                .anyRequest().authenticated() // Boa prática: fechar com uma regra padrão
+            )
+            .httpBasic(Customizer.withDefaults())
+            .csrf(AbstractHttpConfigurer::disable);
+        http.exceptionHandling(customizer ->
+            customizer.accessDeniedHandler(accessDeniedHandler())
+                    .authenticationEntryPoint(authenticationEntryPoint())
+        );
         return http.build();
     }
 
@@ -51,7 +58,16 @@ public class SecurityConfig {
             var writer = response.getWriter();
             response.setStatus(403);
             response.setContentType("application/json");
-            writer.write(new ObjectMapper().writeValueAsString(new SimpleErroResponse("The current user does not have permission.")));
+            writer.write(objectMapper.writeValueAsString(new SimpleErroResponse("The current user does not have permission.")));
+        };
+    }
+
+    private AuthenticationEntryPoint authenticationEntryPoint() {
+        return (request, response, authException) -> {
+            var writer = response.getWriter();
+            response.setStatus(401);
+            response.setContentType("application/json");
+            writer.write(objectMapper.writeValueAsString(new SimpleErroResponse("User not authenticated. Authentication is required to access this resource.")));
         };
     }
 }
