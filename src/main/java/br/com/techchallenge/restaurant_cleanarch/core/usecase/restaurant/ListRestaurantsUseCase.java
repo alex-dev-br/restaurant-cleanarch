@@ -28,4 +28,9 @@ public class ListRestaurantsUseCase extends UseCaseWithoutInput<List<Restaurant>
     protected ForGettingRoleName getRequiredRole() {
         return RestaurantRoles.VIEW_RESTAURANT;
     }
+
+    @Override
+    protected boolean isPublicAccessAllowed() {
+        return true;
+    }
 }
