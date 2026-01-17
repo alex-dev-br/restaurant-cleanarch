@@ -1,16 +1,17 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.user;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserManagementRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseWithoutInput;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
 
-import java.util.List;
 import java.util.Objects;
 
-public class ListUsersUseCase extends UseCaseWithoutInput<List<User>> {
+public class ListUsersUseCase extends UseCaseBase<PagedQuery<Void>, Page<User>> {
 
     private final UserGateway userGateway;
 
@@ -26,7 +27,7 @@ public class ListUsersUseCase extends UseCaseWithoutInput<List<User>> {
     }
 
     @Override
-    public List<User> doExecute() {
-        return userGateway.findAll();
+    protected Page<User> doExecute(PagedQuery<Void> input) {
+        return userGateway.findAll(input);
     }
 }

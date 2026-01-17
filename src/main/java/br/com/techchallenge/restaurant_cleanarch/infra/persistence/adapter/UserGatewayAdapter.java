@@ -1,13 +1,18 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.persistence.adapter;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.UserMapper;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public class UserGatewayAdapter implements UserGateway {
@@ -29,8 +34,15 @@ public class UserGatewayAdapter implements UserGateway {
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> findAll() {
-        return userRepository.findAll().stream().map(userMapper::toDomain).toList();
+    public Page<User> findAll(PagedQuery<Void> input) {
+        var pageable = PageRequest.of(input.pageNumber(), input.pageSize());
+        var resultPaged = userRepository.findAll(pageable);
+        return new Page<> (
+            resultPaged.getNumber(),
+            resultPaged.getSize(),
+            resultPaged.getTotalElements(),
+            resultPaged.getContent().stream().map(userMapper::toDomain).toList()
+        );
     }
 
     @Override

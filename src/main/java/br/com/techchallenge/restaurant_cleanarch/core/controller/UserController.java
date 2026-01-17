@@ -1,12 +1,13 @@
 package br.com.techchallenge.restaurant_cleanarch.core.controller;
 
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateUserInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateUserInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.UserOutput;
 import br.com.techchallenge.restaurant_cleanarch.core.presenter.UserPresenter;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.user.*;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -38,11 +39,9 @@ public class UserController {
         return UserPresenter.toOutput(user);
     }
 
-    public UserOutput update(UUID id, UpdateUserInput input) {
-        Objects.requireNonNull(id, "User ID cannot be null.");
+    public void update(UpdateUserInput input) {
         Objects.requireNonNull(input, "UpdateUserInput cannot be null.");
-        var user = updateUserUseCase.execute(id, input);
-        return UserPresenter.toOutput(user);
+        updateUserUseCase.execute(input);
     }
 
     public UserOutput findById(UUID id) {
@@ -51,11 +50,9 @@ public class UserController {
         return UserPresenter.toOutput(user);
     }
 
-    public List<UserOutput> findAll() {
-        return listUsersUseCase.execute()
-                .stream()
-                .map(UserPresenter::toOutput)
-                .toList();
+    public Page<UserOutput> findAll(int pageNumber, int pageSize) {
+        return listUsersUseCase.execute(new PagedQuery<>(null, pageNumber, pageSize))
+                .mapItems(UserPresenter::toOutput);
     }
 
     public void deleteById(UUID id) {
