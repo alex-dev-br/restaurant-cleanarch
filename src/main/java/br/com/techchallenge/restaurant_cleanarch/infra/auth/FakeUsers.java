@@ -2,37 +2,35 @@ package br.com.techchallenge.restaurant_cleanarch.infra.auth;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.*;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.*;
+import org.reflections.Reflections;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
 
 public class FakeUsers {
+
+    private static final String ROLES_PACKAGE = "br.com.techchallenge.restaurant_cleanarch.core.domain.roles";
 
     private static final String PASSWORD_HASH = "{fake}dev-password-hash";
 
     private static final UUID DEV_OWNER_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
 
+    private FakeUsers() {}
 
     public static User devAdminOwnerUser() {
-        Set<Role> roles = Set.of(
-                new Role(null, UserRoles.RESTAURANT_OWNER.getRoleName()),
+        Set<Role> roles = new HashSet<>();
+        Reflections reflections = new Reflections(ROLES_PACKAGE);
+        Set<Class<? extends ForGettingRoleName>> roleClasses = reflections.getSubTypesOf(ForGettingRoleName.class);
+        var rolesFakeId = new AtomicLong(1);
+        for (Class<? extends ForGettingRoleName> clazz : roleClasses) {
+            if (clazz.isEnum()) {
+                roles.addAll(Stream.of(clazz.getEnumConstants())
+                        .map(e -> new Role(rolesFakeId.getAndIncrement(), e.getRoleName()))
+                        .toList());
+            }
+        }
 
-                new Role(null, RestaurantRoles.CREATE_RESTAURANT.getRoleName()),
-                new Role(null, RestaurantRoles.UPDATE_RESTAURANT.getRoleName()),
-                new Role(null, RestaurantRoles.DELETE_RESTAURANT.getRoleName()),
-                new Role(null, RestaurantRoles.VIEW_RESTAURANT.getRoleName()),
-
-                new Role(null, UserManagementRoles.CREATE_USER.getRoleName()),
-                new Role(null, UserManagementRoles.UPDATE_USER.getRoleName()),
-                new Role(null, UserManagementRoles.DELETE_USER.getRoleName()),
-                new Role(null, UserManagementRoles.VIEW_USER.getRoleName()),
-
-                new Role(null, UserTypeRoles.CREATE_USER_TYPE.getRoleName()),
-                new Role(null, UserTypeRoles.UPDATE_USER_TYPE.getRoleName()),
-                new Role(null, UserTypeRoles.DELETE_USER_TYPE.getRoleName()),
-                new Role(null, UserTypeRoles.VIEW_USER_TYPE.getRoleName())
-        );
-
-        // TODO (ajustar): O método isRestaurantOwner() compara com  "Dono de Restaurante"
         UserType type = new UserType(1L, "Dono de Restaurante", roles);
 
         return new User(

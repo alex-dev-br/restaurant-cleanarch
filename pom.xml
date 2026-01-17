@@ -108,7 +108,17 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa-test</artifactId>
+            <scope>test</scope> <!-- Traz JUnit 5, incluindo assertDoesNotThrow -->
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-test</artifactId>
             <scope>test</scope> <!-- Traz JUnit 5, incluindo assertDoesNotThrow -->
         </dependency>
         <dependency>
@@ -120,6 +130,11 @@
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.10.2</version>
         </dependency>
 
         <!-- Swagger / OpenAPI -->
@@ -179,6 +194,8 @@
                         <exclude>**/core/domain/model/valueobject/*.class</exclude>
                         <exclude>**/infra/persistence/entity/*Entity*.class</exclude>
                         <exclude>**/infra/mapper/*Impl*.class</exclude>
+                        <exclude>**/infra/controller/resquest/*.class</exclude>
+                        <exclude>**/infra/controller/response/*.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -238,10 +255,15 @@
                         @{argLine}  <!-- preserva o JaCoCo agent que o jacoco-maven-plugin injeta -->
                     </argLine>
 
-                    <!-- Remova completamente essa parte (ela causa o warning) -->
-                    <!-- <systemPropertyVariables>
-                        <file.encoding>UTF-8</file.encoding>
-                    </systemPropertyVariables> -->
+                    <includes>
+                        <!-- Padrões default do Surefire -->
+                        <include>**/Test*.java</include>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                        <include>**/*TestCase.java</include>
+                        <!-- Adicionando o padrão para testes de integração -->
+                        <include>**/*IT.java</include>
+                    </includes>
                 </configuration>
             </plugin>
 
