@@ -1,20 +1,22 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:devdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:devdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password: ""
     driver-class-name: org.h2.Driver
-
   jpa:
-    defer-datasource-initialization: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
         format_sql: true
     open-in-view: false
-
+  flyway:
+    enabled: true
+    locations: classpath:db/dev
+    baseline-on-migrate: false
+    table: hhe_history_flyway
   sql:
     init:
       mode: always
@@ -22,7 +24,6 @@ spring:
         - classpath:db/dev/01_roles.sql
         - classpath:db/dev/02_user_type.sql
         - classpath:db/dev/03_user.sql
-
   h2:
     console:
       enabled: true
@@ -30,3 +31,7 @@ spring:
       # settings:                # optional extras
       #   trace: false
       #   web-allow-others: false   # ← keep false unless you really need remote access!
+
+logging:
+  level:
+    org.flywaydb: DEBUG
