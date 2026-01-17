@@ -18,7 +18,6 @@ public class MenuItemBuilder {
     private Boolean restaurantOnly;
     private String photoPath;
 
-    // ✅ novo
     private Long restaurantId;
 
     public MenuItemBuilder() {
@@ -32,7 +31,7 @@ public class MenuItemBuilder {
         this.price = BigDecimal.valueOf(10.0);
         this.restaurantOnly = false;
         this.photoPath = "photo.jpg";
-        this.restaurantId = 1L; // ✅ default
+        this.restaurantId = 1L; //
         return this;
     }
 
@@ -44,7 +43,7 @@ public class MenuItemBuilder {
         b.price = this.price;
         b.restaurantOnly = this.restaurantOnly;
         b.photoPath = this.photoPath;
-        b.restaurantId = this.restaurantId; // ✅ copia
+        b.restaurantId = this.restaurantId; //
         return b;
     }
 
@@ -83,7 +82,6 @@ public class MenuItemBuilder {
         return this;
     }
 
-    // ✅ novo
     public MenuItemBuilder withRestaurantId(Long restaurantId) {
         this.restaurantId = restaurantId;
         return this;
@@ -97,7 +95,6 @@ public class MenuItemBuilder {
         return new MenuItemInput(name, description, price, restaurantOnly, photoPath);
     }
 
-    // ✅ novo: usado pelos seus testes
     public CreateMenuItemInput buildCreateInput() {
         return buildCreateInput(Objects.requireNonNull(restaurantId, "restaurantId cannot be null"));
     }

@@ -157,5 +157,121 @@ public class CreateUserUseCaseTest {
         then(userGateway).should(never()).save(any());
     }
 
+    @Test
+    @DisplayName("Deve lançar exceção quando password for null")
+    void shouldThrowWhenPasswordNull() {
+        // Arrange
+        var input = new CreateUserInput(
+                "Maria",
+                "maria@teste.com",
+                null,
+                null,
+                1L
+        );
+
+        given(loggedUserGateway.hasRole(UserManagementRoles.CREATE_USER)).willReturn(true);
+
+        // Act + Assert
+        assertThatThrownBy(() -> createUserUseCase.execute(input))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Password cannot be blank.");
+
+        then(userGateway).should(never()).existsUserWithEmail(any());
+        then(userTypeGateway).should(never()).findById(any());
+        then(passwordHasherGateway).should(never()).hash(any());
+        then(userGateway).should(never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Deve mapear Address quando input.address não for null")
+    void shouldMapAddressWhenProvided() {
+        // Arrange
+        Long userTypeId = 1L;
+
+        var addressInput = new AddressBuilder()
+                .withStreet("Rua A")
+                .withNumber("10")
+                .withCity("Rio")
+                .withState("RJ")
+                .withZipCode("20000000")
+                .withComplement("Apto 101")
+                .buildInput();
+
+        var input = new CreateUserInput(
+                "Maria Oliveira",
+                "maria@teste.com",
+                "senhaSegura123",
+                addressInput,
+                userTypeId
+        );
+
+        var userType = new UserTypeBuilder()
+                .withId(userTypeId)
+                .withName("Cliente")
+                .withRoleNames(Set.of("VIEW_MENU_ITEM"))
+                .build();
+
+        given(loggedUserGateway.hasRole(UserManagementRoles.CREATE_USER)).willReturn(true);
+        given(userGateway.existsUserWithEmail("maria@teste.com")).willReturn(false);
+        given(userTypeGateway.findById(userTypeId)).willReturn(Optional.of(userType));
+        given(passwordHasherGateway.hash("senhaSegura123")).willReturn("HASHED");
+        given(userGateway.save(any(User.class))).willAnswer(inv -> inv.getArgument(0));
+
+        // Act
+        User result = createUserUseCase.execute(input);
+
+        // Assert
+        then(userGateway).should().save(userCaptor.capture());
+        User saved = userCaptor.getValue();
+
+        assertThat(saved.getAddress()).isNotNull();
+        assertThat(saved.getAddress().getStreet()).isEqualTo("Rua A");
+        assertThat(saved.getAddress().getNumber()).isEqualTo("10");
+        assertThat(saved.getAddress().getCity()).isEqualTo("Rio");
+        assertThat(saved.getAddress().getState()).isEqualTo("RJ");
+        assertThat(saved.getAddress().getZipCode()).isEqualTo("20000000");
+        assertThat(saved.getAddress().getComplement()).isEqualTo("Apto 101");
+
+        assertThat(result.getAddress()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Deve salvar usuário com address nulo quando input.address for null")
+    void shouldSaveUserWithNullAddressWhenAddressInputIsNull() {
+        // Arrange
+        Long userTypeId = 1L;
+
+        var input = new CreateUserInput(
+                "Maria Oliveira",
+                "maria@teste.com",
+                "senhaSegura123",
+                null, // <- cobre o ramo null do ternário
+                userTypeId
+        );
+
+        var userType = new UserTypeBuilder()
+                .withId(userTypeId)
+                .withName("Cliente")
+                .withRoleNames(Set.of("VIEW_MENU_ITEM"))
+                .build();
+
+        given(loggedUserGateway.hasRole(UserManagementRoles.CREATE_USER)).willReturn(true);
+        given(userGateway.existsUserWithEmail("maria@teste.com")).willReturn(false);
+        given(userTypeGateway.findById(userTypeId)).willReturn(Optional.of(userType));
+        given(passwordHasherGateway.hash("senhaSegura123")).willReturn("HASHED");
+        given(userGateway.save(any(User.class))).willAnswer(inv -> inv.getArgument(0));
+
+        // Act
+        User result = createUserUseCase.execute(input);
+
+        // Assert
+        then(userGateway).should().save(userCaptor.capture());
+        User saved = userCaptor.getValue();
+
+        assertThat(saved.getAddress()).isNull();
+        assertThat(result.getAddress()).isNull();
+    }
+
+
 
 }
