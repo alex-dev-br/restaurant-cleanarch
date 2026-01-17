@@ -44,7 +44,7 @@ class RoleRestControllerIT {
     }
 
     @Test
-    @WithMockUser(authorities = {"NONE"})
+    @WithMockUser(roles = {"NO_VIEW_ROLE"})
     void shouldReturnForbiddenWhenGetRolesIsCalledWithoutRole() throws Exception {
         mockMvc.perform(get("/roles"))
                 .andExpect(status().isForbidden())

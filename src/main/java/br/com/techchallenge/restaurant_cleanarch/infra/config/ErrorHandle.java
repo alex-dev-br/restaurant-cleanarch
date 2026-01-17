@@ -6,6 +6,7 @@ import br.com.techchallenge.restaurant_cleanarch.infra.controller.response.Simpl
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,6 +29,12 @@ public class ErrorHandle {
     @ExceptionHandler({OperationNotAllowedException.class})
     public SimpleErroResponse handleOperationNotAllowedException(OperationNotAllowedException e) {
         return new SimpleErroResponse(e.getMessage());
+    }
+
+    @ResponseStatus(code = HttpStatus.FORBIDDEN)
+    @ExceptionHandler(AccessDeniedException.class)
+    public SimpleErroResponse handleAccessDeniedException(AccessDeniedException e) {
+        return new SimpleErroResponse("Acesso negado.");
     }
 
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
