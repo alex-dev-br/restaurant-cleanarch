@@ -1,34 +1,33 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.user;
 
-
-
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserManagementRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.*;
-import br.com.techchallenge.restaurant_cleanarch.core.gateway.*;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
+import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
+import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
 
-import java.util.*;
+import java.util.Objects;
+import java.util.UUID;
 
-public class GetUserByIdUseCase {
+public class GetUserByIdUseCase extends UseCaseBase<UUID, User> {
 
     private final UserGateway userGateway;
-    private final LoggedUserGateway loggedUserGateway;
 
     public GetUserByIdUseCase(UserGateway userGateway, LoggedUserGateway loggedUserGateway) {
-        Objects.requireNonNull(userGateway, "userGateway must not be null");
+        super(loggedUserGateway);
         Objects.requireNonNull(loggedUserGateway, "loggedUserGateway must not be null");
-
         this.userGateway = userGateway;
-        this.loggedUserGateway = loggedUserGateway;
     }
 
-    public User execute(UUID id) {
-        Objects.requireNonNull(id, "id must not be null");
+    @Override
+    protected ForGettingRoleName getRequiredRole() {
+        return UserManagementRoles.VIEW_USER;
+    }
 
-        if (!loggedUserGateway.hasRole(UserManagementRoles.VIEW_USER)) {
-            throw new OperationNotAllowedException("The current user does not have permission to view users.");
-        }
-
+    @Override
+    public User doExecute(UUID id) {
         return userGateway.findById(id)
                 .orElseThrow(() -> new BusinessException("User with ID " + id + " not found."));
     }

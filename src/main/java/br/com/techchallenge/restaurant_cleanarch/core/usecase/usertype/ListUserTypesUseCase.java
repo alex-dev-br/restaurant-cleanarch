@@ -5,27 +5,19 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRol
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserTypeGateway;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.NoInput;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseWithoutInput;
 
 import java.util.Objects;
 import java.util.Set;
 
 
-public class ListUserTypesUseCase extends UseCaseBase<NoInput, Set<UserType>> {
+public class ListUserTypesUseCase extends UseCaseWithoutInput<Set<UserType>> {
 
     private final UserTypeGateway userTypeGateway;
-
-
 
     public ListUserTypesUseCase(UserTypeGateway userTypeGateway, LoggedUserGateway loggedUserGateway) {
         super(Objects.requireNonNull(loggedUserGateway, "LoggedUserGateway cannot be null."));
         this.userTypeGateway = Objects.requireNonNull(userTypeGateway, "UserTypeGateway cannot be null.");
-    }
-
-    // mantém API antiga (sem input)
-    public Set<UserType> execute() {
-        return super.execute(new NoInput());
     }
 
     @Override
@@ -34,9 +26,8 @@ public class ListUserTypesUseCase extends UseCaseBase<NoInput, Set<UserType>> {
     }
 
     @Override
-    protected Set<UserType> doExecute(NoInput input) {
+    protected Set<UserType> doExecute() {
         return userTypeGateway.findAll();
     }
-
 
 }

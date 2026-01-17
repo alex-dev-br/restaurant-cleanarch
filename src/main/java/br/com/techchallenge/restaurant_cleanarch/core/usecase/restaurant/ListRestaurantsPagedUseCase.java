@@ -18,7 +18,6 @@ public class ListRestaurantsPagedUseCase extends UseCaseBase<PagedQuery<Void>, P
 
     @Override
     protected Page<Restaurant> doExecute(PagedQuery<Void> query) {
-        Objects.requireNonNull(query, "PagedQuery cannot be null.");
         return restaurantGateway.findAll(query);
     }
 

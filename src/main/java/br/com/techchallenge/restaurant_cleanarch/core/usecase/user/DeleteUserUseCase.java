@@ -1,33 +1,33 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.user;
 
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserManagementRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.*;
-import br.com.techchallenge.restaurant_cleanarch.core.gateway.*;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.ResourceNotFoundException;
+import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
+import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseWithoutOutput;
 
-import java.util.*;
+import java.util.Objects;
+import java.util.UUID;
 
-public class DeleteUserUseCase {
+public class DeleteUserUseCase extends UseCaseWithoutOutput<UUID> {
 
     private final UserGateway userGateway;
-    private final LoggedUserGateway loggedUserGateway;
 
     public DeleteUserUseCase(UserGateway userGateway, LoggedUserGateway loggedUserGateway) {
+        super(loggedUserGateway);
         Objects.requireNonNull(userGateway, "userGateway cannot be null");
-        Objects.requireNonNull(loggedUserGateway, "loggedUserGateway cannot be null");
-
         this.userGateway = userGateway;
-        this.loggedUserGateway = loggedUserGateway;
     }
 
-    public void execute(UUID id) {
-        Objects.requireNonNull(id, "id must not be null");
+    @Override
+    protected ForGettingRoleName getRequiredRole() {
+        return UserManagementRoles.DELETE_USER;
+    }
 
-        if (!loggedUserGateway.hasRole(UserManagementRoles.DELETE_USER)) {
-            throw new OperationNotAllowedException("The current user does not have permission to delete users.");
-        }
-
+    @Override
+    public void doExecute(UUID id) {
         userGateway.findById(id).orElseThrow(() -> new ResourceNotFoundException("User with ID " + id + " not found."));
-
         userGateway.deleteById(id);
     }
 }

@@ -7,11 +7,11 @@ import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessExceptio
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseWithoutOutput;
 
 import java.util.Objects;
 
-public class DeleteRestaurantUseCase extends UseCaseBase<Long, Void> {
+public class DeleteRestaurantUseCase extends UseCaseWithoutOutput<Long> {
 
     private final RestaurantGateway restaurantGateway;
 
@@ -29,9 +29,7 @@ public class DeleteRestaurantUseCase extends UseCaseBase<Long, Void> {
     }
 
     @Override
-    protected Void doExecute(Long id) {
-        Objects.requireNonNull(id, "Restaurant Id cannot be null.");
-
+    protected void doExecute(Long id) {
         var restaurant = restaurantGateway.findById(id)
                 .orElseThrow(() -> new BusinessException("Restaurant not found."));
 
@@ -41,6 +39,5 @@ public class DeleteRestaurantUseCase extends UseCaseBase<Long, Void> {
         }
 
         restaurantGateway.delete(id);
-        return null;
     }
 }

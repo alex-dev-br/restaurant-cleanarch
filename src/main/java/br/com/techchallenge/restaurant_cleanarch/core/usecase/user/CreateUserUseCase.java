@@ -2,18 +2,22 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase.user;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserManagementRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.*;
-import br.com.techchallenge.restaurant_cleanarch.core.gateway.*;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
+import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
+import br.com.techchallenge.restaurant_cleanarch.core.gateway.PasswordHasherGateway;
+import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
+import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserTypeGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateUserInput;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
 
 import java.util.Objects;
 
-public class CreateUserUseCase {
+public class CreateUserUseCase extends UseCaseBase<CreateUserInput, User> {
 
     private final UserGateway userGateway;
     private final UserTypeGateway userTypeGateway;
-    private final LoggedUserGateway loggedUserGateway;
     private final PasswordHasherGateway passwordHasherGateway;
 
     public CreateUserUseCase(
@@ -22,24 +26,23 @@ public class CreateUserUseCase {
             LoggedUserGateway loggedUserGateway,
             PasswordHasherGateway passwordHasherGateway
     ) {
+        super(loggedUserGateway);
         Objects.requireNonNull(userGateway, "userGateway must not be null");
         Objects.requireNonNull(userTypeGateway, "userTypeGateway must not be null");
-        Objects.requireNonNull(loggedUserGateway, "loggedUserGateway must not be null");
         Objects.requireNonNull(passwordHasherGateway, "passwordHasherGateway must not be null");
 
         this.userGateway = userGateway;
         this.userTypeGateway = userTypeGateway;
-        this.loggedUserGateway = loggedUserGateway;
         this.passwordHasherGateway = passwordHasherGateway;
     }
 
-    public User execute(CreateUserInput input) {
-        Objects.requireNonNull(input, "createUserInput must not be null");
+    @Override
+    protected ForGettingRoleName getRequiredRole() {
+        return UserManagementRoles.CREATE_USER;
+    }
 
-        if (!loggedUserGateway.hasRole(UserManagementRoles.CREATE_USER)) {
-            throw new OperationNotAllowedException("The current user does not have permission to create users.");
-        }
-
+    @Override
+    public User doExecute(CreateUserInput input) {
         if (input.password() == null || input.password().trim().isBlank()) {
             throw new BusinessException("Password cannot be blank.");
         }
