@@ -70,7 +70,7 @@ public class UpdateMenuItemUseCase extends UseCaseBase<UpdateMenuItemInput, Menu
                 input.description() != null ? input.description().trim() : null,
                 input.price(),
                 input.restaurantOnly(),
-                input.photoPath() != null ? input.photoPath().trim() : null
+                input.photoPath() != null ? input.photoPath().trim() : existingItem.getPhotoPath()
         );
 
         return menuItemGateway.save(updatedItem, restaurantId);

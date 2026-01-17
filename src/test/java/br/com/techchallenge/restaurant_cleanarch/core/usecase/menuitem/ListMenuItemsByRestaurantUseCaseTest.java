@@ -10,6 +10,10 @@ import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessExceptio
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.MenuItemGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
+
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.MenuItemRoles;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,9 +37,12 @@ import static org.mockito.Mockito.never;
 @DisplayName("Testes para ListMenuItemsByRestaurantUseCase")
 class ListMenuItemsByRestaurantUseCaseTest {
 
-    @Mock private MenuItemGateway menuItemGateway;
-    @Mock private RestaurantGateway restaurantGateway;
-    @Mock private LoggedUserGateway loggedUserGateway;
+    @Mock
+    private MenuItemGateway menuItemGateway;
+    @Mock
+    private RestaurantGateway restaurantGateway;
+    @Mock
+    private LoggedUserGateway loggedUserGateway;
 
     @Captor
     private ArgumentCaptor<PagedQuery<Long>> pagedQueryCaptor;
@@ -145,5 +152,50 @@ class ListMenuItemsByRestaurantUseCaseTest {
         then(restaurantGateway).shouldHaveNoInteractions();
         then(menuItemGateway).shouldHaveNoInteractions();
         then(loggedUserGateway).shouldHaveNoInteractions();
+    }
+
+    @Test
+    @DisplayName("Deve exigir role VIEW_MENU_ITEM quando acesso público não for permitido (cobre getRequiredRole)")
+    void shouldRequireRoleWhenPublicAccessIsNotAllowed() {
+        // Arrange
+        Long restaurantId = 1L;
+        var query = new PagedQuery<>(restaurantId, 0, 10);
+
+        var securedUseCase = new SecuredListMenuItemsByRestaurantUseCase(
+                loggedUserGateway,
+                menuItemGateway,
+                restaurantGateway
+        );
+
+        given(loggedUserGateway.hasRole(MenuItemRoles.VIEW_MENU_ITEM)).willReturn(false);
+
+        // Act / Assert
+        assertThatThrownBy(() -> securedUseCase.execute(query))
+                .isInstanceOf(OperationNotAllowedException.class);
+
+        then(loggedUserGateway).should().hasRole(MenuItemRoles.VIEW_MENU_ITEM);
+        then(restaurantGateway).shouldHaveNoInteractions();
+        then(menuItemGateway).shouldHaveNoInteractions();
+    }
+
+
+    /**
+     * Subclasse apenas para forçar isPublicAccessAllowed() = false e assim
+     * passar pela checagem de role (cobrindo getRequiredRole()).
+     */
+    private static final class SecuredListMenuItemsByRestaurantUseCase extends ListMenuItemsByRestaurantUseCase {
+
+        SecuredListMenuItemsByRestaurantUseCase(
+                LoggedUserGateway loggedUserGateway,
+                MenuItemGateway menuItemGateway,
+                RestaurantGateway restaurantGateway
+        ) {
+            super(loggedUserGateway, menuItemGateway, restaurantGateway);
+        }
+
+        @Override
+        protected boolean isPublicAccessAllowed() {
+            return false;
+        }
     }
 }

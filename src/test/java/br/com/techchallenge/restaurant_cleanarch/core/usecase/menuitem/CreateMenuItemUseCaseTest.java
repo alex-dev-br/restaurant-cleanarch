@@ -195,6 +195,36 @@ class CreateMenuItemUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve negar quando restaurante não tem owner (ownerId = null)")
+    void shouldThrowOperationNotAllowedWhenRestaurantOwnerIsNull() {
+        // Arrange
+        Long restaurantId = 10L;
+
+        Restaurant restaurant = mock(Restaurant.class);
+        User currentUser = mock(User.class);
+
+        given(loggedUserGateway.hasRole(MenuItemRoles.CREATE_MENU_ITEM)).willReturn(true);
+        given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(restaurant));
+        given(loggedUserGateway.requireCurrentUser()).willReturn(currentUser);
+
+        given(restaurant.getOwner()).willReturn(null); // <- cobre ownerId == null
+        given(currentUser.getId()).willReturn(UUID.randomUUID());
+
+        CreateMenuItemInput input = builder()
+                .withRestaurantId(restaurantId)
+                .buildCreateInput();
+
+        // Act / Assert
+        assertThatThrownBy(() -> useCase.execute(input))
+                .isInstanceOf(OperationNotAllowedException.class)
+                .hasMessageContaining("Apenas o dono do restaurante pode criar itens do cardápio.");
+
+        then(menuItemGateway).shouldHaveNoInteractions();
+        then(menuItemGateway).should(never()).save(any(), any());
+    }
+
+
+    @Test
     @DisplayName("Deve lançar BusinessException quando name for blank")
     void shouldThrowBusinessExceptionWhenNameBlank() {
         // Arrange
@@ -302,4 +332,71 @@ class CreateMenuItemUseCaseTest {
 
         then(menuItemGateway).should(never()).save(any(), any());
     }
+
+    @Test
+    @DisplayName("Deve negar quando usuário atual for nulo (currentUserId = null)")
+    void shouldThrowOperationNotAllowedWhenCurrentUserIsNull() {
+        // Arrange
+        Long restaurantId = 10L;
+
+        Restaurant restaurant = mock(Restaurant.class);
+        User owner = mock(User.class);
+
+        given(loggedUserGateway.hasRole(MenuItemRoles.CREATE_MENU_ITEM)).willReturn(true);
+        given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(restaurant));
+        given(loggedUserGateway.requireCurrentUser()).willReturn(null); // <- cobre currentUserId == null
+
+        given(restaurant.getOwner()).willReturn(owner);
+        given(owner.getId()).willReturn(UUID.randomUUID());
+
+        CreateMenuItemInput input = builder()
+                .withRestaurantId(restaurantId)
+                .buildCreateInput();
+
+        // Act / Assert
+        assertThatThrownBy(() -> useCase.execute(input))
+                .isInstanceOf(OperationNotAllowedException.class)
+                .hasMessageContaining("Apenas o dono do restaurante pode criar itens do cardápio.");
+
+        then(menuItemGateway).shouldHaveNoInteractions();
+        then(menuItemGateway).should(never()).save(any(), any());
+    }
+
+    @Test
+    @DisplayName("Deve permitir description nula (description = null)")
+    void shouldAllowNullDescription() {
+        // Arrange
+        Long restaurantId = 10L;
+        UUID ownerId = UUID.randomUUID();
+
+        arrangeAuthorizedOwnerFlow(restaurantId, ownerId);
+
+        // precisa passar pela validação de duplicidade
+        given(menuItemGateway.existsByNameAndRestaurantId("Pizza", restaurantId)).willReturn(false);
+
+        // retorno do save (pode ser qualquer objeto)
+        given(menuItemGateway.save(any(MenuItem.class), eq(restaurantId)))
+                .willAnswer(inv -> inv.getArgument(0));
+
+        CreateMenuItemInput input = builder()
+                .withRestaurantId(restaurantId)
+                .withDescription(null) // <- cobre o ramo input.description() == null
+                .buildCreateInput();
+
+        // Act
+        useCase.execute(input);
+
+        // Assert
+        then(menuItemGateway).should().save(menuItemCaptor.capture(), eq(restaurantId));
+        MenuItem captured = menuItemCaptor.getValue();
+
+        assertThat(captured.getDescription()).isNull(); // <- valida o ramo do ternário
+
+        then(menuItemGateway).should().existsByNameAndRestaurantId("Pizza", restaurantId);
+        then(restaurantGateway).should().findById(restaurantId);
+        then(loggedUserGateway).should().requireCurrentUser();
+        then(loggedUserGateway).should().hasRole(MenuItemRoles.CREATE_MENU_ITEM);
+    }
+
+
 }
