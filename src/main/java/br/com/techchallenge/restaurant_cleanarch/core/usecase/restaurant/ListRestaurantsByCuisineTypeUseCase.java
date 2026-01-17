@@ -34,4 +34,8 @@ public class ListRestaurantsByCuisineTypeUseCase extends UseCaseBase<PagedQuery<
         return RestaurantRoles.VIEW_RESTAURANT;
     }
 
+    @Override
+    protected boolean isPublicAccessAllowed() {
+        return true;
+    }
 }
