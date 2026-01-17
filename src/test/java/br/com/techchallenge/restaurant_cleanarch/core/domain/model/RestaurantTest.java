@@ -266,4 +266,48 @@ class RestaurantTest {
                 new OpeningHours(6L, DayOfWeek.SATURDAY, LocalTime.of(11, 0), LocalTime.of(22, 0))
         );
     }
+
+
+    @Test
+    @DisplayName("canBeManagedBy deve retornar false quando currentUser for null")
+    void canBeManagedBy_deveRetornarFalse_quandoCurrentUserForNull() {
+        var restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
+
+        assertThat(restaurant.canBeManagedBy(null)).isFalse();
+    }
+
+    @Test
+    @DisplayName("canBeManagedBy deve retornar true quando currentUser for o owner")
+    void canBeManagedBy_deveRetornarTrue_quandoCurrentUserForOwner() {
+        var restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
+
+        assertThat(restaurant.canBeManagedBy(owner)).isTrue();
+    }
+
+    @Test
+    @DisplayName("canBeManagedBy deve retornar true quando currentUser estiver na lista de employees")
+    void canBeManagedBy_deveRetornarTrue_quandoCurrentUserForEmployee() {
+        var restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
+        restaurant.addEmployee(employee);
+
+        assertThat(restaurant.canBeManagedBy(employee)).isTrue();
+    }
+
+    @Test
+    @DisplayName("canBeManagedBy deve retornar false quando currentUser não for owner nem employee")
+    void canBeManagedBy_deveRetornarFalse_quandoCurrentUserNaoTiverPermissao() {
+        var restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
+        var outsider = new UserBuilder().build();
+
+        assertThat(restaurant.canBeManagedBy(outsider)).isFalse();
+    }
+
+    @Test
+    @DisplayName("equals deve retornar false quando this.id for null e other.id não for null (lado inverso)")
+    void equals_deveRetornarFalse_quandoThisIdNullEThatIdNaoNull() {
+        var withId = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
+        var withoutId = new Restaurant(null, restaurantName, address, cuisineType, owner);
+
+        assertThat(withoutId).isNotEqualTo(withId); // <-- lado inverso que costuma faltar
+    }
 }
