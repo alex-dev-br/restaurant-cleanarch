@@ -4,6 +4,8 @@ spring:
     username: sa
     password: ""
     driver-class-name: org.h2.Driver
+  flyway:
+    locations: classpath:db/migration,classpath:db/dev
   jpa:
     hibernate:
       ddl-auto: none
@@ -12,18 +14,6 @@ spring:
       hibernate:
         format_sql: true
     open-in-view: false
-  flyway:
-    enabled: true
-    locations: classpath:db/dev
-    baseline-on-migrate: false
-    table: hhe_history_flyway
-  sql:
-    init:
-      mode: always
-      data-locations:
-        - classpath:db/dev/01_roles.sql
-        - classpath:db/dev/02_user_type.sql
-        - classpath:db/dev/03_user.sql
   h2:
     console:
       enabled: true
@@ -31,7 +21,6 @@ spring:
       # settings:                # optional extras
       #   trace: false
       #   web-allow-others: false   # ← keep false unless you really need remote access!
-
 logging:
   level:
     org.flywaydb: DEBUG

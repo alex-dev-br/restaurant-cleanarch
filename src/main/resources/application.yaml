@@ -1,7 +1,11 @@
 spring:
   application:
     name: restaurant-cleanarch
-
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    table: history_flyway
   jpa:
     open-in-view: false
     properties:
@@ -9,10 +13,8 @@ spring:
         format_sql: true
         jdbc:
           time_zone: UTC
-
 server:
   port: 8080
-
 springdoc:
   api-docs:
     enabled: true
