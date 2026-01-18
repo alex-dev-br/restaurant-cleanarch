@@ -31,8 +31,7 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -121,9 +120,9 @@ class MenuRestControllerTestIT {
 
         var strogonoff = new MenuItemEntity();
         strogonoff.setName("Strogonoff de Frango");
+        strogonoff.setDescription("Cubos de peito de frango, envolvidos em um molho de creme de leite, toque de ketchup, mostarda Dijon e cogumelos fatiados (champignon). Servido com o tradicional arroz branco soltinho e a crocância indispensável da batata palha extrafina.");
         strogonoff.setRestaurant(restaurant);
         strogonoff.setPrice(new BigDecimal("28"));
-        strogonoff.setDescription("Cubos de peito de frango, envolvidos em um molho de creme de leite, toque de ketchup, mostarda Dijon e cogumelos fatiados (champignon). Servido com o tradicional arroz branco soltinho e a crocância indispensável da batata palha extrafina.");
         strogonoff.setRestaurantOnly(false);
         strogonoff.setPhotoPath("/foto-menu/strogonoff-frago.jpg");
 
@@ -227,4 +226,42 @@ class MenuRestControllerTestIT {
                 .andExpect(jsonPath("$.message", is(equalTo("Já existe um item de cardápio com o nome '%s' no restaurante '%s'.".formatted(camaraoRequest.getName(), restaurant.getName())))));
     }
 
+    @Test
+    @WithMockUser(authorities = {"UPDATE_MENU_ITEM"})
+    @DisplayName("Deve alterar item do menu")
+    void deveAlterarNovoItemAoMenu() throws Exception {
+        var camaraoRequest = new MenuItemRequest();
+        camaraoRequest.setName("Risoto de Camarão ao Limão Siciliano");
+        camaraoRequest.setDescription("Arroz arbóreo cremoso com camarões grelhados no azeite de ervas, finalizado com raspas de limão siciliano, queijo parmesão e brotos frescos.");
+        camaraoRequest.setPrice(new BigDecimal("98"));
+        camaraoRequest.setRestaurantOnly(true);
+        camaraoRequest.setPhotoPath("/fotos-menu/risoto-camarao.jpg");
+
+        mockMvc.perform(put("/restaurants/{restaurant-id}/menu/{id}", restaurantId, baiaoDeDoisId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(JsonUtil.parseToString(camaraoRequest)))
+                .andExpect(status().isNoContent());
+
+    }
+
+    @Test
+    @WithMockUser(authorities = {"UPDATE_MENU_ITEM"})
+    @DisplayName("Deve devolver erro se tentar alterar nome para outro em uso")
+    void deveDevolverErroSeTentarAlterarNomeParaOutroEmUso() throws Exception {
+        var camaraoRequest = new MenuItemRequest();
+        camaraoRequest.setName("Strogonoff de Frango");
+        camaraoRequest.setDescription("Cubos de peito de frango, envolvidos em um molho de creme de leite, toque de ketchup, mostarda Dijon e cogumelos fatiados (champignon). Servido com o tradicional arroz branco soltinho e a crocância indispensável da batata palha extrafina.");
+        camaraoRequest.setPrice(new BigDecimal("98"));
+        camaraoRequest.setRestaurantOnly(true);
+        camaraoRequest.setPhotoPath("/fotos-menu/risoto-camarao.jpg");
+
+        mockMvc.perform(put("/restaurants/{restaurant-id}/menu/{id}", restaurantId, baiaoDeDoisId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(JsonUtil.parseToString(camaraoRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is(equalTo("Já existe um item com este nome no restaurante"))));
+    }
 }

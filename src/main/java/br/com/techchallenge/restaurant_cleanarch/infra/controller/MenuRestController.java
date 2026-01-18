@@ -41,4 +41,11 @@ public class MenuRestController {
                 .toUri();
         return ResponseEntity.created(uri).body(menuItemRestMapper.toResponse(menuItemOutput));
     }
+
+    @PutMapping("/{id}")
+    @ResponseStatus(code = HttpStatus.NO_CONTENT)
+    public void updateItem(@PathVariable("id") Long id, @RequestBody @Valid MenuItemRequest menuItemRequest) {
+        var updateInput = menuItemRestMapper.toUpdateInput(menuItemRequest, id);
+        controller.updateMenuItem(updateInput);
+    }
 }
