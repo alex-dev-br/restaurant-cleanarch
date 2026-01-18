@@ -4,9 +4,9 @@ name: CI  # Nome do workflow (aparece no badge de status)
 
 on:
   push:
-    branches: [ "main", "develop" ]  # Executa em pushes para main e develop
+    branches: [ "main" ]  # Executa em pushes para main
   pull_request:
-    branches: [ "main", "develop" ]  # Executa em PRs
+    branches: [ "main" ]  # Executa em PRs
 
 jobs:
   build:
@@ -35,3 +35,39 @@ jobs:
           files: ./target/site/jacoco/jacoco.xml  # Relatório XML gerado pelo Jacoco
           verbose: true  # Logs detalhados para debug
           fail_ci_if_error: true  # Falha o build se upload falhar (boa para qualidade)
+
+      - name: Install Node.js for Screenshot
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'  # Versão estável
+
+      - name: Capture Jacoco Report Screenshot
+        run: |
+          npm init -y
+          npm install puppeteer --save-dev
+          node -e "
+          const puppeteer = require('puppeteer');
+          (async () => {
+            const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+            const page = await browser.newPage();
+            await page.setViewport({ width: 1920, height: 1080 });  # Tamanho para captura completa
+            await page.goto('file://${{ github.workspace }}/target/site/jacoco/index.html', { waitUntil: 'networkidle2' });
+            await page.screenshot({ path: 'docs/images/jacoco-coverage.png', fullPage: true });
+            await browser.close();
+          })();
+          "
+
+      - name: Commit and Push Screenshot
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add docs/images/jacoco-coverage.png
+          git commit -m "Update Jacoco coverage screenshot [ci skip]" || echo "No changes to commit"
+          git push
+        if: github.ref == 'refs/heads/main'  # Só em main para evitar loops
+
+      - name: Upload Screenshot Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-screenshot
+          path: docs/images/jacoco-coverage.png  # Salva como artefato para download
