@@ -5,7 +5,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
-import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateMenuItemInput;
+import br.com.techchallenge.restaurant_cleanarch.infra.controller.request.MenuItemRequest;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.*;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.*;
 import org.junit.jupiter.api.AfterEach;
@@ -66,6 +66,7 @@ class MenuRestControllerTestIT {
     private RestaurantEntity restaurant;
     private Long restaurantId;
     private UUID ownerId;
+    private Long baiaoDeDoisId;
 
     @BeforeEach
     void setUp() {
@@ -111,12 +112,12 @@ class MenuRestControllerTestIT {
 
         var baiaoDeDois = new MenuItemEntity();
         baiaoDeDois.setName("Baião De Dois");
+        baiaoDeDois.setDescription("Prato típico nordestino brasileiro, feito com arroz, feijão de corda, queijo coalho e carnes como carne seca e bacon");
         baiaoDeDois.setRestaurant(restaurant);
         baiaoDeDois.setPrice(new BigDecimal("50"));
-        baiaoDeDois.setDescription("Prato típico nordestino brasileiro, feito com arroz, feijão de corda, queijo coalho e carnes como carne seca e bacon");
         baiaoDeDois.setRestaurantOnly(false);
         baiaoDeDois.setPhotoPath("/fotos-menu/baiao-de-dois.jpg");
-        menuRepo.save(baiaoDeDois);
+        baiaoDeDoisId = menuRepo.save(baiaoDeDois).getId();
 
         var strogonoff = new MenuItemEntity();
         strogonoff.setName("Strogonoff de Frango");
@@ -164,26 +165,66 @@ class MenuRestControllerTestIT {
     @WithMockUser(authorities = {"CREATE_MENU_ITEM"})
     @DisplayName("Deve adicionar novo item no menu")
     void deveAdicionarNovoItemAoMenu() throws Exception {
-        var camaraoInput = new CreateMenuItemInput (
-            "Risoto de Camarão ao Limão Siciliano",
-            "Arroz arbóreo cremoso com camarões grelhados no azeite de ervas, finalizado com raspas de limão siciliano, queijo parmesão e brotos frescos.",
-            new BigDecimal("98"),
-                true,
-                "/fotos-menu/risoto-camarao.jpg",
-                restaurantId
-        );
+        var camaraoRequest = new MenuItemRequest();
+        camaraoRequest.setName("Risoto de Camarão ao Limão Siciliano");
+        camaraoRequest.setDescription("Arroz arbóreo cremoso com camarões grelhados no azeite de ervas, finalizado com raspas de limão siciliano, queijo parmesão e brotos frescos.");
+        camaraoRequest.setPrice(new BigDecimal("98"));
+        camaraoRequest.setRestaurantOnly(true);
+        camaraoRequest.setPhotoPath("/fotos-menu/risoto-camarao.jpg");
+
         mockMvc.perform(post("/restaurants/{id}/menu", restaurantId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding("UTF-8")
-                .content(JsonUtil.parseToString(camaraoInput)))
+                .content(JsonUtil.parseToString(camaraoRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(redirectedUrlPattern("**/restaurants/"+restaurantId+"/menu/*"))
                 .andExpect(jsonPath("$.id", notNullValue()))
-                .andExpect(jsonPath("$.name", is(equalTo(camaraoInput.name()))))
-                .andExpect(jsonPath("$.description", is(equalTo(camaraoInput.description()))))
-                .andExpect(jsonPath("$.price", comparesEqualTo(camaraoInput.price().intValue())))
-                .andExpect(jsonPath("$.restaurantOnly", is(equalTo(camaraoInput.restaurantOnly()))))
-                .andExpect(jsonPath("$.photoPath", is(equalTo(camaraoInput.photoPath()))));
+                .andExpect(jsonPath("$.name", is(equalTo(camaraoRequest.getName()))))
+                .andExpect(jsonPath("$.description", is(equalTo(camaraoRequest.getDescription()))))
+                .andExpect(jsonPath("$.price", comparesEqualTo(camaraoRequest.getPrice().intValue())))
+                .andExpect(jsonPath("$.restaurantOnly", is(equalTo(camaraoRequest.getRestaurantOnly()))))
+                .andExpect(jsonPath("$.photoPath", is(equalTo(camaraoRequest.getPhotoPath()))));
 
     }
+
+    @Test
+    @WithMockUser(authorities = {"CREATE_MENU_ITEM"})
+    @DisplayName("Deve retornar erro se o restaurante não existir")
+    void deveRetornarErroSeRestaurantNaoExistir() throws Exception {
+        var camaraoRequest = new MenuItemRequest();
+        camaraoRequest.setName("Risoto de Camarão ao Limão Siciliano");
+        camaraoRequest.setDescription("Arroz arbóreo cremoso com camarões grelhados no azeite de ervas, finalizado com raspas de limão siciliano, queijo parmesão e brotos frescos.");
+        camaraoRequest.setPrice(new BigDecimal("98"));
+        camaraoRequest.setRestaurantOnly(true);
+        camaraoRequest.setPhotoPath("/fotos-menu/risoto-camarao.jpg");
+
+        mockMvc.perform(post("/restaurants/{id}/menu", Long.MAX_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(JsonUtil.parseToString(camaraoRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is(equalTo("Restaurante não encontrado com ID: " + Long.MAX_VALUE))));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"CREATE_MENU_ITEM"})
+    @DisplayName("Deve retornar erro se o restaurante o item já existe")
+    void deveRetornarErroSeItemJaExiste() throws Exception {
+        var camaraoRequest = new MenuItemRequest();
+        camaraoRequest.setName("Baião De Dois");
+        camaraoRequest.setDescription("Prato típico nordestino brasileiro, feito com arroz, feijão de corda, queijo coalho e carnes como carne seca e bacon");
+        camaraoRequest.setPrice(new BigDecimal("98"));
+        camaraoRequest.setRestaurantOnly(true);
+        camaraoRequest.setPhotoPath("/fotos-menu/risoto-camarao.jpg");
+
+        mockMvc.perform(post("/restaurants/{id}/menu", restaurantId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(JsonUtil.parseToString(camaraoRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is(equalTo("Já existe um item de cardápio com o nome '%s' no restaurante '%s'.".formatted(camaraoRequest.getName(), restaurant.getName())))));
+    }
+
 }
