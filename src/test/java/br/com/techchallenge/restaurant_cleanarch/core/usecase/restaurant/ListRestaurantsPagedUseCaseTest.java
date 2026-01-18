@@ -5,7 +5,6 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.Restaura
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para ListRestaurantsPagedUseCase")
@@ -55,7 +55,6 @@ class ListRestaurantsPagedUseCaseTest {
                 List.of(restaurant)
         );
 
-        given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findAll(query)).willReturn(expectedPage);
 
         // Act
@@ -69,7 +68,7 @@ class ListRestaurantsPagedUseCaseTest {
         assertThat(result.totalPages()).isOne();
         assertThat(result.content()).containsExactly(restaurant);
 
-        then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
+        then(loggedUserGateway).should(never()).hasRole(RestaurantRoles.VIEW_RESTAURANT);
         then(restaurantGateway).should().findAll(query);
     }
 
@@ -89,7 +88,6 @@ class ListRestaurantsPagedUseCaseTest {
                 List.of()
         );
 
-        given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findAll(query)).willReturn(expectedPage);
 
         // Act
@@ -101,25 +99,8 @@ class ListRestaurantsPagedUseCaseTest {
         assertThat(result.totalPages()).isZero(); // com totalElements=0, tende a ser 0
         assertThat(result.content()).isEmpty();
 
-        then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
+        then(loggedUserGateway).should(never()).hasRole(RestaurantRoles.VIEW_RESTAURANT);
         then(restaurantGateway).should().findAll(query);
-    }
-
-    @Test
-    @DisplayName("Deve lançar OperationNotAllowedException quando usuário não tiver permissão")
-    void shouldThrowOperationNotAllowedWhenUserHasNoPermission() {
-        // Arrange
-        PagedQuery<Void> query = new PagedQuery<>(null, 0, 10);
-
-        given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(false);
-
-        // Act & Assert
-        assertThatThrownBy(() -> useCase.execute(query))
-                .isInstanceOf(OperationNotAllowedException.class)
-                .hasMessageContaining("does not have permission to perform this action");
-
-        then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
-        then(restaurantGateway).shouldHaveNoInteractions();
     }
 
     @Test
