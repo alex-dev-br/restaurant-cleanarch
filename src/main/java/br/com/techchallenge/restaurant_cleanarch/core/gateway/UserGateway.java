@@ -15,7 +15,6 @@ public interface UserGateway {
 
     Page<User> findAll(PagedQuery<Void> input);
 
-    boolean existsByEmail(String email);
 
     void deleteById(UUID id);
 }

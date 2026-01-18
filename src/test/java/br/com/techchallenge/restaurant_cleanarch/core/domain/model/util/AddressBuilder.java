@@ -3,6 +3,7 @@ package br.com.techchallenge.restaurant_cleanarch.core.domain.model.util;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.AddressInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.AddressOutput;
+import br.com.techchallenge.restaurant_cleanarch.infra.controller.request.AddressRequest;
 
 public class AddressBuilder {
 
@@ -78,5 +79,16 @@ public class AddressBuilder {
 
     public AddressOutput buildOutput() {
         return new AddressOutput(street, number, city, state, zipCode, complement);
+    }
+
+    public AddressRequest buildRequest() {
+        AddressRequest addressRequest = new AddressRequest();
+        addressRequest.setStreet(street);
+        addressRequest.setNumber(number);
+        addressRequest.setCity(city);
+        addressRequest.setState(state);
+        addressRequest.setZipCode(zipCode);
+        addressRequest.setComplement(complement);
+        return addressRequest;
     }
 }

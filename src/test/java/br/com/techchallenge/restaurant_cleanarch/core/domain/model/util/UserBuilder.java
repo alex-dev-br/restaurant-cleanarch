@@ -5,7 +5,12 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.AddressInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateUserInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.UserSummaryOutput;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.AddressEmbeddableEntity;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserEntity;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserTypeEntity;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,6 +24,7 @@ public class UserBuilder {
     private String name;
     private String email;
     private Address address;
+    private AddressInput addressInput;
 
     private Long userTypeId;
     private String userTypeName;
@@ -34,8 +40,9 @@ public class UserBuilder {
         this.id = UUID.randomUUID();
         this.name = "João Silva";
         this.email = "joao@example.com";
-        this.address = new AddressBuilder().build();
-
+        var addressBuilder = new AddressBuilder();
+        this.address = addressBuilder.build();
+        this.addressInput = addressBuilder.buildInput();
         this.userTypeId = 1L;
         this.userTypeName = "Usuário";
 
@@ -138,5 +145,27 @@ public class UserBuilder {
 
     public UserSummaryOutput buildSummaryOutput() {
         return new UserSummaryOutput(id, name);
+    }
+
+    public UserEntity buildEntity() {
+        var addressEntity = new AddressEmbeddableEntity();
+        var entity = new UserEntity();
+        entity.setId(id);
+        entity.setName(userTypeName);
+        entity.setEmail(email);
+        entity.setPasswordHash(passwordHash);
+        entity.setAddress(addressEntity);
+        entity.setUserType(new UserTypeEntity(userTypeId, null, null));
+        return entity;
+    }
+
+    public CreateUserInput buildInput() {
+        return new CreateUserInput(
+                name,
+                email,
+                passwordHash,
+                addressInput,
+                userTypeId
+        );
     }
 }

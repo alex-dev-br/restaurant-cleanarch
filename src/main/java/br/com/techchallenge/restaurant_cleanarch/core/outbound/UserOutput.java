@@ -7,6 +7,5 @@ public record UserOutput(
         String name,
         String email,
         AddressOutput address,
-        UserTypeOutput userType,
-        Set<RoleOutput> roles
+        UserTypeOutput userType
 ) {}
