@@ -4,9 +4,9 @@ name: CI  # Nome do workflow (aparece no badge de status)
 
 on:
   push:
-    branches: [ "main" ]  # Executa em pushes para main
+    branches: [ "main", "develop" ]  # Executa em pushes para main e develop
   pull_request:
-    branches: [ "main" ]  # Executa em PRs
+    branches: [ "main", "develop" ]  # Executa em PRs
 
 jobs:
   build:
@@ -50,7 +50,7 @@ jobs:
           (async () => {
             const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
             const page = await browser.newPage();
-            await page.setViewport({ width: 1920, height: 1080 });  # Tamanho para captura completa
+            await page.setViewport({ width: 1920, height: 1080 });  // Tamanho para captura completa
             await page.goto('file://${{ github.workspace }}/target/site/jacoco/index.html', { waitUntil: 'networkidle2' });
             await page.screenshot({ path: 'docs/images/jacoco-coverage.png', fullPage: true });
             await browser.close();
