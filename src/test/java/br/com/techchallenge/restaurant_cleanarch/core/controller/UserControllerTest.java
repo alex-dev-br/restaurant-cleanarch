@@ -3,6 +3,7 @@ package br.com.techchallenge.restaurant_cleanarch.core.controller;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateUserInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateUserInput;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.user.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,10 +14,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para UserController")
@@ -42,6 +43,9 @@ class UserControllerTest {
 
     @Captor
     private ArgumentCaptor<CreateUserInput> createUserCaptor;
+
+    @Captor
+    private ArgumentCaptor<UpdateUserInput> updateUserCaptor;
 
     @Test
     @DisplayName("Deve criar usuário com sucesso")
@@ -70,6 +74,26 @@ class UserControllerTest {
         assertThat(userCaptorValue.userTypeId()).isEqualTo(userInput.userTypeId());
         assertThat(userCaptorValue.address()).isEqualTo(userInput.address());
     }
+
+    @Test
+    @DisplayName("Deve alterar usuário com sucesso")
+    void deveAlterarUsuarioComSucesso() {
+        var userBuilder = new UserBuilder();
+        UUID uuid = UUID.randomUUID();
+        var userUpdateInput = userBuilder.withId(uuid).buildUpdateInput();
+
+        updateUserUseCase.execute(userUpdateInput);
+
+        then(updateUserUseCase).should().execute(updateUserCaptor.capture());
+        var userCaptorValue = updateUserCaptor.getValue();
+        assertThat(userCaptorValue).isNotNull();
+        assertThat(userUpdateInput.id()).isEqualTo(uuid);
+        assertThat(userCaptorValue.name()).isEqualTo(userUpdateInput.name());
+        assertThat(userCaptorValue.email()).isEqualTo(userUpdateInput.email());
+        assertThat(userCaptorValue.userTypeId()).isEqualTo(userUpdateInput.userTypeId());
+        assertThat(userCaptorValue.address()).isEqualTo(userUpdateInput.address());
+    }
+
 
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com CreateUserUseCase nulo")

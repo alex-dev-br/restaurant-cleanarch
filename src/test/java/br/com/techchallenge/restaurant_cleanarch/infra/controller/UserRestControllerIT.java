@@ -6,10 +6,7 @@ import br.com.techchallenge.restaurant_cleanarch.infra.controller.request.Addres
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.request.UserRequest;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -18,8 +15,11 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ActiveProfiles({"test"})
@@ -32,6 +32,7 @@ class UserRestControllerIT {
 
     @Autowired
     private UserRepository userRepository;
+
     private UserEntity user;
     private AddressRequest addressRequest;
 
@@ -65,6 +66,7 @@ class UserRestControllerIT {
                 .characterEncoding("UTF-8")
                 .content(JsonUtil.parseToString(userRequest)))
                 .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(redirectedUrlPattern("**/user/*"))
                 .andExpect(jsonPath("$.id", is(matchesPattern("[a-fA-F0-9\\-]{36}"))))
                 .andExpect(jsonPath("$.name", is(equalTo(userRequest.getName()))))
@@ -95,6 +97,7 @@ class UserRestControllerIT {
                         .characterEncoding("UTF-8")
                         .content(JsonUtil.parseToString(userRequest)))
                 .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(equalTo("Email is already in use."))));
     }
 
@@ -115,6 +118,95 @@ class UserRestControllerIT {
                         .characterEncoding("UTF-8")
                         .content(JsonUtil.parseToString(userRequest)))
                 .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is(equalTo("User type with ID " + userTypeId + " not found."))));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"UPDATE_USER"})
+    @DisplayName("Deve alterar usuário com usuário")
+    void deveAlterarUsuarioComSucesso() throws Exception {
+        var userTypeId = 1L;
+        var userRequest = new UserRequest();
+        userRequest.setName("Maria Oliveira");
+        userRequest.setEmail("marie.olv@mail.com");
+        userRequest.setPassword("secret&Str0nG");
+        userRequest.setUserTypeId(userTypeId);
+        userRequest.setAddress(addressRequest);
+
+        mockMvc.perform(put("/user/{id}", user.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(JsonUtil.parseToString(userRequest)))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"UPDATE_USER"})
+    @DisplayName("Deve retornar erro se o usuário sendo alterado não existir")
+    void deveDarErroAoAlterarUsuarioSeEleNaoExistir() throws Exception {
+        var userTypeId = 1L;
+        var userRequest = new UserRequest();
+        userRequest.setName("Maria Oliveira");
+        userRequest.setEmail("marie.olv@mail.com");
+        userRequest.setPassword("secret&Str0nG");
+        userRequest.setUserTypeId(userTypeId);
+        userRequest.setAddress(addressRequest);
+
+        UUID randomUUID = UUID.randomUUID();
+        mockMvc.perform(put("/user/{id}", randomUUID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(JsonUtil.parseToString(userRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is(equalTo("User with ID " + randomUUID + " not found."))));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"UPDATE_USER"})
+    @DisplayName("Deve retornar erro ao tentar alterar o email para um em uso")
+    void deveDarErroAoAlterarUsuarioParaEmailEmUso() throws Exception {
+        String inUseEmail = "in.use@mail.com";
+        UserEntity userEntity = new UserBuilder().withEmail(inUseEmail).withoutId().buildEntity();
+        userRepository.save(userEntity);
+
+        var userTypeId = 1L;
+
+        var userRequest = new UserRequest();
+        userRequest.setName("Maria Oliveira");
+        userRequest.setEmail(inUseEmail);
+        userRequest.setPassword("secret&Str0nG");
+        userRequest.setUserTypeId(userTypeId);
+        userRequest.setAddress(addressRequest);
+
+        mockMvc.perform(put("/user/{id}", user.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(JsonUtil.parseToString(userRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", is(equalTo("Email " + inUseEmail + " is already in use."))));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"UPDATE_USER"})
+    @DisplayName("Deve retornar erro ao tentar alterar o userType para um inválido")
+    void deveDarErroAoAlterarUsuarioParaUserTypeInvalido() throws Exception {
+        var userTypeId = Long.MAX_VALUE;
+        var userRequest = new UserRequest();
+        userRequest.setName("Maria Oliveira");
+        userRequest.setEmail("marie.olv@mail.com");
+        userRequest.setPassword("secret&Str0nG");
+        userRequest.setUserTypeId(userTypeId);
+        userRequest.setAddress(addressRequest);
+
+        mockMvc.perform(put("/user/{id}", user.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
+                        .content(JsonUtil.parseToString(userRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(equalTo("User type with ID " + userTypeId + " not found."))));
     }
 }

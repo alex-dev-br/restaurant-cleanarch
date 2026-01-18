@@ -7,6 +7,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.A
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.AddressInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateUserInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateUserInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.UserSummaryOutput;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.AddressEmbeddableEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserEntity;
@@ -164,6 +165,16 @@ public class UserBuilder {
                 name,
                 email,
                 passwordHash,
+                addressInput,
+                userTypeId
+        );
+    }
+
+    public UpdateUserInput buildUpdateInput() {
+        return new UpdateUserInput(
+                id,
+                name,
+                email,
                 addressInput,
                 userTypeId
         );

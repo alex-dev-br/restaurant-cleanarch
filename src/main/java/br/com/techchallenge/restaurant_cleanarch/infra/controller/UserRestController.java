@@ -6,11 +6,10 @@ import br.com.techchallenge.restaurant_cleanarch.infra.controller.request.UserRe
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.response.UserResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/user")
@@ -30,5 +29,12 @@ public class UserRestController {
         var createUserOutput = userController.create(createUserInput);
         var uri = uriComponentsBuilder.path("/user/{id}").buildAndExpand(createUserOutput.id()).toUri();
         return ResponseEntity.created(uri).body(userRestMapper.toResponse(createUserOutput));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateUser(@PathVariable("id") UUID id, @RequestBody @Valid UserRequest userRequest) {
+        var updateUserInput = userRestMapper.toUpdateInput(userRequest, id);
+        userController.update(updateUserInput);
+        return ResponseEntity.noContent().build();
     }
 }
