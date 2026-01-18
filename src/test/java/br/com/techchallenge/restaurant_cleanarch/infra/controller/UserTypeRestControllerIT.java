@@ -5,6 +5,8 @@ import br.com.techchallenge.restaurant_cleanarch.infra.controller.request.UserTy
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserTypeEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.RoleRepository;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserTypeRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,25 @@ class UserTypeRestControllerIT {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    private Long savedManagerId;
+    private Set<String> managerRolesName;
+
+    @BeforeEach
+    void setUp() {
+        managerRolesName = Set.of("VIEW_USER_TYPE", "CREATE_USER_TYPE");
+        var roles = roleRepository.findByNameIn(managerRolesName);
+        var manager = new UserTypeEntity();
+        manager.setName("MANAGER");
+        manager.setRoles(new HashSet<>(roles));
+        var savedManager = userTypeRepository.save(manager);
+        savedManagerId = savedManager.getId();
+    }
+
+    @AfterEach
+    void tearDown() {
+        userTypeRepository.deleteById(savedManagerId);
+    }
 
     @Test
     @WithMockUser(authorities = {"CREATE_USER_TYPE"})
@@ -156,21 +177,14 @@ class UserTypeRestControllerIT {
     @WithMockUser(authorities = {"VIEW_USER_TYPE"})
     @DisplayName("Deve buscar tipo de usuário por id")
     void shouldFindUserTypeById() throws Exception {
-        var userType = new UserTypeEntity();
-        userType.setName("MANAGER");
-        var roles = roleRepository.findByNameIn(Set.of("VIEW_USER_TYPE", "CREATE_USER_TYPE"));
-        userType.setRoles(new HashSet<>(roles));
-        var savedUserType = userTypeRepository.save(userType);
-        Long id = savedUserType.getId();
-
-        mockMvc.perform(get("/user-types/{id}", id)
+        mockMvc.perform(get("/user-types/{id}", savedManagerId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.id").value(savedManagerId))
                 .andExpect(jsonPath("$.name").value("MANAGER"))
                 .andExpect(jsonPath("$.roles", hasSize(2)))
-                .andExpect(jsonPath("$.roles", containsInAnyOrder("VIEW_USER_TYPE", "CREATE_USER_TYPE")));
+                .andExpect(jsonPath("$.roles", containsInAnyOrder(managerRolesName.toArray())));
     }
 
     @Test
@@ -181,5 +195,18 @@ class UserTypeRestControllerIT {
 
         mockMvc.perform(get("/user-types/{id}", idInexistente))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"VIEW_USER_TYPE"})
+    @DisplayName("Deve buscar todos os tipos de usuários")
+    void shouldListAllUserTyped() throws Exception {
+        mockMvc.perform(get("/user-types").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(3))))
+                .andExpect(jsonPath("$[*].name", hasItems("RESTAURANT_OWNER", "CUSTOMER", "MANAGER"))) // flyway cria tipos padrão
+                .andExpect(jsonPath("$[?(@.name == 'MANAGER')].roles[*]", containsInAnyOrder(managerRolesName.toArray())));
     }
 }

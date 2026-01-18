@@ -189,7 +189,7 @@ class UserTypeControllerTest {
 
     @Test
     @DisplayName("Deve retornar todos os UserTypes com sucesso")
-    void shouldGetAllUserTypesSuccessfully() {
+    void shouldListAllUserTypesSuccessfully() {
         String roleName1 = "ADMIN";
         String userTypeName1 = "Administrator";
         Role role1 = new Role(1L, roleName1);
@@ -202,7 +202,7 @@ class UserTypeControllerTest {
 
         given(listUserTypesUseCase.execute()).willReturn(Set.of(userType1, userType2));
 
-        List<UserTypeOutput> result = userTypeController.getAllUserTypes();
+        List<UserTypeOutput> result = userTypeController.listAllUserTypes();
 
         assertThat(result).isNotNull().hasSize(2);
         assertThat(result).extracting(UserTypeOutput::name).containsExactlyInAnyOrder(userTypeName1, userTypeName2);
@@ -217,7 +217,7 @@ class UserTypeControllerTest {
 
         given(listUserTypesUseCase.execute()).willThrow(expectedException);
 
-        assertThatThrownBy(() -> userTypeController.getAllUserTypes())
+        assertThatThrownBy(() -> userTypeController.listAllUserTypes())
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Error fetching user types");
 

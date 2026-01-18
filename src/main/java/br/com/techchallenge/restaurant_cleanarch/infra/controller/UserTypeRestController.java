@@ -5,9 +5,12 @@ import br.com.techchallenge.restaurant_cleanarch.infra.controller.mapper.UserTyp
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.request.UserTypeRequest;
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.response.UserTypeResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/user-types")
@@ -35,5 +38,11 @@ public class UserTypeRestController {
                 .map(userTypeRestMapper::toResponse)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public List<UserTypeResponse> listUserTypes() {
+        return userTypeController.listAllUserTypes().stream().map(userTypeRestMapper::toResponse).toList();
     }
 }
