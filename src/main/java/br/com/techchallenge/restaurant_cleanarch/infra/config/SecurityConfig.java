@@ -1,6 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.config;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RoleRoles;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserManagementRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles;
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.response.SimpleErroResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +31,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         final var userTypeBaseUrl = "/user-types";
         final var userTypeWithIdUrl = "/user-types/{id}";
+        final var userBaseUrl = "/user";
+        final var userWithIdUrl = "/user/{id}";
+
         http
             .cors(Customizer.withDefaults())
             .formLogin(AbstractHttpConfigurer::disable)
@@ -45,11 +49,19 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/restaurants", "/restaurants/{id}").permitAll()
                 .requestMatchers(HttpMethod.GET, "/roles").hasAuthority(RoleRoles.VIEW_ROLE.getRoleName())
+
                 .requestMatchers(HttpMethod.POST, userTypeBaseUrl).hasAuthority(UserTypeRoles.CREATE_USER_TYPE.getRoleName())
                 .requestMatchers(HttpMethod.PUT, userTypeWithIdUrl).hasAuthority(UserTypeRoles.UPDATE_USER_TYPE.getRoleName())
                 .requestMatchers(HttpMethod.DELETE, userTypeWithIdUrl).hasAuthority(UserTypeRoles.DELETE_USER_TYPE.getRoleName())
                 .requestMatchers(HttpMethod.GET, userTypeBaseUrl).hasAuthority(UserTypeRoles.VIEW_USER_TYPE.getRoleName())
                 .requestMatchers(HttpMethod.GET, userTypeWithIdUrl).hasAuthority(UserTypeRoles.VIEW_USER_TYPE.getRoleName())
+
+                .requestMatchers(HttpMethod.POST, userBaseUrl).hasAuthority(UserManagementRoles.CREATE_USER.getRoleName())
+                .requestMatchers(HttpMethod.GET, userBaseUrl).hasAuthority(UserManagementRoles.VIEW_USER.getRoleName())
+                .requestMatchers(HttpMethod.PUT, userWithIdUrl).hasAuthority(UserManagementRoles.UPDATE_USER.getRoleName())
+                .requestMatchers(HttpMethod.GET, userWithIdUrl).hasAuthority(UserManagementRoles.VIEW_USER.getRoleName())
+                .requestMatchers(HttpMethod.DELETE, userWithIdUrl).hasAuthority(UserManagementRoles.DELETE_USER.getRoleName())
+
                 .anyRequest().authenticated() // Boa prática: fechar com uma regra padrão
             )
             .httpBasic(Customizer.withDefaults())

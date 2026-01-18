@@ -12,7 +12,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -58,7 +58,7 @@ class RoleRestControllerIT {
 
 
     private String[] findAllRoleConstants() {
-        var roles = new ArrayList<String>();
+        var roles = new HashSet<String>();
         Reflections reflections = new Reflections(ROLES_PACKAGE);
         Set<Class<? extends ForGettingRoleName>> roleClasses = reflections.getSubTypesOf(ForGettingRoleName.class);
 

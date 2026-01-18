@@ -5,7 +5,10 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.UserMapper;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserRepository;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,19 +51,14 @@ public class UserGatewayAdapter implements UserGateway {
     @Override
     @Transactional(readOnly = true)
     public boolean existsUserWithEmail(String email) {
-        return existsByEmail(email);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean existsByEmail(String email) {
         Objects.requireNonNull(email, "email cannot be null");
-
-        String normalized = email.trim();
-        if (normalized.isBlank()) return false;
-
-        return userRepository.existsByEmailIgnoreCase(normalized);
+        var probe = new UserEntity();
+        probe.setEmail(email);
+        var example = ExampleMatcher.matching()
+                .withMatcher("email", ExampleMatcher.GenericPropertyMatchers.exact());
+        return userRepository.exists(Example.of(probe, example));
     }
+
 
     @Override
     @Transactional

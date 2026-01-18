@@ -19,7 +19,7 @@ import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para CreateUserUseCase")
-public class CreateUserUseCaseTest {
+class CreateUserUseCaseTest {
 
     @Mock private UserGateway userGateway;
     @Mock private UserTypeGateway userTypeGateway;
@@ -271,7 +271,5 @@ public class CreateUserUseCaseTest {
         assertThat(saved.getAddress()).isNull();
         assertThat(result.getAddress()).isNull();
     }
-
-
 
 }
