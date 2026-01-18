@@ -267,7 +267,7 @@ class UserTypeRestControllerIT {
 
     @Test
     @WithMockUser(authorities = {"DELETE_USER_TYPE"})
-    @DisplayName("Deve retornar erro tentar delete ID inexistente")
+    @DisplayName("Deve retornar deletar com sucesso")
     void shouldDeleteUseTypeWithSuccess() throws Exception{
         mockMvc.perform(delete("/user-types/{id}", managerId)).andExpect(status().isNoContent());
     }

@@ -48,4 +48,15 @@ public class MenuRestController {
         var updateInput = menuItemRestMapper.toUpdateInput(menuItemRequest, id);
         controller.updateMenuItem(updateInput);
     }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(code = HttpStatus.NO_CONTENT)
+    public void deleteById(@PathVariable("id") Long id) {
+        controller.deleteById(id);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<MenuItemResponse> getById(@PathVariable("id") Long id) {
+        return controller.getById(id).map(menuItemRestMapper::toResponse).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    }
 }

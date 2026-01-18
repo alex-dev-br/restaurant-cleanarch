@@ -3,14 +3,14 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.MenuItemRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.MenuItemGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
 
 import java.util.Objects;
+import java.util.Optional;
 
-public class GetMenuItemByIdUseCase extends UseCaseBase<Long, MenuItem> {
+public class GetMenuItemByIdUseCase extends UseCaseBase<Long, Optional<MenuItem>> {
 
     private final MenuItemGateway menuItemGateway;
 
@@ -21,9 +21,8 @@ public class GetMenuItemByIdUseCase extends UseCaseBase<Long, MenuItem> {
     }
 
     @Override
-    protected MenuItem doExecute(Long id) {
-        return menuItemGateway.findById(id)
-                .orElseThrow(() -> new BusinessException("Item de cardápio não encontrado"));
+    protected Optional<MenuItem> doExecute(Long id) {
+        return menuItemGateway.findById(id);
     }
 
     @Override
