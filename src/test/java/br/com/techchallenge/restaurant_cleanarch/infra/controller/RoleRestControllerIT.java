@@ -1,6 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.controller;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ class RoleRestControllerIT {
 
     @Test
     @WithMockUser(authorities = {"VIEW_ROLE"})
+    @DisplayName("Deve buscar todas as roles com sucesso")
     void shouldReturnAllRolesWhenGetRolesIsCalled() throws Exception {
         var allRoles = findAllRoleConstants();
 
@@ -45,6 +47,7 @@ class RoleRestControllerIT {
 
     @Test
     @WithMockUser(roles = {"NO_VIEW_ROLE"})
+    @DisplayName("Deve retornar forbidden quando tentar buscar as roles sem permissão")
     void shouldReturnForbiddenWhenGetRolesIsCalledWithoutRole() throws Exception {
         mockMvc.perform(get("/roles"))
                 .andExpect(status().isForbidden())

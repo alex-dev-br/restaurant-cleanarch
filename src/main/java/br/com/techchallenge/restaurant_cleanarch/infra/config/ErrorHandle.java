@@ -1,5 +1,6 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.config;
 
+import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.response.FieldErrorResponse;
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.response.SimpleErroResponse;
@@ -41,6 +42,12 @@ public class ErrorHandle {
     @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(UsernameNotFoundException.class)
     public SimpleErroResponse handleUsernameNotFoundException(UsernameNotFoundException e) {
+        return new SimpleErroResponse(e.getMessage());
+    }
+
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(BusinessException.class)
+    public SimpleErroResponse handleBusinessException(BusinessException e) {
         return new SimpleErroResponse(e.getMessage());
     }
 
