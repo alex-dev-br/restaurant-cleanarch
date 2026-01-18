@@ -40,7 +40,7 @@ class UserTypeRestControllerIT {
                 .content(JsonUtil.parseToString(userTypeRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(redirectedUrlPattern("**/user-types/*"))
+                .andExpect(redirectedUrlPattern("**/user-types/{[0-9]+}"))
                 .andExpect(jsonPath("$.name", is(equalTo(userTypeRequest.getName()))))
                 .andExpect(jsonPath("$.roles").isArray())
                 .andExpect(jsonPath("$.roles", hasSize(3)))
