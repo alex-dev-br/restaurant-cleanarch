@@ -52,6 +52,25 @@ class UserTypeRestControllerIT {
 
     @Test
     @WithMockUser(authorities = {"CREATE_USER_TYPE"})
+    @DisplayName("Deve criar lançar erro ao tentar criar UserType existente")
+    void shouldReturnBadRequestWhenCreateUserTypeWithNameIsUse() throws Exception {
+        var userTypeRequest = new UserTypeRequest();
+        List<String> rolesRequest = List.of (
+            MenuItemRoles.CREATE_MENU_ITEM.getRoleName(), MenuItemRoles.UPDATE_MENU_ITEM.getRoleName(), MenuItemRoles.VIEW_MENU_ITEM.getRoleName()
+        );
+        userTypeRequest.setRoles(rolesRequest);
+        userTypeRequest.setName("RESTAURANT_OWNER");
+
+        mockMvc.perform(post("/user-types")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(JsonUtil.parseToString(userTypeRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.message", is(equalTo("User type name is already in use."))));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"CREATE_USER_TYPE"})
     @DisplayName("Deve criar lançar erro ao tentar criar sem nome")
     void shouldReturnBadRequestWhenCreateUserTypeWithoutName() throws Exception {
         var userTypeRequest = new UserTypeRequest();
