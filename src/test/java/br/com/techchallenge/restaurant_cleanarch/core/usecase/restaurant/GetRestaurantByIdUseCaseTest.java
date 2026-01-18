@@ -5,7 +5,6 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.Restaura
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para GetRestaurantByIdUseCase")
@@ -51,7 +51,6 @@ class GetRestaurantByIdUseCaseTest {
                 .withOwner(owner)
                 .build();
 
-        given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(restaurant));
 
         var result = getRestaurantByIdUseCase.execute(restaurantId);
@@ -59,22 +58,8 @@ class GetRestaurantByIdUseCaseTest {
         assertThat(result).isNotEmpty();
         assertThat(result.get().getId()).isEqualTo(restaurantId);
 
-        then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
+        then(loggedUserGateway).should(never()).hasRole(RestaurantRoles.VIEW_RESTAURANT);
         then(restaurantGateway).should().findById(restaurantId);
-    }
-
-    @Test
-    @DisplayName("Deve lançar OperationNotAllowedException quando usuário não tem permissão")
-    void shouldThrowOperationNotAllowedWhenUserHasNoPermission() {
-        Long restaurantId = 1L;
-        given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(false);
-
-        assertThatThrownBy(() -> getRestaurantByIdUseCase.execute(restaurantId))
-                .isInstanceOf(OperationNotAllowedException.class)
-                .hasMessageContaining("The current user does not have permission");
-
-        then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
-        then(restaurantGateway).shouldHaveNoInteractions();
     }
 
     @Test
@@ -82,14 +67,13 @@ class GetRestaurantByIdUseCaseTest {
     void shouldThrowBusinessExceptionWhenRestaurantNotFound() {
         Long restaurantId = 1L;
 
-        given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.empty());
 
         Optional<Restaurant> result = getRestaurantByIdUseCase.execute(restaurantId);
 
         assertThat(result).isEmpty();
 
-        then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
+        then(loggedUserGateway).should(never()).hasRole(RestaurantRoles.VIEW_RESTAURANT);
         then(restaurantGateway).should().findById(restaurantId);
     }
 

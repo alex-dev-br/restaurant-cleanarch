@@ -32,4 +32,9 @@ public class GetRestaurantByIdUseCase extends UseCaseBase<Long, Optional<Restaur
         // aqui id NÃO será null, pois UseCaseBase.execute já valida input != null
         return restaurantGateway.findById(id);
     }
+
+    @Override
+    protected boolean isPublicAccessAllowed() {
+        return true;
+    }
 }

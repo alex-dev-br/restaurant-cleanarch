@@ -17,13 +17,10 @@ public class Restaurant {
     private final String cuisineType;
     private final User owner;
 
-    @Getter(AccessLevel.NONE)  // Pois os getters retornam cópias imutáveis, evitando exposição direta.
     private final Set<OpeningHours> openingHours;
 
-    @Getter(AccessLevel.NONE)
     private final Set<MenuItem> menu;
 
-    @Getter(AccessLevel.NONE)
     private final Set<User> employees;
 
     public Restaurant(Long id, String name, Address address, String cuisineType, User owner) {

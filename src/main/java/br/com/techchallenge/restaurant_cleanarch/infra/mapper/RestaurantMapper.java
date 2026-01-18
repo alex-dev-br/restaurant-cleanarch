@@ -38,14 +38,14 @@ public abstract class RestaurantMapper {
     @Autowired protected AddressMapper addressMapper;
 
     // Domain → Entity: MapStruct gera automático
-    @Mapping(target = "menu", source = "menuItems")
+    @Mapping(target = "menu", source = "menu")
     @Mapping(target = "openingHours", source = "openingHours")
     @Mapping(target = "employeeLinks", ignore = true)  // Populado no RestaurantGatewayAdapter.save()
     public abstract RestaurantEntity toEntity(Restaurant domain);
 
     /**
      * Entity → Domain: manual.
-     * Assim o MapStruct NÃO gera implementação e você evita warnings como "menuItems".
+     * Assim o MapStruct NÃO gera implementação e você evita warnings como "menu".
      */
     public Restaurant toDomain(RestaurantEntity entity) {
         if (entity == null) return null;

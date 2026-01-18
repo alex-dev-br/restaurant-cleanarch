@@ -3,7 +3,6 @@ package br.com.techchallenge.restaurant_cleanarch.infra.controller;
 import br.com.techchallenge.restaurant_cleanarch.core.controller.RestaurantController;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantManagementOutput;
-import br.com.techchallenge.restaurant_cleanarch.core.outbound.RestaurantPublicOutput;
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.mapper.RestaurantRestMapper;
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.request.RestaurantRequest;
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.response.RestaurantResponse;
@@ -54,15 +53,15 @@ public class RestaurantRestController {
     }
 
     @GetMapping
-    public Page<RestaurantPublicOutput> listPaged(
+    public Page<RestaurantSummaryResponse> listPaged(
             @RequestParam(required = false) String cuisineType,
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize
     ) {
         if (cuisineType != null && !cuisineType.isBlank()) {
-            return controller.findByCuisineType(cuisineType, pageNumber, pageSize);
+            return controller.findByCuisineType(cuisineType, pageNumber, pageSize).mapItems(restaurantRestMapper::toResponseSummary);
         }
-        return controller.findAll(pageNumber, pageSize);
+        return controller.findAll(pageNumber, pageSize).mapItems(restaurantRestMapper::toResponseSummary);
     }
 
     @DeleteMapping("/{id}")

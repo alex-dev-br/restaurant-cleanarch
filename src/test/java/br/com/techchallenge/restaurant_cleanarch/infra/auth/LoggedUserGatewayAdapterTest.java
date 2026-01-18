@@ -2,8 +2,10 @@ package br.com.techchallenge.restaurant_cleanarch.infra.auth;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
-import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
-import org.junit.jupiter.api.*;
+import br.com.techchallenge.restaurant_cleanarch.infra.mapper.UserMapper;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,20 +13,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 class LoggedUserGatewayAdapterTest {
 
-    private UserGateway userGateway;
     private LoggedUserGatewayAdapter adapter;
+    private UserMapper userMapperMock;
 
     @BeforeEach
     void setUp() {
-        userGateway = Mockito.mock(UserGateway.class);
-        adapter = new LoggedUserGatewayAdapter(userGateway);
+        userMapperMock = Mockito.mock(UserMapper.class);
+        adapter = new LoggedUserGatewayAdapter(userMapperMock);
         SecurityContextHolder.clearContext();
     }
 
@@ -43,7 +44,7 @@ class LoggedUserGatewayAdapterTest {
 
         // Assert
         assertThat(result).isEmpty();
-        verifyNoInteractions(userGateway);
+        verifyNoInteractions(userMapperMock);
     }
 
     @Test
@@ -57,51 +58,7 @@ class LoggedUserGatewayAdapterTest {
 
         // Assert
         assertThat(result).isEmpty();
-        verifyNoInteractions(userGateway);
-    }
-
-    @Test
-    void getCurrentUser_deveBuscarNoGateway_quandoPrincipalEhUuidString() {
-        // Arrange
-        UUID id = UUID.randomUUID();
-        var auth = new UsernamePasswordAuthenticationToken(
-                id.toString(),
-                "n/a",
-                List.of(new SimpleGrantedAuthority("ROLE_ANY"))
-        );
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        User user = Mockito.mock(User.class);
-        when(userGateway.findById(id)).thenReturn(Optional.of(user));
-
-        // Act
-        Optional<User> result = adapter.getCurrentUser();
-
-        // Assert
-        assertThat(result).contains(user);
-        verify(userGateway).findById(id);
-    }
-
-    @Test
-    void getCurrentUser_deveBuscarNoGateway_quandoPrincipalEhUuid() {
-        // Arrange
-        UUID id = UUID.randomUUID();
-        var auth = new UsernamePasswordAuthenticationToken(
-                id,
-                "n/a",
-                List.of(new SimpleGrantedAuthority("ROLE_ANY"))
-        );
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        User user = Mockito.mock(User.class);
-        when(userGateway.findById(id)).thenReturn(Optional.of(user));
-
-        // Act
-        Optional<User> result = adapter.getCurrentUser();
-
-        // Assert
-        assertThat(result).contains(user);
-        verify(userGateway).findById(id);
+        verifyNoInteractions(userMapperMock);
     }
 
     @Test
@@ -114,7 +71,7 @@ class LoggedUserGatewayAdapterTest {
 
         // Assert
         assertThat(result).isFalse();
-        verifyNoInteractions(userGateway);
+        verifyNoInteractions(userMapperMock);
     }
 
     @Test
@@ -128,7 +85,7 @@ class LoggedUserGatewayAdapterTest {
 
         // Assert
         assertThat(result).isFalse();
-        verifyNoInteractions(userGateway);
+        verifyNoInteractions(userMapperMock);
     }
 
     @Test
@@ -147,7 +104,7 @@ class LoggedUserGatewayAdapterTest {
 
         // Assert
         assertThat(result).isTrue();
-        verifyNoInteractions(userGateway);
+        verifyNoInteractions(userMapperMock);
     }
 
     @Test
@@ -166,7 +123,7 @@ class LoggedUserGatewayAdapterTest {
 
         // Assert
         assertThat(result).isFalse();
-        verifyNoInteractions(userGateway);
+        verifyNoInteractions(userMapperMock);
     }
 
     @Test
@@ -184,7 +141,7 @@ class LoggedUserGatewayAdapterTest {
 
         // Assert
         assertThat(result).isEmpty();
-        verifyNoInteractions(userGateway);
+        verifyNoInteractions(userMapperMock);
     }
 
     @Test
@@ -200,7 +157,7 @@ class LoggedUserGatewayAdapterTest {
 
         // Assert
         assertThat(result).isEmpty();
-        verifyNoInteractions(userGateway);
+        verifyNoInteractions(userMapperMock);
     }
 
     @Test
@@ -220,6 +177,6 @@ class LoggedUserGatewayAdapterTest {
 
         // Assert
         assertThat(result).isFalse();
-        verifyNoInteractions(userGateway);
+        verifyNoInteractions(userMapperMock);
     }
 }

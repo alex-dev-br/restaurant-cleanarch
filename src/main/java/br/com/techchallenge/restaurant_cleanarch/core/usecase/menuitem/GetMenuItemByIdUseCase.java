@@ -29,4 +29,9 @@ public class GetMenuItemByIdUseCase extends UseCaseBase<Long, Optional<MenuItem>
     protected ForGettingRoleName getRequiredRole() {
         return MenuItemRoles.VIEW_MENU_ITEM;
     }
+
+    @Override
+    protected boolean isPublicAccessAllowed() {
+        return true;
+    }
 }
