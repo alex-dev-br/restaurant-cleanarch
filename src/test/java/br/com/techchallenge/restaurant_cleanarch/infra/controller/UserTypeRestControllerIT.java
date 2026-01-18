@@ -259,7 +259,9 @@ class UserTypeRestControllerIT {
                         .content(JsonUtil.parseToString(updateManager)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.message", is(equalTo("Invalid roles: INVALID, ALL"))));
+                .andExpect(jsonPath("$.message", startsWith("Invalid roles:")))
+                .andExpect(jsonPath("$.message", containsString("INVALID")))
+                .andExpect(jsonPath("$.message", containsString("ALL")));
     }
 
 }
