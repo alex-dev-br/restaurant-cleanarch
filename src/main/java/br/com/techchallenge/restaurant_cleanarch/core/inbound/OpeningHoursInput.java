@@ -4,7 +4,7 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 
 public record OpeningHoursInput (
-    DayOfWeek dayOfDay,
+    DayOfWeek dayOfWeek,
     LocalTime openHour,
     LocalTime closeHour
 ) {}

@@ -11,8 +11,11 @@ import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.*;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class RestaurantController {
+
+    private static final String ID_CANNOT_BE_NULL = "Restaurant Id cannot be null.";
 
     private final CreateRestaurantUseCase createRestaurantUseCase;
     private final UpdateRestaurantUseCase updateRestaurantUseCase;
@@ -49,10 +52,10 @@ public class RestaurantController {
         this.listRestaurantsPagedUseCase = listRestaurantsPagedUseCase;
     }
 
-    public RestaurantPublicOutput createRestaurant(CreateRestaurantInput createRestaurantInput) {
+    public RestaurantManagementOutput createRestaurant(CreateRestaurantInput createRestaurantInput) {
         Objects.requireNonNull(createRestaurantInput, "CreateRestaurantInput cannot be null.");
         var restaurant = createRestaurantUseCase.execute(createRestaurantInput);
-        return RestaurantPresenter.toOutput(restaurant);
+        return RestaurantPresenter.toManagementOutput(restaurant);
     }
 
     public void updateRestaurant(UpdateRestaurantInput updateRestaurantInput) {
@@ -60,16 +63,16 @@ public class RestaurantController {
         updateRestaurantUseCase.execute(updateRestaurantInput);
     }
 
-    public RestaurantPublicOutput findById(Long id) {
-        Objects.requireNonNull(id, "Restaurant Id cannot be null.");
+    public Optional<RestaurantPublicOutput> findById(Long id) {
+        Objects.requireNonNull(id, ID_CANNOT_BE_NULL);
         var restaurant = getRestaurantByIdUseCase.execute(id);
-        return RestaurantPresenter.toOutput(restaurant);
+        return restaurant.map(RestaurantPresenter::toOutput);
     }
 
-    public RestaurantManagementOutput findManagementById(Long id) {
-        Objects.requireNonNull(id, "Restaurant Id cannot be null.");
+    public Optional<RestaurantManagementOutput> findManagementById(Long id) {
+        Objects.requireNonNull(id, ID_CANNOT_BE_NULL);
         var restaurant = getRestaurantManagementByIdUseCase.execute(id);
-        return RestaurantPresenter.toManagementOutput(restaurant);
+        return restaurant.map(RestaurantPresenter::toManagementOutput);
     }
 
     // Mantido por compatibilidade
@@ -93,7 +96,7 @@ public class RestaurantController {
     }
 
     public void deleteById(Long id) {
-        Objects.requireNonNull(id, "Restaurant Id cannot be null.");
+        Objects.requireNonNull(id, ID_CANNOT_BE_NULL);
         deleteRestaurantUseCase.execute(id);
     }
 }

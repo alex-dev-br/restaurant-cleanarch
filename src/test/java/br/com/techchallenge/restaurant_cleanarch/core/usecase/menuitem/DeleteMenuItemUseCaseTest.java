@@ -111,7 +111,7 @@ class DeleteMenuItemUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve negar quando restaurante não tem owner (ownerId = null)")
+    @DisplayName("Deve negar quando restaurante não tem ownerId (ownerId = null)")
     void shouldThrowOperationNotAllowedWhenRestaurantOwnerIsNull() {
         // Arrange
         Long itemId = 10L;

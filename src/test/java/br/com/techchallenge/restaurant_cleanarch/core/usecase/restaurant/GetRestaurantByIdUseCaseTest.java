@@ -5,7 +5,6 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.Restaura
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
@@ -55,10 +54,10 @@ class GetRestaurantByIdUseCaseTest {
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(restaurant));
 
-        Restaurant result = getRestaurantByIdUseCase.execute(restaurantId);
+        var result = getRestaurantByIdUseCase.execute(restaurantId);
 
-        assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(restaurantId);
+        assertThat(result).isNotEmpty();
+        assertThat(result.get().getId()).isEqualTo(restaurantId);
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
         then(restaurantGateway).should().findById(restaurantId);
@@ -86,9 +85,9 @@ class GetRestaurantByIdUseCaseTest {
         given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT)).willReturn(true);
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> getRestaurantByIdUseCase.execute(restaurantId))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("Restaurant not found.");
+        Optional<Restaurant> result = getRestaurantByIdUseCase.execute(restaurantId);
+
+        assertThat(result).isEmpty();
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT);
         then(restaurantGateway).should().findById(restaurantId);

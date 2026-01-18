@@ -488,7 +488,7 @@ class RestaurantGatewayAdapterTest {
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(id);
         assertThat(result.get().getName()).isEqualTo("Management Test");
-        // Verificar se dados de management estão presentes (ex: owner carregado)
+        // Verificar se dados de management estão presentes (ex: ownerId carregado)
         assertThat(result.get().getOwner()).isNotNull();
     }
 

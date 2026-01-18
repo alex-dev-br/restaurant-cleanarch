@@ -197,6 +197,8 @@
                         <exclude>**/infra/controller/mapper/*Impl*.class</exclude>
                         <exclude>**/infra/controller/request/*.class</exclude>
                         <exclude>**/infra/controller/response/*.class</exclude>
+                        <exclude>**/infra/config/*.class</exclude>
+                        <exclude>**/infra/auth/*.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>

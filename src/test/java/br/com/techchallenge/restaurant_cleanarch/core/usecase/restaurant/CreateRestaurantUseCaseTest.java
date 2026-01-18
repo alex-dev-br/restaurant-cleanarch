@@ -282,7 +282,7 @@ class CreateRestaurantUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve permitir owner estar em employees e evitar dupla consulta via cache")
+    @DisplayName("Deve permitir ownerId estar em employees e evitar dupla consulta via cache")
     void shouldAllowOwnerToBeInEmployeesAndAvoidDoubleLookup() {
         // Arrange
         CreateRestaurantInput input = new CreateRestaurantInput(
@@ -365,7 +365,7 @@ class CreateRestaurantUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve lançar BusinessException quando owner não é encontrado")
+    @DisplayName("Deve lançar BusinessException quando ownerId não é encontrado")
     void shouldThrowExceptionWhenOwnerNotFound() {
         // Arrange
         CreateRestaurantInput input = new CreateRestaurantInput(
@@ -392,7 +392,7 @@ class CreateRestaurantUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve lançar UserCannotBeRestaurantOwnerException quando owner não pode ser dono")
+    @DisplayName("Deve lançar UserCannotBeRestaurantOwnerException quando ownerId não pode ser dono")
     void shouldThrowExceptionWhenUserCannotBeOwner() {
         // Arrange
         UUID ordinaryUserId = UUID.randomUUID();
@@ -419,7 +419,7 @@ class CreateRestaurantUseCaseTest {
         // Act + Assert
         assertThatThrownBy(() -> createRestaurantUseCase.execute(input))
                 .isInstanceOf(UserCannotBeRestaurantOwnerException.class)
-                .hasMessageContaining("restaurant owner");
+                .hasMessageContaining("restaurant ownerId");
 
         then(restaurantGateway).should(never()).save(any());
     }
@@ -568,7 +568,7 @@ class CreateRestaurantUseCaseTest {
 
         assertThat(openingHours).isNotNull();
         assertThat(openingHours.getId()).isNull(); // create use case seta null
-        assertThat(openingHours.getDayOfWeek()).isEqualTo(openingHoursInput.dayOfDay());
+        assertThat(openingHours.getDayOfWeek()).isEqualTo(openingHoursInput.dayOfWeek());
 
         assertThat(address).isNotNull();
         assertThat(address.getStreet()).isEqualTo("Street X");

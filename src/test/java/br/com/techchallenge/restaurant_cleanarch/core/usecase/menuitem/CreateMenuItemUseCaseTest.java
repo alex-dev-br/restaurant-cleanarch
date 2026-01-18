@@ -61,7 +61,7 @@ class CreateMenuItemUseCaseTest {
      * - ownerId == currentUserId
      *
      * IMPORTANTE: chame este helper somente nos testes que realmente precisam
-     * passar pela validação de owner, senão o Mockito vai acusar stubs não usados.
+     * passar pela validação de ownerId, senão o Mockito vai acusar stubs não usados.
      */
     private Restaurant arrangeAuthorizedOwnerFlow(Long restaurantId, UUID ownerId) {
         Restaurant restaurant = mock(Restaurant.class);
@@ -80,7 +80,7 @@ class CreateMenuItemUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve criar item com sucesso quando usuário tem role e é o dono (owner por UUID)")
+    @DisplayName("Deve criar item com sucesso quando usuário tem role e é o dono (ownerId por UUID)")
     void shouldCreateSuccessfullyWhenUserHasRoleAndIsOwner() {
         // Arrange
         Long restaurantId = 10L;
@@ -195,7 +195,7 @@ class CreateMenuItemUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve negar quando restaurante não tem owner (ownerId = null)")
+    @DisplayName("Deve negar quando restaurante não tem ownerId (ownerId = null)")
     void shouldThrowOperationNotAllowedWhenRestaurantOwnerIsNull() {
         // Arrange
         Long restaurantId = 10L;
@@ -233,7 +233,7 @@ class CreateMenuItemUseCaseTest {
         given(loggedUserGateway.hasRole(MenuItemRoles.CREATE_MENU_ITEM)).willReturn(true);
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(mock(Restaurant.class)));
 
-        // NOTE: sem stubs de owner/user, porque falha antes.
+        // NOTE: sem stubs de ownerId/user, porque falha antes.
         CreateMenuItemInput input = builder()
                 .withName("   ")
                 .withRestaurantId(restaurantId)
@@ -269,7 +269,7 @@ class CreateMenuItemUseCaseTest {
         given(loggedUserGateway.hasRole(MenuItemRoles.CREATE_MENU_ITEM)).willReturn(true);
         given(restaurantGateway.findById(restaurantId)).willReturn(Optional.of(mock(Restaurant.class)));
 
-        // NOTE: sem stubs de owner/user, porque explode em Objects.requireNonNull(input.name()) antes.
+        // NOTE: sem stubs de ownerId/user, porque explode em Objects.requireNonNull(input.name()) antes.
         CreateMenuItemInput input = builder()
                 .withName(null)
                 .withRestaurantId(restaurantId)

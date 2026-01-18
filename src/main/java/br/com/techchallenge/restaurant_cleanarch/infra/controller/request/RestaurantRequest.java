@@ -1,6 +1,5 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.controller.request;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -20,12 +19,12 @@ public class RestaurantRequest {
     private String cuisineType;
     @NotNull
     private AddressRequest address;
-    @NotEmpty
-    private Long ownerId;
+    @NotNull
+    private UUID ownerId;
 
     @NotNull
     @Size(min = 1, max = 7)
-    private List<OpeningHours> openingHours;
+    private List<OpeningHoursRequest> openingHours;
 
     private List<MenuItemRequest> menu;
 

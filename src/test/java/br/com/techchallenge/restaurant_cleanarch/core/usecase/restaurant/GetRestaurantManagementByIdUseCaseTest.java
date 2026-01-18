@@ -6,7 +6,6 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.Restaura
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.UserNotAuthenticatedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
@@ -42,7 +41,7 @@ class GetRestaurantManagementByIdUseCaseTest {
     private GetRestaurantManagementByIdUseCase useCase;
 
     @Test
-    @DisplayName("Deve permitir quando usuário tem mesmo id do owner (UUID) mesmo sendo outra instância")
+    @DisplayName("Deve permitir quando usuário tem mesmo id do ownerId (UUID) mesmo sendo outra instância")
     void devePermitir_quandoUsuarioTemMesmoIdDoOwner_mesmoSendoOutraInstancia() {
         // Arrange
         Long restaurantId = 1L;
@@ -71,10 +70,10 @@ class GetRestaurantManagementByIdUseCaseTest {
         given(loggedUserGateway.requireCurrentUser()).willReturn(currentUser);
 
         // Act
-        Restaurant result = useCase.execute(restaurantId);
+        var result = useCase.execute(restaurantId);
 
         // Assert
-        assertThat(result).isSameAs(restaurant);
+        assertThat(result).isNotEmpty().hasValue(restaurant);
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT_MANAGEMENT);
         then(restaurantGateway).should().findByIdWithManagement(restaurantId);
@@ -116,10 +115,10 @@ class GetRestaurantManagementByIdUseCaseTest {
         given(loggedUserGateway.requireCurrentUser()).willReturn(currentUser);
 
         // Act
-        Restaurant result = useCase.execute(restaurantId);
+        var result = useCase.execute(restaurantId);
 
         // Assert
-        assertThat(result).isSameAs(restaurant);
+        assertThat(result).isNotEmpty().hasValue(restaurant);
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT_MANAGEMENT);
         then(restaurantGateway).should().findByIdWithManagement(restaurantId);
@@ -127,7 +126,7 @@ class GetRestaurantManagementByIdUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve negar quando usuário não é owner nem employee (por UUID)")
+    @DisplayName("Deve negar quando usuário não é ownerId nem employee (por UUID)")
     void deveNegar_quandoUsuarioNaoEhOwnerNemEmployee_porId() {
         // Arrange
         Long restaurantId = 3L;
@@ -225,13 +224,13 @@ class GetRestaurantManagementByIdUseCaseTest {
         given(restaurantGateway.findByIdWithManagement(restaurantId)).willReturn(Optional.empty());
 
         // Act + Assert
-        assertThatThrownBy(() -> useCase.execute(restaurantId))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage("Restaurant not found.");
+        Optional<Restaurant> result = useCase.execute(restaurantId);
+
+        assertThat(result).isEmpty();
 
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT_MANAGEMENT);
         then(restaurantGateway).should().findByIdWithManagement(restaurantId);
-        then(loggedUserGateway).should(never()).requireCurrentUser();
+        then(loggedUserGateway).should().requireCurrentUser();
     }
 
     @Test

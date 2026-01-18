@@ -43,14 +43,14 @@ public class CreateRestaurantUseCase extends UseCaseBase<CreateRestaurantInput, 
     @Override
     protected Restaurant doExecute(CreateRestaurantInput input) {
         Objects.requireNonNull(input, "CreateRestaurantInput cannot be null.");
-        Objects.requireNonNull(input.owner(), "Owner id cannot be null.");
+        Objects.requireNonNull(input.ownerId(), "Owner id cannot be null.");
         Objects.requireNonNull(input.name(), "Restaurant name cannot be null.");
 
         if (restaurantGateway.existsRestaurantWithName(input.name())) {
             throw new RestaurantNameIsAlreadyInUseException();
         }
 
-        var ownerId = input.owner();
+        var ownerId = input.ownerId();
         var owner = userGateway.findById(ownerId)
                 .orElseThrow(() -> new BusinessException("Owner not found."));
 
@@ -97,7 +97,7 @@ public class CreateRestaurantUseCase extends UseCaseBase<CreateRestaurantInput, 
     }
 
     private OpeningHours buildOpeningHours(OpeningHoursInput input) {
-        return input == null ? null : new OpeningHours(null, input.dayOfDay(), input.openHour(), input.closeHour());
+        return input == null ? null : new OpeningHours(null, input.dayOfWeek(), input.openHour(), input.closeHour());
     }
 
     private Address buildAddress(AddressInput addressInput) {

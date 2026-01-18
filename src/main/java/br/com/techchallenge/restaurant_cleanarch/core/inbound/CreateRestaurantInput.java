@@ -10,5 +10,5 @@ public record CreateRestaurantInput (
     Set<OpeningHoursInput> openingHours,
     Set<MenuItemInput> menu,
     Set<UUID> employees,
-    UUID owner
+    UUID ownerId
 ) {}

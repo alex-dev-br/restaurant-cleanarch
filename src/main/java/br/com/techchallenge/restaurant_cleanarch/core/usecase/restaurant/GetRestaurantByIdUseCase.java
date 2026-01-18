@@ -3,14 +3,14 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.UseCaseBase;
 
 import java.util.Objects;
+import java.util.Optional;
 
-public class GetRestaurantByIdUseCase extends UseCaseBase<Long, Restaurant> {
+public class GetRestaurantByIdUseCase extends UseCaseBase<Long, Optional<Restaurant>> {
 
     private final RestaurantGateway restaurantGateway;
 
@@ -28,9 +28,8 @@ public class GetRestaurantByIdUseCase extends UseCaseBase<Long, Restaurant> {
     }
 
     @Override
-    protected Restaurant doExecute(Long id) {
+    protected Optional<Restaurant> doExecute(Long id) {
         // aqui id NÃO será null, pois UseCaseBase.execute já valida input != null
-        return restaurantGateway.findById(id)
-                .orElseThrow(() -> new BusinessException("Restaurant not found."));
+        return restaurantGateway.findById(id);
     }
 }

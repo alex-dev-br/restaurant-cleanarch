@@ -22,10 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -75,9 +72,7 @@ class RestaurantControllerTest {
     private UUID ownerId;
     private UUID employeeUuid;
     private User owner;
-    private UserSummaryOutput ownerSummaryOutput;
     private User employee;
-    private UserSummaryOutput employeeSummaryOutput;
     private OpeningHoursInput openingHoursInput;
     private OpeningHours openingHours;
     private OpeningHoursOutput openingHoursOutput;
@@ -108,11 +103,7 @@ class RestaurantControllerTest {
         menuOutput = menuItemBuilder.buildOutput(restaurantId);
 
         owner = userBuilder.withId(ownerId).withRole(UserRoles.RESTAURANT_OWNER).build();
-        ownerSummaryOutput = userBuilder.buildSummaryOutput();
-
         employee = userBuilder.withId(employeeUuid).build();
-        employeeSummaryOutput = userBuilder.buildSummaryOutput();
-
         address = addressBuilder.build();
         addressInput = addressBuilder.buildInput();
         addressOutput = addressBuilder.buildOutput();
@@ -146,7 +137,7 @@ class RestaurantControllerTest {
         given(createRestaurantUseCase.execute(input)).willReturn(restaurant);
 
         // Act
-        RestaurantPublicOutput result = restaurantController.createRestaurant(input);
+        RestaurantManagementOutput result = restaurantController.createRestaurant(input);
 
         // Assert
         assertThat(result).isNotNull();
@@ -357,11 +348,12 @@ class RestaurantControllerTest {
         restaurant.addMenuItem(menuItem);
         restaurant.addEmployee(employee);
 
-        given(getRestaurantByIdUseCase.execute(restaurantId)).willReturn(restaurant);
+        given(getRestaurantByIdUseCase.execute(restaurantId)).willReturn(Optional.of(restaurant));
 
-        RestaurantPublicOutput result = restaurantController.findById(restaurantId);
+        var optionalResult = restaurantController.findById(restaurantId);
 
-        assertThat(result).isNotNull();
+        assertThat(optionalResult).isNotEmpty();
+        var result = optionalResult.get();
         assertThat(result.id()).isEqualTo(restaurant.getId());
         assertThat(result.name()).isEqualTo(restaurant.getName());
         assertThat(result.cuisineType()).isEqualTo(restaurant.getCuisineType());
@@ -559,13 +551,13 @@ class RestaurantControllerTest {
         Restaurant restaurant = new RestaurantBuilder().withId(id).build();
         restaurant.addEmployee(new UserBuilder().withId(UUID.randomUUID()).build());
 
-        given(getRestaurantManagementByIdUseCase.execute(id)).willReturn(restaurant);
+        given(getRestaurantManagementByIdUseCase.execute(id)).willReturn(Optional.of(restaurant));
 
-        RestaurantManagementOutput result = restaurantController.findManagementById(id);
+        var result = restaurantController.findManagementById(id);
 
-        assertThat(result).isNotNull();
-        assertThat(result.id()).isEqualTo(id);
-        assertThat(result.employees()).isNotNull().hasSize(1);
+        assertThat(result).isNotEmpty();
+        assertThat(result.get().id()).isEqualTo(id);
+        assertThat(result.get().employees()).isNotNull().hasSize(1);
 
         then(getRestaurantManagementByIdUseCase).should().execute(id);
     }
