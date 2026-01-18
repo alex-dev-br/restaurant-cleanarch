@@ -64,6 +64,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, userWithIdUrl).hasAuthority(UserManagementRoles.DELETE_USER.getRoleName())
 
                 .requestMatchers(HttpMethod.POST, "/restaurants/{restaurant-id}/menu").hasAuthority(MenuItemRoles.CREATE_MENU_ITEM.getRoleName())
+                .requestMatchers(HttpMethod.PUT, "/restaurants/{restaurant-id}/menu/{id}").hasAuthority(MenuItemRoles.UPDATE_MENU_ITEM.getRoleName())
                 .anyRequest().authenticated() // Boa prática: fechar com uma regra padrão
             )
             .httpBasic(Customizer.withDefaults())
