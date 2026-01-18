@@ -29,6 +29,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         final var userTypeBaseUrl = "/user-types";
+        final var userTypeWithIdUrl = "/user-types/{id}";
         http
             .cors(Customizer.withDefaults())
             .formLogin(AbstractHttpConfigurer::disable)
@@ -45,10 +46,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/restaurants", "/restaurants/{id}").permitAll()
                 .requestMatchers(HttpMethod.GET, "/roles").hasAuthority(RoleRoles.VIEW_ROLE.getRoleName())
                 .requestMatchers(HttpMethod.POST, userTypeBaseUrl).hasAuthority(UserTypeRoles.CREATE_USER_TYPE.getRoleName())
-                .requestMatchers(HttpMethod.PUT, userTypeBaseUrl).hasAuthority(UserTypeRoles.UPDATE_USER_TYPE.getRoleName())
-                .requestMatchers(HttpMethod.DELETE, userTypeBaseUrl).hasAuthority(UserTypeRoles.DELETE_USER_TYPE.getRoleName())
+                .requestMatchers(HttpMethod.PUT, userTypeWithIdUrl).hasAuthority(UserTypeRoles.UPDATE_USER_TYPE.getRoleName())
+                .requestMatchers(HttpMethod.DELETE, userTypeWithIdUrl).hasAuthority(UserTypeRoles.DELETE_USER_TYPE.getRoleName())
                 .requestMatchers(HttpMethod.GET, userTypeBaseUrl).hasAuthority(UserTypeRoles.VIEW_USER_TYPE.getRoleName())
-                .requestMatchers(HttpMethod.GET, userTypeBaseUrl+"/{id}").hasAuthority(UserTypeRoles.VIEW_USER_TYPE.getRoleName())
+                .requestMatchers(HttpMethod.GET, userTypeWithIdUrl).hasAuthority(UserTypeRoles.VIEW_USER_TYPE.getRoleName())
                 .anyRequest().authenticated() // Boa prática: fechar com uma regra padrão
             )
             .httpBasic(Customizer.withDefaults())

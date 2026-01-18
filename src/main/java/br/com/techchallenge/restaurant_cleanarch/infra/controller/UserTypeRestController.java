@@ -45,4 +45,12 @@ public class UserTypeRestController {
     public List<UserTypeResponse> listUserTypes() {
         return userTypeController.listAllUserTypes().stream().map(userTypeRestMapper::toResponse).toList();
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateUserType(@PathVariable("id") Long id,
+                                               @RequestBody @Valid UserTypeRequest userTypeRequest) {
+        var updateUserTypeInput = userTypeRestMapper.toUpdateInput(userTypeRequest, id);
+        userTypeController.updateUserType(updateUserTypeInput);
+        return ResponseEntity.noContent().build();
+    }
 }

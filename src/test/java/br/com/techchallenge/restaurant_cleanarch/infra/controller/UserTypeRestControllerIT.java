@@ -17,13 +17,13 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ActiveProfiles({"test"})
@@ -40,7 +40,7 @@ class UserTypeRestControllerIT {
     @Autowired
     private RoleRepository roleRepository;
 
-    private Long savedManagerId;
+    private Long managerId;
     private Set<String> managerRolesName;
 
     @BeforeEach
@@ -51,12 +51,12 @@ class UserTypeRestControllerIT {
         manager.setName("MANAGER");
         manager.setRoles(new HashSet<>(roles));
         var savedManager = userTypeRepository.save(manager);
-        savedManagerId = savedManager.getId();
+        managerId = savedManager.getId();
     }
 
     @AfterEach
     void tearDown() {
-        userTypeRepository.deleteById(savedManagerId);
+        userTypeRepository.deleteById(managerId);
     }
 
     @Test
@@ -177,11 +177,11 @@ class UserTypeRestControllerIT {
     @WithMockUser(authorities = {"VIEW_USER_TYPE"})
     @DisplayName("Deve buscar tipo de usuário por id")
     void shouldFindUserTypeById() throws Exception {
-        mockMvc.perform(get("/user-types/{id}", savedManagerId)
+        mockMvc.perform(get("/user-types/{id}", managerId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(savedManagerId))
+                .andExpect(jsonPath("$.id").value(managerId))
                 .andExpect(jsonPath("$.name").value("MANAGER"))
                 .andExpect(jsonPath("$.roles", hasSize(2)))
                 .andExpect(jsonPath("$.roles", containsInAnyOrder(managerRolesName.toArray())));
@@ -209,4 +209,57 @@ class UserTypeRestControllerIT {
                 .andExpect(jsonPath("$[*].name", hasItems("RESTAURANT_OWNER", "CUSTOMER", "MANAGER"))) // flyway cria tipos padrão
                 .andExpect(jsonPath("$[?(@.name == 'MANAGER')].roles[*]", containsInAnyOrder(managerRolesName.toArray())));
     }
+
+    @Test
+    @WithMockUser(authorities = {"UPDATE_USER_TYPE"})
+    @DisplayName("Deve alterar user type com sucesso")
+    void shouldUpdateUseTypeWithSuccess() throws Exception {
+        var userTypeRequest = new UserTypeRequest();
+        userTypeRequest.setName("MANAGER_UPDATED");
+        List<String> rolesRequest = List.of (
+            MenuItemRoles.CREATE_MENU_ITEM.getRoleName(),
+            MenuItemRoles.UPDATE_MENU_ITEM.getRoleName(),
+            MenuItemRoles.VIEW_MENU_ITEM.getRoleName(),
+            MenuItemRoles.DELETE_MENU_ITEM.getRoleName()
+        );
+        userTypeRequest.setRoles(rolesRequest);
+
+        mockMvc.perform(put("/user-types/{id}", managerId)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(JsonUtil.parseToString(userTypeRequest)))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"UPDATE_USER_TYPE"})
+    @DisplayName("Deve lançar erro ao nome sendo utilizado")
+    void shouldThrowErrorWhenUpdateUseTypeWithNameIsUse() throws Exception {
+        var userTypeRequest = new UserTypeRequest();
+        userTypeRequest.setName("RESTAURANT_OWNER");
+        userTypeRequest.setRoles(new ArrayList<>(managerRolesName));
+
+        mockMvc.perform(put("/user-types/{id}", managerId)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(JsonUtil.parseToString(userTypeRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.message", is(equalTo("User type name is already in use."))));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"UPDATE_USER_TYPE"})
+    @DisplayName("Deve lançar erro ao tentar adicionar roles inválidas")
+    void shouldThrowErrorWhenUpdateUseTypeWithInvalidRole() throws Exception {
+        var updateManager = new UserTypeRequest();
+        updateManager.setName("MANAGER");
+        updateManager.setRoles(List.of("UPDATE_USER_TYPE", "INVALID", "ALL"));
+
+        mockMvc.perform(put("/user-types/{id}", managerId)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(JsonUtil.parseToString(updateManager)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.message", is(equalTo("Invalid roles: INVALID, ALL"))));
+    }
+
 }
