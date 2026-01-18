@@ -7,9 +7,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQue
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateMenuItemInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateMenuItemInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.MenuItemOutput;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem.CreateMenuItemUseCase;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem.ListMenuItemsByRestaurantUseCase;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem.UpdateMenuItemUseCase;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -40,6 +39,12 @@ class MenuItemControllerTest {
 
     @Mock
     private UpdateMenuItemUseCase updateMenuItemUseCase;
+
+    @Mock
+    private DeleteMenuItemUseCase deleteMenuItemUseCase;
+
+    @Mock
+    private GetMenuItemByIdUseCase getMenuItemByIdUseCase;
 
     @InjectMocks
     private MenuItemController menuItemController;
@@ -139,9 +144,32 @@ class MenuItemControllerTest {
     }
 
     @Test
+    @DisplayName("Deve deletar sucesso")
+    void deveDeletarItemDeMenuComSucesso() {
+        Long menuId = 1L;
+        menuItemController.deleteById(menuId);
+        then(deleteMenuItemUseCase).should().execute(menuId);
+    }
+
+    @Test
+    @DisplayName("Deve Buscar por id com sucesso")
+    void deveBuscarPorIdComSucesso() {
+        MenuItem menuItem = new MenuItemBuilder().build();
+        Long menuId = 1L;
+
+        given(getMenuItemByIdUseCase.execute(menuId)).willReturn(Optional.of(menuItem));
+
+        var result = menuItemController.getById(menuId);
+
+        assertThat(result).isNotNull();
+
+        then(getMenuItemByIdUseCase).should().execute(menuId);
+    }
+
+    @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com ListMenuItemsByRestaurantUseCase nulo")
     void shouldThrowExceptionWhenListMenuItemsByRestaurantUseCaseIsNull() {
-        assertThatThrownBy(() -> new MenuItemController(null, createMenuItemUseCase, updateMenuItemUseCase))
+        assertThatThrownBy(() -> new MenuItemController(null, createMenuItemUseCase, updateMenuItemUseCase, deleteMenuItemUseCase, getMenuItemByIdUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("ListMenuItemsByRestaurantUseCase cannot be null.");
 
@@ -151,7 +179,7 @@ class MenuItemControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com CreateMenuItemUseCase nulo")
     void shouldThrowExceptionWhenCreateMenuItemUseCaseIsNull() {
-        assertThatThrownBy(() -> new MenuItemController(listMenuItemsByRestaurantUseCase, null, updateMenuItemUseCase))
+        assertThatThrownBy(() -> new MenuItemController(listMenuItemsByRestaurantUseCase, null, updateMenuItemUseCase, deleteMenuItemUseCase, getMenuItemByIdUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("CreateMenuItemUseCase cannot be null.");
 
@@ -161,9 +189,29 @@ class MenuItemControllerTest {
     @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com UpdateMenuItemUseCase nulo")
     void shouldThrowExceptionWhenUpdateMenuItemUseCaseIsNull() {
-        assertThatThrownBy(() -> new MenuItemController(listMenuItemsByRestaurantUseCase, createMenuItemUseCase, null))
+        assertThatThrownBy(() -> new MenuItemController(listMenuItemsByRestaurantUseCase, createMenuItemUseCase, null, deleteMenuItemUseCase, getMenuItemByIdUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("UpdateMenuItemUseCase cannot be null.");
+
+        then(listMenuItemsByRestaurantUseCase).should(never()).execute(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao instanciar controller com DeleteMenuItemUseCase nulo")
+    void shouldThrowExceptionWhenDeleteMenuItemUseCaseIsNull() {
+        assertThatThrownBy(() -> new MenuItemController(listMenuItemsByRestaurantUseCase, createMenuItemUseCase, updateMenuItemUseCase, null, getMenuItemByIdUseCase))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("DeleteMenuItemUseCase cannot be null.");
+
+        then(listMenuItemsByRestaurantUseCase).should(never()).execute(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao instanciar controller com GetMenuItemByIdUseCase nulo")
+    void shouldThrowExceptionWhenGetMenuItemByIdUseCaseIsNull() {
+        assertThatThrownBy(() -> new MenuItemController(listMenuItemsByRestaurantUseCase, createMenuItemUseCase, updateMenuItemUseCase, deleteMenuItemUseCase, null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("GetMenuItemByIdUseCase cannot be null.");
 
         then(listMenuItemsByRestaurantUseCase).should(never()).execute(any());
     }

@@ -1,9 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.config;
 
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.*;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem.CreateMenuItemUseCase;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem.ListMenuItemsByRestaurantUseCase;
-import br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem.UpdateMenuItemUseCase;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem.*;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.*;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.role.ListRolesUseCase;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.user.*;
@@ -101,6 +99,16 @@ public class UseCaseConfig {
     @Bean
     public UpdateMenuItemUseCase updateMenuItemUseCase(LoggedUserGateway loggedUserGateway, MenuItemGateway menuItemGateway, RestaurantGateway restaurantGateway) {
         return new UpdateMenuItemUseCase(loggedUserGateway, menuItemGateway, restaurantGateway);
+    }
+
+    @Bean
+    public DeleteMenuItemUseCase deleteMenuItemUseCase(LoggedUserGateway loggedUserGateway, MenuItemGateway menuItemGateway, RestaurantGateway restaurantGateway) {
+        return new DeleteMenuItemUseCase(loggedUserGateway, menuItemGateway, restaurantGateway);
+    }
+
+    @Bean
+    public GetMenuItemByIdUseCase getMenuItemByIdUseCase(LoggedUserGateway loggedUserGateway, MenuItemGateway menuItemGateway, RestaurantGateway restaurantGateway) {
+        return new GetMenuItemByIdUseCase(menuItemGateway, loggedUserGateway);
     }
 
     /* ============================

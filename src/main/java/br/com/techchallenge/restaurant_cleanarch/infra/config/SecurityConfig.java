@@ -34,6 +34,8 @@ public class SecurityConfig {
         final var userTypeWithIdUrl = "/user-types/{id}";
         final var userBaseUrl = "/user";
         final var userWithIdUrl = "/user/{id}";
+        final var menuItemBaseUrl = "/restaurants/{restaurant-id}/menu";
+        final var menuWithIdUrl = "/restaurants/{restaurant-id}/menu/{id}";
 
         http
             .cors(Customizer.withDefaults())
@@ -48,7 +50,7 @@ public class SecurityConfig {
                         "/actuator/health",
                         "/api/v1/_ping"
                 ).permitAll()
-                .requestMatchers(HttpMethod.GET,"/restaurants", "/restaurants/{id}", "/restaurants/{restaurant-id}/menu").permitAll()
+                .requestMatchers(HttpMethod.GET,"/restaurants", "/restaurants/{id}", menuItemBaseUrl, menuWithIdUrl).permitAll()
                 .requestMatchers(HttpMethod.GET, "/roles").hasAuthority(RoleRoles.VIEW_ROLE.getRoleName())
 
                 .requestMatchers(HttpMethod.POST, userTypeBaseUrl).hasAuthority(UserTypeRoles.CREATE_USER_TYPE.getRoleName())
@@ -63,8 +65,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, userWithIdUrl).hasAuthority(UserManagementRoles.VIEW_USER.getRoleName())
                 .requestMatchers(HttpMethod.DELETE, userWithIdUrl).hasAuthority(UserManagementRoles.DELETE_USER.getRoleName())
 
-                .requestMatchers(HttpMethod.POST, "/restaurants/{restaurant-id}/menu").hasAuthority(MenuItemRoles.CREATE_MENU_ITEM.getRoleName())
-                .requestMatchers(HttpMethod.PUT, "/restaurants/{restaurant-id}/menu/{id}").hasAuthority(MenuItemRoles.UPDATE_MENU_ITEM.getRoleName())
+                .requestMatchers(HttpMethod.POST, menuItemBaseUrl).hasAuthority(MenuItemRoles.CREATE_MENU_ITEM.getRoleName())
+                .requestMatchers(HttpMethod.PUT, menuWithIdUrl).hasAuthority(MenuItemRoles.UPDATE_MENU_ITEM.getRoleName())
+                .requestMatchers(HttpMethod.DELETE, menuWithIdUrl).hasAuthority(MenuItemRoles.DELETE_MENU_ITEM.getRoleName())
                 .anyRequest().authenticated() // Boa prática: fechar com uma regra padrão
             )
             .httpBasic(Customizer.withDefaults())

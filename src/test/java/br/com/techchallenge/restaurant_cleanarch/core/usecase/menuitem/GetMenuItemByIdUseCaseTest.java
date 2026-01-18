@@ -3,7 +3,6 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.MenuItemBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.MenuItemRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.MenuItemGateway;
@@ -18,7 +17,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.BDDMockito.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para GetMenuItemByIdUseCase (UseCaseBase)")
@@ -73,9 +73,9 @@ class GetMenuItemByIdUseCaseTest {
         given(menuItemGateway.findById(itemId)).willReturn(Optional.empty());
 
         // Act / Assert
-        assertThatThrownBy(() -> useCase.execute(itemId))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("Item de cardápio não encontrado");
+        var optionalResult = useCase.execute(itemId);
+
+        assertThat(optionalResult).isEmpty();
 
         then(loggedUserGateway).should().hasRole(MenuItemRoles.VIEW_MENU_ITEM);
         then(menuItemGateway).should().findById(itemId);
@@ -100,10 +100,11 @@ class GetMenuItemByIdUseCaseTest {
         given(menuItemGateway.findById(itemId)).willReturn(Optional.of(expected));
 
         // Act
-        MenuItem result = useCase.execute(itemId);
+        var optionalResult = useCase.execute(itemId);
 
         // Assert
-        assertThat(result).isNotNull();
+        assertThat(optionalResult).isNotEmpty();
+        var result = optionalResult.get();
         assertThat(result.getId()).isEqualTo(itemId);
         assertThat(result.getName()).isEqualTo("Pizza Margherita");
 

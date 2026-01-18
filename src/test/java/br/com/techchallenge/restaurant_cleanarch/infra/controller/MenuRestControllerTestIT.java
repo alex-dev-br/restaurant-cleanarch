@@ -66,6 +66,7 @@ class MenuRestControllerTestIT {
     private Long restaurantId;
     private UUID ownerId;
     private Long baiaoDeDoisId;
+    private MenuItemEntity baiaoDeDoisEntity;
 
     @BeforeEach
     void setUp() {
@@ -116,7 +117,8 @@ class MenuRestControllerTestIT {
         baiaoDeDois.setPrice(new BigDecimal("50"));
         baiaoDeDois.setRestaurantOnly(false);
         baiaoDeDois.setPhotoPath("/fotos-menu/baiao-de-dois.jpg");
-        baiaoDeDoisId = menuRepo.save(baiaoDeDois).getId();
+        baiaoDeDoisEntity = menuRepo.save(baiaoDeDois);
+        baiaoDeDoisId = baiaoDeDoisEntity.getId();
 
         var strogonoff = new MenuItemEntity();
         strogonoff.setName("Strogonoff de Frango");
@@ -263,5 +265,45 @@ class MenuRestControllerTestIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(equalTo("Já existe um item com este nome no restaurante"))));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"DELETE_MENU_ITEM"})
+    @DisplayName("Deve deletar item de menu com sucesso")
+    void deveDeletarItemDeMenuComSucesso() throws Exception {
+        mockMvc.perform(delete("/restaurants/{restaurant-id}/menu/{id}", restaurantId, baiaoDeDoisId))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"DELETE_MENU_ITEM"})
+    @DisplayName("Deve devolver erro ao deletar item de menu inexistentes")
+    void deveDevolverErroAoDeletarItemMenuInexistente() throws Exception {
+        mockMvc.perform(delete("/restaurants/{restaurant-id}/menu/{id}", restaurantId, Long.MAX_VALUE))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message", equalTo("Restaurante associado não encontrado")));
+    }
+
+    @Test
+    @DisplayName("Deve consultar item menu com sucesso")
+    void deveConsultarItemMenuComSucesso() throws Exception {
+        mockMvc.perform(get("/restaurants/{restaurant-id}/menu/{id}", restaurantId, baiaoDeDoisId)
+                .accept(MediaType.APPLICATION_JSON).characterEncoding("UTF-8"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", notNullValue()))
+                .andExpect(jsonPath("$.name", is(equalTo(baiaoDeDoisEntity.getName()))))
+                .andExpect(jsonPath("$.description", is(equalTo(baiaoDeDoisEntity.getDescription()))))
+                .andExpect(jsonPath("$.price", comparesEqualTo(baiaoDeDoisEntity.getPrice().doubleValue())))
+                .andExpect(jsonPath("$.restaurantOnly", is(equalTo(baiaoDeDoisEntity.getRestaurantOnly()))))
+                .andExpect(jsonPath("$.photoPath", is(equalTo(baiaoDeDoisEntity.getPhotoPath()))));
+
+    }
+
+    @Test
+    @DisplayName("Deve devolver notfound se não existe item menu")
+    void deveDevolverNotFoundSeNaoExistirItemMenu() throws Exception {
+        mockMvc.perform(get("/restaurants/{restaurant-id}/menu/{id}", restaurantId, Long.MAX_VALUE))
+                .andExpect(status().isNotFound());
     }
 }
