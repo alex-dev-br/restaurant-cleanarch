@@ -6,10 +6,7 @@ import br.com.techchallenge.restaurant_cleanarch.infra.controller.request.UserTy
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.response.UserTypeResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
@@ -30,5 +27,13 @@ public class UserTypeRestController {
         var createUserTypeOutput = userTypeController.createUserType(createUserTypeInput);
         var uri = uriComponentsBuilder.path("/user-types/{id}").buildAndExpand(createUserTypeOutput.id()).toUri();
         return ResponseEntity.created(uri).body(userTypeRestMapper.toResponse(createUserTypeOutput));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserTypeResponse> getUserTypeById(@PathVariable("id") Long id) {
+        return userTypeController.getUserTypeById(id)
+                .map(userTypeRestMapper::toResponse)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

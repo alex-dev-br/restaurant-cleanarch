@@ -2,6 +2,9 @@ package br.com.techchallenge.restaurant_cleanarch.infra.controller;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.MenuItemRoles;
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.request.UserTypeRequest;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserTypeEntity;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.RoleRepository;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserTypeRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +15,12 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -25,6 +31,12 @@ class UserTypeRestControllerIT {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private UserTypeRepository userTypeRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Test
     @WithMockUser(authorities = {"CREATE_USER_TYPE"})
@@ -122,7 +134,7 @@ class UserTypeRestControllerIT {
     }
 
     @Test
-    @WithMockUser(roles = {"VIEW_USER_TYPE"})
+    @WithMockUser(authorities = {"VIEW_USER_TYPE"})
     @DisplayName("Deve retorna forbidden quando tentar criar um novo tipo de usuário sem permissão")
     void shouldReturnForbiddenWhenCreateUserTypeWithoutPermission() throws Exception {
         var userTypeRequest = new UserTypeRequest();
@@ -138,5 +150,36 @@ class UserTypeRestControllerIT {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().encoding("UTF-8"))
                 .andExpect(jsonPath("$.message", containsString("current user does not have permission")));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"VIEW_USER_TYPE"})
+    @DisplayName("Deve buscar tipo de usuário por id")
+    void shouldFindUserTypeById() throws Exception {
+        var userType = new UserTypeEntity();
+        userType.setName("MANAGER");
+        var roles = roleRepository.findByNameIn(Set.of("VIEW_USER_TYPE", "CREATE_USER_TYPE"));
+        userType.setRoles(new HashSet<>(roles));
+        var savedUserType = userTypeRepository.save(userType);
+        Long id = savedUserType.getId();
+
+        mockMvc.perform(get("/user-types/{id}", id)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.name").value("MANAGER"))
+                .andExpect(jsonPath("$.roles", hasSize(2)))
+                .andExpect(jsonPath("$.roles", containsInAnyOrder("VIEW_USER_TYPE", "CREATE_USER_TYPE")));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"VIEW_USER_TYPE"})
+    @DisplayName("Deve retornar 404 ao buscar ID inexistente")
+    void shouldReturn404WhenIdNotFound() throws Exception {
+        Long idInexistente = Long.MAX_VALUE;
+
+        mockMvc.perform(get("/user-types/{id}", idInexistente))
+                .andExpect(status().isNotFound());
     }
 }
