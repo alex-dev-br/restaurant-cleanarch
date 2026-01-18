@@ -3,8 +3,11 @@ package br.com.techchallenge.restaurant_cleanarch.core.controller;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateUserInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateUserInput;
+import br.com.techchallenge.restaurant_cleanarch.core.outbound.UserOutput;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.user.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +18,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,10 +110,50 @@ class UserControllerTest {
     @DisplayName("Deve deletar usuário com sucesso")
     void deveDeletarUsuarioComSucesso() {
         UUID uuid = UUID.randomUUID();
-        deleteUserUseCase.execute(uuid);
+        userController.deleteById(uuid);
 
         then(deleteUserUseCase).should().execute(uuidArgumentCaptor.capture());
         assertThat(uuidArgumentCaptor.getValue()).isEqualTo(uuid);
+    }
+
+    @Test
+    @DisplayName("Deve buscar usuário por Id")
+    void deveBuscarUsuarioPorId() {
+        var userBuilder = new UserBuilder();
+        var uuid = UUID.randomUUID();
+        var user = userBuilder.withId(uuid).build();
+
+        given(getUserByIdUseCase.execute(uuid)).willReturn(Optional.of(user));
+
+        var result = userController.findById(uuid);
+
+        assertThat(result).isNotEmpty();
+        UserOutput userOutput = result.get();
+        assertThat(userOutput.id()).isEqualTo(uuid);
+
+        then(getUserByIdUseCase).should().execute(uuidArgumentCaptor.capture());
+        assertThat(uuidArgumentCaptor.getValue()).isEqualTo(uuid);
+    }
+
+    @Test
+    @DisplayName("Deve buscar todos os usuários")
+    void deveBuscarTodosOsUsuarios() {
+        var userBuilder = new UserBuilder();
+        var user = userBuilder.build();
+        int pageNumber = 0;
+        int pageSize = 10;
+        PagedQuery<Void> pagedQuery = new PagedQuery<>(null, pageNumber, pageSize);
+        var page = new Page<>(pageNumber, pageSize, 1, List.of(user));
+
+        given(listUsersUseCase.execute(pagedQuery)).willReturn(page);
+
+        var result = userController.findAll(pageNumber, pageSize);
+
+        assertThat(result.pageNumber()).isZero();
+        assertThat(result.pageSize()).isEqualTo(pageSize);
+        assertThat(result.totalPages()).isOne();
+        assertThat(result.totalElements()).isOne();
+        assertThat(result.content()).hasSize(1);
     }
 
     @Test

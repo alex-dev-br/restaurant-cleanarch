@@ -275,4 +275,26 @@ class UserRestControllerIT {
         UUID randomUUID = UUID.randomUUID();
         mockMvc.perform(get("/user/{id}", randomUUID).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
     }
+
+    @Test
+    @WithMockUser(authorities = {"VIEW_USER"})
+    @DisplayName("Deve buscar todos os usuarios com sucesso")
+    void deveBuscarTodosUsuariosComSucesso() throws Exception {
+        var pageNumber = 0;
+        var pageSize = 10;
+        mockMvc.perform(get("/user?pageNumber={pageNumber}&pageSize={pageSize}", pageNumber, pageSize)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.pageNumber", is(equalTo(pageNumber))))
+                .andExpect(jsonPath("$.pageSize", is(equalTo(pageSize))))
+                .andExpect(jsonPath("$.totalElements", is(greaterThanOrEqualTo(1))))
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))))
+                .andExpect(jsonPath("$.content[*].id", hasItem(user.getId().toString())))
+                .andExpect(jsonPath("$.content[*].name", hasItem(user.getName())))
+                .andExpect(jsonPath("$.content[*].email", hasItem(user.getEmail())))
+                .andExpect(jsonPath("$.content[*].password").doesNotExist());
+
+    }
 }

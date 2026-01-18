@@ -194,6 +194,7 @@
                         <exclude>**/core/domain/model/valueobject/*.class</exclude>
                         <exclude>**/infra/persistence/entity/*Entity*.class</exclude>
                         <exclude>**/infra/mapper/*Impl*.class</exclude>
+                        <exclude>**/infra/controller/mapper/*Impl*.class</exclude>
                         <exclude>**/infra/controller/resquest/*.class</exclude>
                         <exclude>**/infra/controller/response/*.class</exclude>
                     </excludes>
