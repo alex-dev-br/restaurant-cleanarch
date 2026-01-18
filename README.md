@@ -324,6 +324,14 @@ Os testes verificam cenários de sucesso e de falha (campos obrigatórios, permi
 - **Docker** – contêineres multi‑stage geram imagens enxutas e performáticas; healthchecks garantem que os serviços só 
 iniciem quando seus dependentes estiverem prontos.
 
+**Métricas de Qualidade do Projeto:**  
+O badge de CI indica o status do build e testes automatizados via GitHub Actions, enquanto o de cobertura mostra o 
+percentual de código testado via Jacoco e Codecov.
+
+[![Codecov Coverage](https://codecov.io/gh/alex-dev-br/restaurant-cleanarch/graph/badge.svg)](https://codecov.io/gh/alex-dev-br/restaurant-cleanarch)
+[![CI Build](https://github.com/alex-dev-br/restaurant-cleanarch/actions/workflows/ci.yml/badge.svg)](https://github.com/alex-dev-br/restaurant-cleanarch/actions/workflows/ci.yml)
+[![Codecov Coverage Graph](https://codecov.io/gh/alex-dev-br/restaurant-cleanarch/graphs/sunburst.svg?token=SEU_TOKEN)](https://codecov.io/gh/alex-dev-br/restaurant-cleanarch)
+
 ---
 
 ## 7. Collections para Teste
