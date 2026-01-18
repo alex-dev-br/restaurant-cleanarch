@@ -1,6 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.config;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RoleRoles;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles;
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.response.SimpleErroResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
@@ -42,6 +43,9 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/restaurants", "/restaurants/*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/roles").hasAuthority(RoleRoles.VIEW_ROLE.getRoleName())
+                .requestMatchers(HttpMethod.POST, "/user-types").hasAuthority(UserTypeRoles.CREATE_USER_TYPE.getRoleName())
+                .requestMatchers(HttpMethod.GET, "/user-types").hasAuthority(UserTypeRoles.VIEW_USER_TYPE.getRoleName())
+                .requestMatchers(HttpMethod.GET, "/user-types/{id}").hasAuthority(UserTypeRoles.VIEW_USER_TYPE.getRoleName())
                 .anyRequest().authenticated() // Boa prática: fechar com uma regra padrão
             )
             .httpBasic(Customizer.withDefaults())

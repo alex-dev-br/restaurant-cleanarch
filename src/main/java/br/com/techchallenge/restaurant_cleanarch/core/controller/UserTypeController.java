@@ -8,6 +8,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype.*;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class UserTypeController {
 
@@ -49,9 +50,9 @@ public class UserTypeController {
         deleteUserTypeUseCase.execute(id);
     }
 
-    public UserTypeOutput getUserTypeById(Long id) {
-        var userType = getUserTypeByIdUseCase.execute(id);
-        return UserTypePresenter.toOutput(userType);
+    public Optional<UserTypeOutput> getUserTypeById(Long id) {
+        var result = getUserTypeByIdUseCase.execute(id);
+        return result.map(UserTypePresenter::toOutput);
     }
 
     public List<UserTypeOutput> getAllUserTypes() {

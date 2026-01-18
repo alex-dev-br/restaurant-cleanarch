@@ -3,7 +3,6 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase.usertype;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserTypeBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserTypeGateway;
@@ -45,9 +44,9 @@ class GetUserTypeByIdUseCaseTest {
         given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.of(expectedUserType));
 
-        UserType result = getUserTypeByIdUseCase.execute(id);
+        var result = getUserTypeByIdUseCase.execute(id);
 
-        assertThat(result).isNotNull().isEqualTo(expectedUserType);
+        assertThat(result).isNotEmpty().hasValue(expectedUserType);
 
         then(loggedUserGateway).should().hasRole(UserTypeRoles.VIEW_USER_TYPE);
         then(userTypeGateway).should().findById(id);
@@ -69,16 +68,16 @@ class GetUserTypeByIdUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando UserType não é encontrado")
+    @DisplayName("Deve retornar optinal vazio quando UserType não é encontrado")
     void shouldThrowExceptionWhenUserTypeNotFound() {
         Long id = 1L;
 
         given(loggedUserGateway.hasRole(UserTypeRoles.VIEW_USER_TYPE)).willReturn(true);
         given(userTypeGateway.findById(id)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> getUserTypeByIdUseCase.execute(id))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage("User type not found.");
+        var result = getUserTypeByIdUseCase.execute(id);
+
+        assertThat(result).isEmpty();
 
         then(loggedUserGateway).should().hasRole(UserTypeRoles.VIEW_USER_TYPE);
         then(userTypeGateway).should().findById(id);

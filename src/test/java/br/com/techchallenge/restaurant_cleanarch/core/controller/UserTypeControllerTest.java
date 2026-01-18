@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -156,14 +157,17 @@ class UserTypeControllerTest {
         Role role = new Role(1L, roleName);
         UserType userType = new UserType(id, userTypeName, Set.of(role));
 
-        given(getUserTypeByIdUseCase.execute(id)).willReturn(userType);
+        given(getUserTypeByIdUseCase.execute(id)).willReturn(Optional.of(userType));
 
-        UserTypeOutput result = userTypeController.getUserTypeById(id);
+        var result = userTypeController.getUserTypeById(id);
 
-        assertThat(result).isNotNull();
-        assertThat(result.id()).isEqualTo(id);
-        assertThat(result.name()).isEqualTo(userTypeName);
-        assertThat(result.roles()).containsExactly(roleName);
+        assertThat(result).isNotEmpty();
+
+        var userTypeOutput = result.get();
+
+        assertThat(userTypeOutput.id()).isEqualTo(id);
+        assertThat(userTypeOutput.name()).isEqualTo(userTypeName);
+        assertThat(userTypeOutput.roles()).containsExactly(roleName);
 
         then(getUserTypeByIdUseCase).should().execute(id);
     }
