@@ -1,10 +1,12 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.controller;
 
 import br.com.techchallenge.restaurant_cleanarch.core.controller.UserController;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.mapper.UserRestMapper;
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.request.UserRequest;
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.response.UserResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -45,9 +47,17 @@ public class UserRestController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> buscaPorId(@PathVariable("id") UUID id) {
+    public ResponseEntity<UserResponse> findById(@PathVariable("id") UUID id) {
         return userController.findById(id).map(userRestMapper::toResponse)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public Page<UserResponse> findAll(@RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
+                                      @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
+        var page = userController.findAll(pageNumber, pageSize);
+        return page.mapItems(userRestMapper::toResponse);
     }
 }

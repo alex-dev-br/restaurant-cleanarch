@@ -1,7 +1,9 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.persistence.adapter;
 
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserManagementRoles;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.UserMapper;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.RoleEntity;
@@ -162,5 +164,19 @@ class UserGatewayAdapterTest {
         assertThatThrownBy(() -> userGatewayAdapter.deleteById(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("id cannot be null");
+    }
+
+    @Test
+    @DisplayName("Deve buscar todos os usuários")
+    void deveBuscarTodosOsUsuarios() {
+        var pagedQuery = new PagedQuery<Void>(null, 0, 10);
+        var result = userGatewayAdapter.findAll(pagedQuery);
+
+        assertThat(result).isNotNull();
+        assertThat(result.pageNumber()).isZero();
+        assertThat(result.pageSize()).isEqualTo(10);
+        assertThat(result.totalPages()).isGreaterThanOrEqualTo(1);
+        assertThat(result.totalElements()).isGreaterThanOrEqualTo(1);
+        assertThat(result.content()).isNotEmpty().extracting(User::getId).contains(userEntity.getId());
     }
 }
