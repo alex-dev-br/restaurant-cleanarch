@@ -6,6 +6,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.Restaura
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
+import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.UserNotAuthenticatedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
@@ -48,15 +49,18 @@ class GetRestaurantManagementByIdUseCaseTest {
         UUID ownerId = UUID.randomUUID();
 
         User ownerFromRestaurant = new UserBuilder()
+                .withDefaults()
                 .withId(ownerId)
-                .withRole(UserRoles.RESTAURANT_OWNER) // necessário para o domínio
+                .withRole(UserRoles.RESTAURANT_OWNER)
                 .build();
 
         User currentUser = new UserBuilder()
+                .withDefaults()
                 .withId(ownerId) // mesma UUID, outra instância
                 .build();
 
         Restaurant restaurant = new RestaurantBuilder()
+                .withDefaults()
                 .withId(restaurantId)
                 .withOwner(ownerFromRestaurant)
                 .withEmployees(Set.of())
@@ -85,19 +89,23 @@ class GetRestaurantManagementByIdUseCaseTest {
         UUID employeeId = UUID.randomUUID();
 
         User ownerFromRestaurant = new UserBuilder()
+                .withDefaults()
                 .withId(UUID.randomUUID())
-                .withRole(UserRoles.RESTAURANT_OWNER) // necessário para o domínio
+                .withRole(UserRoles.RESTAURANT_OWNER)
                 .build();
 
         User employeeFromRestaurant = new UserBuilder()
+                .withDefaults()
                 .withId(employeeId)
                 .build();
 
         User currentUser = new UserBuilder()
+                .withDefaults()
                 .withId(employeeId) // mesma UUID, outra instância
                 .build();
 
         Restaurant restaurant = new RestaurantBuilder()
+                .withDefaults()
                 .withId(restaurantId)
                 .withOwner(ownerFromRestaurant)
                 .withEmployees(Set.of(employeeFromRestaurant))
@@ -125,19 +133,23 @@ class GetRestaurantManagementByIdUseCaseTest {
         Long restaurantId = 3L;
 
         User owner = new UserBuilder()
+                .withDefaults()
                 .withId(UUID.randomUUID())
-                .withRole(UserRoles.RESTAURANT_OWNER) // necessário para o domínio
+                .withRole(UserRoles.RESTAURANT_OWNER)
                 .build();
 
         User employee = new UserBuilder()
+                .withDefaults()
                 .withId(UUID.randomUUID())
                 .build();
 
         User currentUser = new UserBuilder()
+                .withDefaults()
                 .withId(UUID.randomUUID()) // diferente dos dois
                 .build();
 
         Restaurant restaurant = new RestaurantBuilder()
+                .withDefaults()
                 .withId(restaurantId)
                 .withOwner(owner)
                 .withEmployees(Set.of(employee))
@@ -164,10 +176,12 @@ class GetRestaurantManagementByIdUseCaseTest {
         Long restaurantId = 4L;
 
         Restaurant restaurant = new RestaurantBuilder()
+                .withDefaults()
                 .withId(restaurantId)
                 .withOwner(new UserBuilder()
+                        .withDefaults()
                         .withId(UUID.randomUUID())
-                        .withRole(UserRoles.RESTAURANT_OWNER) // necessário para o domínio
+                        .withRole(UserRoles.RESTAURANT_OWNER)
                         .build())
                 .withEmployees(Set.of())
                 .build();
@@ -199,5 +213,36 @@ class GetRestaurantManagementByIdUseCaseTest {
         then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT_MANAGEMENT);
         then(restaurantGateway).shouldHaveNoInteractions();
         then(loggedUserGateway).should(never()).requireCurrentUser();
+    }
+
+    @Test
+    @DisplayName("Deve lançar BusinessException quando restaurante não for encontrado (cobre lambda do orElseThrow)")
+    void deveLancarBusinessException_quandoRestauranteNaoForEncontrado() {
+        // Arrange
+        Long restaurantId = 6L;
+
+        given(loggedUserGateway.hasRole(RestaurantRoles.VIEW_RESTAURANT_MANAGEMENT)).willReturn(true);
+        given(restaurantGateway.findByIdWithManagement(restaurantId)).willReturn(Optional.empty());
+
+        // Act + Assert
+        assertThatThrownBy(() -> useCase.execute(restaurantId))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Restaurant not found.");
+
+        then(loggedUserGateway).should().hasRole(RestaurantRoles.VIEW_RESTAURANT_MANAGEMENT);
+        then(restaurantGateway).should().findByIdWithManagement(restaurantId);
+        then(loggedUserGateway).should(never()).requireCurrentUser();
+    }
+
+    @Test
+    @DisplayName("Deve lançar NullPointerException quando input for null (UseCaseBase)")
+    void deveLancarNullPointerException_quandoInputForNull() {
+        // Arrange / Act + Assert
+        assertThatThrownBy(() -> useCase.execute(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("Input cannot be null");
+
+        then(loggedUserGateway).shouldHaveNoInteractions();
+        then(restaurantGateway).shouldHaveNoInteractions();
     }
 }

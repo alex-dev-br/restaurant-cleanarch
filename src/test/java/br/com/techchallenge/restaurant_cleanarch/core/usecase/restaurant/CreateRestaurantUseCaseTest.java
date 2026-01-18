@@ -22,6 +22,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateRestaurantInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.MenuItemInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.OpeningHoursInput;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.AddressInput;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Method;
 import java.time.DayOfWeek;
 import java.util.Optional;
 import java.util.Set;
@@ -64,16 +66,15 @@ class CreateRestaurantUseCaseTest {
     private UUID employeeId;
     private User owner;
     private User employee;
-    private Address address;
     private String restaurantName;
     private String cuisineType;
 
     @BeforeEach
     void setUp() {
+        // Arrange (common)
         ownerId = UUID.randomUUID();
         employeeId = UUID.randomUUID();
 
-        address = new AddressBuilder().build();
         restaurantName = "My Restaurant";
         cuisineType = "Italian";
 
@@ -93,27 +94,31 @@ class CreateRestaurantUseCaseTest {
     @DisplayName("Deve criar restaurante com sucesso (com openingHours, menu e employees)")
     void shouldCreateRestaurantSuccessfully() {
         // Arrange
-        OpeningHoursInput ohFridayInput = new OpeningHoursBuilder().buildInput();
-        OpeningHours ohFriday = new OpeningHoursBuilder().build();
+        OpeningHoursInput ohFridayInput = new OpeningHoursBuilder().withDefaults().buildInput();
+        OpeningHours ohFriday = new OpeningHoursBuilder().withDefaults().build();
 
         OpeningHoursInput ohTuesdayInput = new OpeningHoursBuilder()
+                .withDefaults()
                 .withDayOfWeek(DayOfWeek.TUESDAY)
                 .buildInput();
         OpeningHours ohTuesday = new OpeningHoursBuilder()
+                .withDefaults()
                 .withDayOfWeek(DayOfWeek.TUESDAY)
                 .build();
 
         Set<OpeningHoursInput> openingHoursInput = Set.of(ohTuesdayInput, ohFridayInput);
         Set<OpeningHours> openingHours = Set.of(ohTuesday, ohFriday);
 
-        MenuItemInput menuItemInput = new MenuItemBuilder().buildInput();
-        MenuItem menuItem = new MenuItemBuilder().build();
+        MenuItemInput menuItemInput = new MenuItemBuilder().withDefaults().buildInput();
+        MenuItem menuItem = new MenuItemBuilder().withDefaults().build();
         Set<MenuItemInput> menuItemsInput = Set.of(menuItemInput);
         Set<MenuItem> menuItems = Set.of(menuItem);
 
+        AddressInput addressInput = new AddressBuilder().withDefaults().buildInput();
+
         CreateRestaurantInput input = new CreateRestaurantInput(
                 restaurantName,
-                new AddressBuilder().buildInput(),
+                addressInput,
                 cuisineType,
                 openingHoursInput,
                 menuItemsInput,
@@ -125,7 +130,7 @@ class CreateRestaurantUseCaseTest {
                 .withDefaults()
                 .withId(1L)
                 .withName(restaurantName)
-                .withAddress(address)
+                .withAddress(new AddressBuilder().withDefaults().build())
                 .withCuisineType(cuisineType)
                 .withOwner(owner)
                 .withEmployees(Set.of(employee))
@@ -158,7 +163,15 @@ class CreateRestaurantUseCaseTest {
         assertThat(captured.getId()).isNull();
         assertThat(captured.getName()).isEqualTo(restaurantName);
         assertThat(captured.getCuisineType()).isEqualTo(cuisineType);
-        assertThat(captured.getAddress()).isEqualTo(address);
+
+        // compara Address por campos (evita fragilidade de instância)
+        assertThat(captured.getAddress().getStreet()).isEqualTo(addressInput.street());
+        assertThat(captured.getAddress().getNumber()).isEqualTo(addressInput.number());
+        assertThat(captured.getAddress().getCity()).isEqualTo(addressInput.city());
+        assertThat(captured.getAddress().getState()).isEqualTo(addressInput.state());
+        assertThat(captured.getAddress().getZipCode()).isEqualTo(addressInput.zipCode());
+        assertThat(captured.getAddress().getComplement()).isEqualTo(addressInput.complement());
+
         assertThat(captured.getOwner()).isEqualTo(owner);
 
         assertThat(captured.getEmployees()).extracting(User::getId)
@@ -179,7 +192,7 @@ class CreateRestaurantUseCaseTest {
         // Arrange
         CreateRestaurantInput input = new CreateRestaurantInput(
                 restaurantName,
-                new AddressBuilder().buildInput(),
+                new AddressBuilder().withDefaults().buildInput(),
                 cuisineType,
                 null,
                 null,
@@ -191,7 +204,7 @@ class CreateRestaurantUseCaseTest {
                 .withDefaults()
                 .withId(1L)
                 .withName(restaurantName)
-                .withAddress(address)
+                .withAddress(new AddressBuilder().withDefaults().build())
                 .withCuisineType(cuisineType)
                 .withOwner(owner)
                 .withEmployees(Set.of())
@@ -229,7 +242,7 @@ class CreateRestaurantUseCaseTest {
         // Arrange
         CreateRestaurantInput input = new CreateRestaurantInput(
                 restaurantName,
-                new AddressBuilder().buildInput(),
+                new AddressBuilder().withDefaults().buildInput(),
                 cuisineType,
                 null,
                 null,
@@ -241,7 +254,7 @@ class CreateRestaurantUseCaseTest {
                 .withDefaults()
                 .withId(1L)
                 .withName(restaurantName)
-                .withAddress(address)
+                .withAddress(new AddressBuilder().withDefaults().build())
                 .withCuisineType(cuisineType)
                 .withOwner(owner)
                 .withEmployees(Set.of())
@@ -274,7 +287,7 @@ class CreateRestaurantUseCaseTest {
         // Arrange
         CreateRestaurantInput input = new CreateRestaurantInput(
                 restaurantName,
-                new AddressBuilder().buildInput(),
+                new AddressBuilder().withDefaults().buildInput(),
                 cuisineType,
                 null,
                 null,
@@ -286,7 +299,7 @@ class CreateRestaurantUseCaseTest {
                 .withDefaults()
                 .withId(1L)
                 .withName(restaurantName)
-                .withAddress(address)
+                .withAddress(new AddressBuilder().withDefaults().build())
                 .withCuisineType(cuisineType)
                 .withOwner(owner)
                 .withEmployees(Set.of(owner))
@@ -312,8 +325,10 @@ class CreateRestaurantUseCaseTest {
     @Test
     @DisplayName("Deve lançar OperationNotAllowedException quando usuário não tem role (UseCaseBase)")
     void shouldThrowExceptionWhenUserHasNoPermission() {
+        // Arrange
         given(loggedUserGateway.hasRole(RestaurantRoles.CREATE_RESTAURANT)).willReturn(false);
 
+        // Act + Assert
         assertThatThrownBy(() -> createRestaurantUseCase.execute(mock(CreateRestaurantInput.class)))
                 .isInstanceOf(OperationNotAllowedException.class)
                 .hasMessageContaining("The current user does not have permission");
@@ -325,9 +340,10 @@ class CreateRestaurantUseCaseTest {
     @Test
     @DisplayName("Deve lançar RestaurantNameIsAlreadyInUseException quando nome já existe (não consulta userGateway)")
     void shouldThrowExceptionWhenRestaurantNameAlreadyExists() {
+        // Arrange
         CreateRestaurantInput input = new CreateRestaurantInput(
                 restaurantName,
-                new AddressBuilder().buildInput(),
+                new AddressBuilder().withDefaults().buildInput(),
                 cuisineType,
                 null,
                 null,
@@ -338,6 +354,7 @@ class CreateRestaurantUseCaseTest {
         given(loggedUserGateway.hasRole(RestaurantRoles.CREATE_RESTAURANT)).willReturn(true);
         given(restaurantGateway.existsRestaurantWithName(restaurantName)).willReturn(true);
 
+        // Act + Assert
         assertThatThrownBy(() -> createRestaurantUseCase.execute(input))
                 .isInstanceOf(RestaurantNameIsAlreadyInUseException.class)
                 .hasMessageContaining("already in use");
@@ -350,9 +367,10 @@ class CreateRestaurantUseCaseTest {
     @Test
     @DisplayName("Deve lançar BusinessException quando owner não é encontrado")
     void shouldThrowExceptionWhenOwnerNotFound() {
+        // Arrange
         CreateRestaurantInput input = new CreateRestaurantInput(
                 restaurantName,
-                new AddressBuilder().buildInput(),
+                new AddressBuilder().withDefaults().buildInput(),
                 cuisineType,
                 null,
                 null,
@@ -364,6 +382,7 @@ class CreateRestaurantUseCaseTest {
         given(restaurantGateway.existsRestaurantWithName(restaurantName)).willReturn(false);
         given(userGateway.findById(ownerId)).willReturn(Optional.empty());
 
+        // Act + Assert
         assertThatThrownBy(() -> createRestaurantUseCase.execute(input))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("Owner not found");
@@ -375,6 +394,7 @@ class CreateRestaurantUseCaseTest {
     @Test
     @DisplayName("Deve lançar UserCannotBeRestaurantOwnerException quando owner não pode ser dono")
     void shouldThrowExceptionWhenUserCannotBeOwner() {
+        // Arrange
         UUID ordinaryUserId = UUID.randomUUID();
 
         User ordinaryUser = new UserBuilder()
@@ -384,7 +404,7 @@ class CreateRestaurantUseCaseTest {
 
         CreateRestaurantInput input = new CreateRestaurantInput(
                 restaurantName,
-                new AddressBuilder().buildInput(),
+                new AddressBuilder().withDefaults().buildInput(),
                 cuisineType,
                 null,
                 null,
@@ -396,6 +416,7 @@ class CreateRestaurantUseCaseTest {
         given(restaurantGateway.existsRestaurantWithName(restaurantName)).willReturn(false);
         given(userGateway.findById(ordinaryUserId)).willReturn(Optional.of(ordinaryUser));
 
+        // Act + Assert
         assertThatThrownBy(() -> createRestaurantUseCase.execute(input))
                 .isInstanceOf(UserCannotBeRestaurantOwnerException.class)
                 .hasMessageContaining("restaurant owner");
@@ -406,9 +427,10 @@ class CreateRestaurantUseCaseTest {
     @Test
     @DisplayName("Deve lançar BusinessException quando employee não é encontrado")
     void shouldThrowExceptionWhenEmployeeNotFound() {
+        // Arrange
         CreateRestaurantInput input = new CreateRestaurantInput(
                 restaurantName,
-                new AddressBuilder().buildInput(),
+                new AddressBuilder().withDefaults().buildInput(),
                 cuisineType,
                 null,
                 null,
@@ -421,6 +443,7 @@ class CreateRestaurantUseCaseTest {
         given(userGateway.findById(ownerId)).willReturn(Optional.of(owner));
         given(userGateway.findById(employeeId)).willReturn(Optional.empty());
 
+        // Act + Assert
         assertThatThrownBy(() -> createRestaurantUseCase.execute(input))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("Employee " + employeeId);
@@ -431,6 +454,7 @@ class CreateRestaurantUseCaseTest {
     @Test
     @DisplayName("Deve lançar NullPointerException quando input é nulo (UseCaseBase)")
     void shouldThrowExceptionWhenInputIsNull() {
+        // Arrange / Act + Assert
         assertThatThrownBy(() -> createRestaurantUseCase.execute(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("Input cannot be null");
@@ -443,9 +467,10 @@ class CreateRestaurantUseCaseTest {
     @Test
     @DisplayName("Deve lançar NullPointerException quando ownerId é nulo (precisa passar pela role antes)")
     void shouldThrowExceptionWhenOwnerIdIsNull() {
+        // Arrange
         CreateRestaurantInput input = new CreateRestaurantInput(
                 restaurantName,
-                new AddressBuilder().buildInput(),
+                new AddressBuilder().withDefaults().buildInput(),
                 cuisineType,
                 null,
                 null,
@@ -455,6 +480,7 @@ class CreateRestaurantUseCaseTest {
 
         given(loggedUserGateway.hasRole(RestaurantRoles.CREATE_RESTAURANT)).willReturn(true);
 
+        // Act + Assert
         assertThatThrownBy(() -> createRestaurantUseCase.execute(input))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("Owner");
@@ -466,9 +492,10 @@ class CreateRestaurantUseCaseTest {
     @Test
     @DisplayName("Deve lançar NullPointerException quando nome do restaurante é nulo (precisa passar pela role antes)")
     void shouldThrowExceptionWhenRestaurantNameIsNull() {
+        // Arrange
         CreateRestaurantInput input = new CreateRestaurantInput(
                 null,
-                new AddressBuilder().buildInput(),
+                new AddressBuilder().withDefaults().buildInput(),
                 cuisineType,
                 null,
                 null,
@@ -478,11 +505,73 @@ class CreateRestaurantUseCaseTest {
 
         given(loggedUserGateway.hasRole(RestaurantRoles.CREATE_RESTAURANT)).willReturn(true);
 
+        // Act + Assert
         assertThatThrownBy(() -> createRestaurantUseCase.execute(input))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("Restaurant name");
 
         then(restaurantGateway).shouldHaveNoInteractions();
         then(userGateway).shouldHaveNoInteractions();
+    }
+
+    @Test
+    @DisplayName("Deve retornar null nos métodos build* quando input for null (cobre branches)")
+    void shouldReturnNullWhenCallingPrivateBuildersWithNullInput() throws Exception {
+        // Arrange
+        Method buildMenu = CreateRestaurantUseCase.class.getDeclaredMethod("buildMenu", MenuItemInput.class);
+        buildMenu.setAccessible(true);
+
+        Method buildOpeningHours = CreateRestaurantUseCase.class.getDeclaredMethod("buildOpeningHours", OpeningHoursInput.class);
+        buildOpeningHours.setAccessible(true);
+
+        Method buildAddress = CreateRestaurantUseCase.class.getDeclaredMethod("buildAddress", AddressInput.class);
+        buildAddress.setAccessible(true);
+
+        // Act
+        MenuItem menuItem = (MenuItem) buildMenu.invoke(createRestaurantUseCase, new Object[]{null});
+        OpeningHours openingHours = (OpeningHours) buildOpeningHours.invoke(createRestaurantUseCase, new Object[]{null});
+        Address address = (Address) buildAddress.invoke(createRestaurantUseCase, new Object[]{null});
+
+        // Assert
+        assertThat(menuItem).isNull();
+        assertThat(openingHours).isNull();
+        assertThat(address).isNull();
+    }
+
+    @Test
+    @DisplayName("Deve construir objetos corretamente nos métodos build* via reflection (cobre branches não-nulos)")
+    void shouldBuildObjectsWhenCallingPrivateBuildersWithNonNullInput() throws Exception {
+        // Arrange
+        MenuItemInput menuItemInput = new MenuItemBuilder().withDefaults().withName("Dish X").buildInput();
+        OpeningHoursInput openingHoursInput = new OpeningHoursBuilder().withDefaults().withDayOfWeek(DayOfWeek.TUESDAY).buildInput();
+        AddressInput addressInput = new AddressBuilder().withDefaults().withStreet("Street X").buildInput();
+
+        Method buildMenu = CreateRestaurantUseCase.class.getDeclaredMethod("buildMenu", MenuItemInput.class);
+        buildMenu.setAccessible(true);
+
+        Method buildOpeningHours = CreateRestaurantUseCase.class.getDeclaredMethod("buildOpeningHours", OpeningHoursInput.class);
+        buildOpeningHours.setAccessible(true);
+
+        Method buildAddress = CreateRestaurantUseCase.class.getDeclaredMethod("buildAddress", AddressInput.class);
+        buildAddress.setAccessible(true);
+
+        // Act
+        MenuItem menuItem = (MenuItem) buildMenu.invoke(createRestaurantUseCase, menuItemInput);
+        OpeningHours openingHours = (OpeningHours) buildOpeningHours.invoke(createRestaurantUseCase, openingHoursInput);
+        Address address = (Address) buildAddress.invoke(createRestaurantUseCase, addressInput);
+
+        // Assert
+        assertThat(menuItem).isNotNull();
+        assertThat(menuItem.getId()).isNull(); // create use case seta null
+        assertThat(menuItem.getName()).isEqualTo(menuItemInput.name());
+        assertThat(menuItem.getDescription()).isEqualTo(menuItemInput.description());
+
+        assertThat(openingHours).isNotNull();
+        assertThat(openingHours.getId()).isNull(); // create use case seta null
+        assertThat(openingHours.getDayOfWeek()).isEqualTo(openingHoursInput.dayOfDay());
+
+        assertThat(address).isNotNull();
+        assertThat(address.getStreet()).isEqualTo("Street X");
+        assertThat(address.getZipCode()).isEqualTo(addressInput.zipCode());
     }
 }
