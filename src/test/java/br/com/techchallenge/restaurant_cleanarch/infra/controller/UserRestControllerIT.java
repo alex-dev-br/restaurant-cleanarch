@@ -4,9 +4,14 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressB
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.request.AddressRequest;
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.request.UserRequest;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.RoleEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserRepository;
-import org.junit.jupiter.api.*;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserTypeRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -32,12 +37,17 @@ class UserRestControllerIT {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserTypeRepository userTypeRepository;
+
     private UserEntity user;
     private AddressRequest addressRequest;
 
     @BeforeEach
     void setUp() {
+        var userType = userTypeRepository.findById(1L).orElseThrow(() -> new RuntimeException("User type not found"));
         UserEntity userEntity = new UserBuilder().withoutId().buildEntity();
+        userEntity.setUserType(userType);
         user = userRepository.save(userEntity);
 
         var addressBuilder = new AddressBuilder();
@@ -228,5 +238,41 @@ class UserRestControllerIT {
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.message", is(equalTo("User with ID " + randomUUID + " not found."))));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"VIEW_USER"})
+    @DisplayName("Deve buscar usuário por id com sucesso")
+    void deveBuscarPeloIdUsuarioComSucesso() throws Exception {
+        mockMvc.perform(get("/user/{id}", user.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id", is(equalTo(user.getId().toString()))))
+                .andExpect(jsonPath("$.name", is(equalTo(user.getName()))))
+                .andExpect(jsonPath("$.email", is(equalTo(user.getEmail()))))
+                .andExpect(jsonPath("$.password").doesNotExist())
+                .andExpect(jsonPath("$.address").exists())
+                .andExpect(jsonPath("$.address.street", is(equalTo(user.getAddress().getStreet()))))
+                .andExpect(jsonPath("$.address.number", is(equalTo(user.getAddress().getNumber()))))
+                .andExpect(jsonPath("$.address.city", is(equalTo(user.getAddress().getCity()))))
+                .andExpect(jsonPath("$.address.state", is(equalTo(user.getAddress().getState()))))
+                .andExpect(jsonPath("$.address.zipCode", is(equalTo(user.getAddress().getZipCode()))))
+                .andExpect(jsonPath("$.address.complement", is(equalTo(user.getAddress().getComplement()))))
+                .andExpect(jsonPath("$.userType.id", is(equalTo(user.getUserType().getId().intValue()))))
+                .andExpect(jsonPath("$.userType.name", is(equalTo(user.getUserType().getName()))))
+                .andExpect(jsonPath("$.userType.roles").isArray())
+                .andExpect(jsonPath("$.userType.roles", hasSize(user.getUserType().getRoles().size())))
+                .andExpect(jsonPath("$.userType.roles", hasItems(user.getUserType().getRoles()
+                        .stream().map(RoleEntity::getName).toArray())));
+
+    }
+
+    @Test
+    @WithMockUser(authorities = {"VIEW_USER"})
+    @DisplayName("Deve retornar notfound ao buscar usuário inexistente")
+    void deveDevolverRetornarNotFoundAoBuscarUsuarioPorIdInexistente() throws Exception {
+        UUID randomUUID = UUID.randomUUID();
+        mockMvc.perform(get("/user/{id}", randomUUID).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
     }
 }

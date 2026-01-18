@@ -9,6 +9,7 @@ import br.com.techchallenge.restaurant_cleanarch.core.presenter.UserPresenter;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.user.*;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 public class UserController {
@@ -44,10 +45,10 @@ public class UserController {
         updateUserUseCase.execute(input);
     }
 
-    public UserOutput findById(UUID id) {
+    public Optional<UserOutput> findById(UUID id) {
         Objects.requireNonNull(id, "User ID cannot be null.");
         var user = getUserByIdUseCase.execute(id);
-        return UserPresenter.toOutput(user);
+        return user.map(UserPresenter::toOutput);
     }
 
     public Page<UserOutput> findAll(int pageNumber, int pageSize) {

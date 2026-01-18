@@ -1,9 +1,13 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.persistence.adapter;
 
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserManagementRoles;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.UserMapper;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.RoleEntity;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserRepository;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserTypeRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -29,15 +33,21 @@ class UserGatewayAdapterTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserTypeRepository userTypeRepository;
+
     private String userEmail;
     private UUID userUuid;
+    private UserEntity userEntity;
 
     @BeforeEach
     void setUp() {
         userEmail = "user.gateway@mail.com";
+        var userType = userTypeRepository.findById(1L).orElseThrow(RuntimeException::new);
         var user = new UserBuilder().withEmail(userEmail).withRole(UserManagementRoles.VIEW_USER).withoutId().buildEntity();
-        var savedUser = userRepository.save(user);
-        userUuid = savedUser.getId();
+        user.setUserType(userType);
+        userEntity = userRepository.save(user);
+        userUuid = userEntity.getId();
     }
 
     @AfterEach
@@ -117,8 +127,38 @@ class UserGatewayAdapterTest {
     }
 
     @Test
+    @DisplayName("Deve retornar erro se uuid for nulo ao deletar")
+    void deveRetornarErroSeUuidForNuloAoDeletar() {
+        assertThatThrownBy(() -> userGatewayAdapter.deleteById(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("id cannot be null");
+    }
+
+    @Test
+    @DisplayName("Deve buscar usuário por id com sucesso")
+    void deveBuscarUsuarioPeloIdComSucesso() {
+        var result = userGatewayAdapter.findById(userUuid);
+        assertThat(result).isNotEmpty();
+        var user = result.get();
+        assertThat(user.getId()).isEqualTo(userUuid);
+        assertThat(user.getName()).isEqualTo(userEntity.getName());
+        assertThat(user.getEmail()).isEqualTo(userEntity.getEmail());
+        assertThat(user.getPasswordHash()).isEqualTo(userEntity.getPasswordHash());
+        assertThat(user.getAddress()).usingRecursiveComparison().isEqualTo(userEntity.getAddress());
+        assertThat(user.getUserType()).usingRecursiveComparison().ignoringFields("roles").isEqualTo(userEntity.getUserType());
+        assertThat(user.getUserType().getRoles()).extracting(Role::name)
+                .containsExactlyInAnyOrderElementsOf(userEntity.getUserType().getRoles().stream().map(RoleEntity::getName).toList());
+    }
+
+    @Test
+    @DisplayName("Deve buscar usuário por id com sucesso")
+    void deveRetornarOptionalVazioAoBuscarUsuarioInexistente() {
+        assertThat(userGatewayAdapter.findById(UUID.randomUUID())).isEmpty();
+    }
+
+    @Test
     @DisplayName("Deve retornar erro ser uuid for nulo")
-    void deveRetornarErroSeUuidForNulo() {
+    void deveRetornarErroSeUuidForNuloAoBuscar() {
         assertThatThrownBy(() -> userGatewayAdapter.deleteById(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("id cannot be null");
