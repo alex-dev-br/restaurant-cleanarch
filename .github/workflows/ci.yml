@@ -4,9 +4,9 @@ name: CI  # Nome do workflow (aparece no badge de status)
 
 on:
   push:
-    branches: [ "main", "develop" ]  # Executa em pushes para main e develop
+    branches: [ "main" ]  # Executa em pushes para main 
   pull_request:
-    branches: [ "main", "develop" ]  # Executa em PRs
+    branches: [ "main" ]  # Executa em PRs
 
 jobs:
   build:
@@ -41,21 +41,14 @@ jobs:
         with:
           node-version: '20'  # Versão estável
 
+      - name: Create Images Directory
+        run: mkdir -p docs/images  # Cria a pasta se não existir, evitando ENOENT
+
       - name: Capture Jacoco Report Screenshot
         run: |
           npm init -y
           npm install puppeteer --save-dev
-          node -e "
-          const puppeteer = require('puppeteer');
-          (async () => {
-            const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-            const page = await browser.newPage();
-            await page.setViewport({ width: 1920, height: 1080 });  // Tamanho para captura completa
-            await page.goto('file://${{ github.workspace }}/target/site/jacoco/index.html', { waitUntil: 'networkidle2' });
-            await page.screenshot({ path: 'docs/images/jacoco-coverage.png', fullPage: true });
-            await browser.close();
-          })();
-          "
+          node -e "const puppeteer = require('puppeteer'); (async () => { const browser = await puppeteer.launch({ args: ['--no-sandbox'] }); const page = await browser.newPage(); await page.setViewport({ width: 1920, height: 1080 }); await page.goto('file://${{ github.workspace }}/target/site/jacoco/index.html', { waitUntil: 'networkidle2' }); await page.screenshot({ path: 'docs/images/jacoco-coverage.png', fullPage: true }); await browser.close(); })();"
 
       - name: Commit and Push Screenshot
         run: |
