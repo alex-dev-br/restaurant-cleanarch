@@ -1,27 +1,19 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.persistence.adapter;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.*;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.*;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.*;
 import br.com.techchallenge.restaurant_cleanarch.infra.mapper.*;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.RestaurantEntity;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserEntity;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.RestaurantRepository;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserRepository;
-import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.UserTypeRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.*;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.*;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+import org.springframework.context.annotation.*;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -52,6 +44,9 @@ class RestaurantGatewayAdapterTest {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private TestEntityManager testEntityManager;
 
     private User ownerDomain;
 
@@ -107,15 +102,18 @@ class RestaurantGatewayAdapterTest {
         Restaurant savedRestaurant = adapter.save(restaurant);
         Long restaurantId = savedRestaurant.getId();
 
+        testEntityManager.clear(); // Clear cache to avoid stale state
+
+        Restaurant toUpdate = adapter.findById(restaurantId)
+                .orElseThrow(() -> new RuntimeException("Restaurant not found after save"));
+
         Restaurant updatedRestaurantDomain = new Restaurant(
                 restaurantId,
                 "Updated Name",
-                savedRestaurant.getAddress(),
+                toUpdate.getAddress(),
                 "Updated Cuisine",
-                savedRestaurant.getOwner()
+                toUpdate.getOwner()
         );
-        restaurant.addOpeningHours(savedRestaurant.getOpeningHours());
-        restaurant.addMenuItems(savedRestaurant.getMenuItems());
 
         // When
         Restaurant result = adapter.save(updatedRestaurantDomain);
@@ -163,6 +161,85 @@ class RestaurantGatewayAdapterTest {
     }
 
     @Test
+    @DisplayName("Deve retornar true se restaurante com nome existe excluindo ID específico")
+    void shouldReturnTrueIfRestaurantWithNameExistsExcludingId() {
+        // Arrange - Cria UM restaurante (não podemos criar duplicado por causa da unique constraint)
+        Restaurant restaurant = new Restaurant(
+                null,
+                "Unique Restaurant Name",
+                new AddressBuilder().build(),
+                "Italian",
+                ownerDomain
+        );
+        Restaurant saved = adapter.save(restaurant);
+        Long existingId = saved.getId();
+
+        // Caso 1: Exclui um ID DIFERENTE → deve encontrar o restaurante → true
+        boolean existsWithDifferentId = adapter.existsRestaurantWithNameExcludingId("Unique Restaurant Name", 999L);
+
+        // Caso 2: Exclui o PRÓPRIO ID → não deve considerar → false
+        boolean existsWithOwnId = adapter.existsRestaurantWithNameExcludingId("Unique Restaurant Name", existingId);
+
+        // Caso 3: Nome que NÃO existe → stream vazia → false
+        boolean existsWithNonExistentName = adapter.existsRestaurantWithNameExcludingId("Non Existent Name", existingId);
+
+        // Asserts - Cobertura completa do lambda
+        assertThat(existsWithDifferentId)
+                .as("Deve retornar true quando há match e o ID é diferente (branch !equals = true)")
+                .isTrue();
+
+        assertThat(existsWithOwnId)
+                .as("Deve retornar false quando o único match é o próprio ID (branch !equals = false)")
+                .isFalse();
+
+        assertThat(existsWithNonExistentName)
+                .as("Deve retornar false quando stream é vazia (anyMatch false)")
+                .isFalse();
+    }
+
+    @Test
+    @DisplayName("Deve retornar false se restaurante com nome não existe excluindo ID")
+    void shouldReturnFalseIfRestaurantWithNameDoesNotExistExcludingId() {
+        // Given
+        Restaurant restaurant = new Restaurant(
+                null,
+                "Unique Name",
+                new AddressBuilder().build(),
+                "Italian",
+                ownerDomain
+        );
+        Restaurant saved = adapter.save(restaurant);
+        Long id = saved.getId();
+
+        // When
+        boolean exists = adapter.existsRestaurantWithNameExcludingId("Non Existent Name", id);
+
+        // Then
+        assertThat(exists).isFalse();
+    }
+
+    @Test
+    @DisplayName("Deve retornar false se nome existe mas pertence ao mesmo ID excluído")
+    void shouldReturnFalseIfNameExistsButBelongsToExcludedId() {
+        // Given
+        Restaurant restaurant = new Restaurant(
+                null,
+                "Same Name",
+                new AddressBuilder().build(),
+                "Italian",
+                ownerDomain
+        );
+        Restaurant saved = adapter.save(restaurant);
+        Long id = saved.getId();
+
+        // When
+        boolean exists = adapter.existsRestaurantWithNameExcludingId("Same Name", id);
+
+        // Then
+        assertThat(exists).isFalse();
+    }
+
+    @Test
     @DisplayName("Deve retornar todos os restaurantes")
     void shouldReturnAllRestaurants() {
         // Given
@@ -203,6 +280,47 @@ class RestaurantGatewayAdapterTest {
 
         // Then
         assertThat(restaurants).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deve retornar página de restaurantes paginados")
+    void shouldReturnPagedRestaurants() {
+        // Given
+        Restaurant restaurant1 = new Restaurant(
+                null,
+                "Restaurant A",
+                new AddressBuilder().build(),
+                "Italian",
+                ownerDomain
+        );
+        Restaurant restaurant2 = new Restaurant(
+                null,
+                "Restaurant B",
+                new AddressBuilder().build(),
+                "Japanese",
+                ownerDomain
+        );
+        Restaurant restaurant3 = new Restaurant(
+                null,
+                "Restaurant C",
+                new AddressBuilder().build(),
+                "Mexican",
+                ownerDomain
+        );
+        adapter.save(restaurant1);
+        adapter.save(restaurant2);
+        adapter.save(restaurant3);
+
+        PagedQuery<Void> query = new PagedQuery<>(null, 0, 2);
+
+        // When
+        Page<Restaurant> result = adapter.findAll(query);
+
+        // Then
+        assertThat(result.content()).hasSize(2);
+        assertThat(result.totalElements()).isEqualTo(3L);
+        assertThat(result.totalPages()).isEqualTo(2);
+        assertThat(result.pageNumber()).isZero();
     }
 
     @Test
@@ -312,4 +430,140 @@ class RestaurantGatewayAdapterTest {
         assertThat(secondPage.totalPages()).isEqualTo(2);
         assertThat(secondPage.pageNumber()).isOne();
     }
+
+    @Test
+    @DisplayName("Deve encontrar restaurante por ID")
+    void shouldFindById() {
+        // Arrange
+        Restaurant restaurant = new Restaurant(
+                null,
+                "Test Restaurant",
+                new AddressBuilder().build(),
+                "Test Cuisine",
+                ownerDomain
+        );
+        Restaurant saved = adapter.save(restaurant);
+        Long id = saved.getId();
+
+        // Act
+        Optional<Restaurant> result = adapter.findById(id);
+
+        // Then
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo(id);
+        assertThat(result.get().getName()).isEqualTo("Test Restaurant");
+    }
+
+    @Test
+    @DisplayName("Deve retornar vazio ao buscar por ID inexistente")
+    void shouldReturnEmptyWhenFindByNonExistentId() {
+        // Arrange
+        Long nonExistentId = 999L;
+
+        // Act
+        Optional<Restaurant> result = adapter.findById(nonExistentId);
+
+        // Then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deve encontrar restaurante por ID com dados de management")
+    void shouldFindByIdWithManagement() {
+        // Arrange
+        Restaurant restaurant = new Restaurant(
+                null,
+                "Management Test",
+                new AddressBuilder().build(),
+                "Test Cuisine",
+                ownerDomain
+        );
+        Restaurant saved = adapter.save(restaurant);
+        Long id = saved.getId();
+
+        // Act
+        Optional<Restaurant> result = adapter.findByIdWithManagement(id);
+
+        // Then
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo(id);
+        assertThat(result.get().getName()).isEqualTo("Management Test");
+        // Verificar se dados de management estão presentes (ex: owner carregado)
+        assertThat(result.get().getOwner()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Deve retornar vazio ao buscar por ID inexistente com management")
+    void shouldReturnEmptyWhenFindByNonExistentIdWithManagement() {
+        // Arrange
+        Long nonExistentId = 999L;
+
+        // Act
+        Optional<Restaurant> result = adapter.findByIdWithManagement(nonExistentId);
+
+        // Then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deve ignorar employee sem ID ao salvar restaurante")
+    void shouldIgnoreEmployeeWithoutIdWhenSavingRestaurant() {
+        // Arrange
+        Restaurant restaurant = new Restaurant(
+                null,
+                "Restaurant With Invalid Employee",
+                new AddressBuilder().build(),
+                "Italian",
+                ownerDomain
+        );
+
+        // employee sem ID
+        User employeeWithoutId = new UserBuilder()
+                .withId(null)
+                .build();
+
+        restaurant.addEmployee(employeeWithoutId);
+
+        // Act
+        Restaurant saved = adapter.save(restaurant);
+
+        // Assert
+        RestaurantEntity entity = restaurantRepository.findById(saved.getId()).orElseThrow();
+        assertThat(entity.getEmployeeLinks()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deve salvar restaurante sem funcionários quando employees estiver vazio")
+    void shouldSaveRestaurantWithEmptyEmployees() {
+        Restaurant restaurant = new Restaurant(
+                null,
+                "Restaurant No Employees",
+                new AddressBuilder().build(),
+                "Italian",
+                ownerDomain
+        );
+
+        Restaurant saved = adapter.save(restaurant);
+
+        RestaurantEntity entity = restaurantRepository.findById(saved.getId()).orElseThrow();
+        assertThat(entity.getEmployeeLinks()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deve salvar restaurante quando employees for null")
+    void shouldSaveRestaurantWhenEmployeesIsNull() {
+        Restaurant restaurant = new Restaurant(
+                null,
+                "Restaurant Null Employees",
+                new AddressBuilder().build(),
+                "Italian",
+                ownerDomain
+        );
+
+
+        Restaurant saved = adapter.save(restaurant);
+
+        assertThat(saved).isNotNull();
+    }
+
 }
