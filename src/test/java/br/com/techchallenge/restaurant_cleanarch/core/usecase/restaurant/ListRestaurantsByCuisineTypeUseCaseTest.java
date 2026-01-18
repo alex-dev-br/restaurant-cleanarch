@@ -4,6 +4,8 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.RestaurantBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.RestaurantGateway;
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,6 +42,7 @@ class ListRestaurantsByCuisineTypeUseCaseTest {
         // Arrange
         String cuisineType = "Italian";
         Restaurant restaurant = new RestaurantBuilder()
+                .withDefaults()
                 .withCuisineType(cuisineType)
                 .build();
 
@@ -102,7 +106,7 @@ class ListRestaurantsByCuisineTypeUseCaseTest {
         assertThat(result.pageNumber()).isEqualTo(pageNumber);
         assertThat(result.pageSize()).isEqualTo(pageSize);
         assertThat(result.totalElements()).isZero();
-        assertThat(result.totalPages()).isZero(); // totalElements=0 => totalPages=0 (derivado)
+        assertThat(result.totalPages()).isZero(); // totalElements=0 => totalPages=0
         assertThat(result.content()).isEmpty();
 
         // public access: não deve consultar role
@@ -120,5 +124,19 @@ class ListRestaurantsByCuisineTypeUseCaseTest {
 
         then(restaurantGateway).shouldHaveNoInteractions();
         then(loggedUserGateway).shouldHaveNoInteractions();
+    }
+
+    @Test
+    @DisplayName("Deve retornar a role requerida correta (cobre getRequiredRole mesmo com acesso público)")
+    void shouldReturnRequiredRoleCorrectly() throws Exception {
+        // Arrange
+        Method method = ListRestaurantsByCuisineTypeUseCase.class.getDeclaredMethod("getRequiredRole");
+        method.setAccessible(true);
+
+        // Act
+        ForGettingRoleName role = (ForGettingRoleName) method.invoke(useCase);
+
+        // Assert
+        assertThat(role).isEqualTo(RestaurantRoles.VIEW_RESTAURANT);
     }
 }
