@@ -53,4 +53,10 @@ public class UserTypeRestController {
         userTypeController.updateUserType(updateUserTypeInput);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUserType(@PathVariable("id") Long id) {
+        userTypeController.deleteUserType(id);
+        return ResponseEntity.noContent().build();
+    }
 }
