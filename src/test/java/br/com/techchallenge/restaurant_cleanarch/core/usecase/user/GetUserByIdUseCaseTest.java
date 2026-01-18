@@ -3,7 +3,6 @@ package br.com.techchallenge.restaurant_cleanarch.core.usecase.user;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserManagementRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.OperationNotAllowedException;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.UserGateway;
@@ -17,7 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,17 +41,17 @@ class GetUserByIdUseCaseTest {
         given(userGateway.findById(userId)).willReturn(Optional.of(expectedUser));
 
         // Act
-        User result = getUserByIdUseCase.execute(userId);
+        var result = getUserByIdUseCase.execute(userId);
 
         // Assert
-        assertThat(result).isNotNull().isSameAs(expectedUser);
+        assertThat(result).isNotEmpty().hasValue(expectedUser);
 
         then(loggedUserGateway).should().hasRole(UserManagementRoles.VIEW_USER);
         then(userGateway).should().findById(userId);
     }
 
     @Test
-    @DisplayName("Deve lançar BusinessException quando usuário não existir")
+    @DisplayName("Deve retornar um optional vazio quando usuário não existir")
     void shouldThrowWhenUserNotFound() {
         // Arrange
         UUID userId = UUID.randomUUID();
@@ -60,9 +60,9 @@ class GetUserByIdUseCaseTest {
         given(userGateway.findById(userId)).willReturn(Optional.empty());
 
         // Act + Assert
-        assertThatThrownBy(() -> getUserByIdUseCase.execute(userId))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage("User with ID " + userId + " not found.");
+        var result = getUserByIdUseCase.execute(userId);
+
+        assertThat(result).isEmpty();
 
         then(loggedUserGateway).should().hasRole(UserManagementRoles.VIEW_USER);
         then(userGateway).should().findById(userId);

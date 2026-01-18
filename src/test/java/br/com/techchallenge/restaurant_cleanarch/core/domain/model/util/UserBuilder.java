@@ -10,12 +10,14 @@ import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateUserInput;
 import br.com.techchallenge.restaurant_cleanarch.core.inbound.UpdateUserInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.UserSummaryOutput;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.AddressEmbeddableEntity;
+import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.RoleEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserEntity;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.UserTypeEntity;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class UserBuilder {
 
@@ -150,13 +152,28 @@ public class UserBuilder {
 
     public UserEntity buildEntity() {
         var addressEntity = new AddressEmbeddableEntity();
+        addressEntity.setStreet(address.getStreet());
+        addressEntity.setCity(address.getCity());
+        addressEntity.setNumber(address.getNumber());
+        addressEntity.setState(address.getState());
+        addressEntity.setZipCode(address.getZipCode());
+        addressEntity.setComplement(address.getComplement());
+
+        Set<RoleEntity> rolesEntity = roles.stream().map(r -> {
+            RoleEntity roleEntity = new RoleEntity();
+            roleEntity.setId(r.id());
+            roleEntity.setName(r.name());
+            return roleEntity;
+        }).collect(Collectors.toSet());
+
         var entity = new UserEntity();
         entity.setId(id);
-        entity.setName(userTypeName);
+        entity.setName(name);
         entity.setEmail(email);
         entity.setPasswordHash(passwordHash);
         entity.setAddress(addressEntity);
-        entity.setUserType(new UserTypeEntity(userTypeId, null, null));
+
+        entity.setUserType(new UserTypeEntity(userTypeId, userTypeName, rolesEntity));
         return entity;
     }
 

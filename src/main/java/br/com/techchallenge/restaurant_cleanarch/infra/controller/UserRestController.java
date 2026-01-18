@@ -43,4 +43,11 @@ public class UserRestController {
         userController.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> buscaPorId(@PathVariable("id") UUID id) {
+        return userController.findById(id).map(userRestMapper::toResponse)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 }
