@@ -46,7 +46,7 @@ class GetUserTypeByIdUseCaseTest {
 
         var result = getUserTypeByIdUseCase.execute(id);
 
-        assertThat(result).isNotEmpty().isExactlyInstanceOf(UserType.class).hasValue(expectedUserType);
+        assertThat(result).isNotEmpty().hasValue(expectedUserType);
 
         then(loggedUserGateway).should().hasRole(UserTypeRoles.VIEW_USER_TYPE);
         then(userTypeGateway).should().findById(id);
