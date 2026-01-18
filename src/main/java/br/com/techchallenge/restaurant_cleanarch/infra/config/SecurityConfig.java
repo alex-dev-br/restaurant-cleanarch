@@ -47,7 +47,7 @@ public class SecurityConfig {
                         "/actuator/health",
                         "/api/v1/_ping"
                 ).permitAll()
-                .requestMatchers(HttpMethod.GET, "/restaurants", "/restaurants/{id}").permitAll()
+                .requestMatchers(HttpMethod.GET,"/restaurants", "/restaurants/{id}", "/restaurants/{id}/menu").permitAll()
                 .requestMatchers(HttpMethod.GET, "/roles").hasAuthority(RoleRoles.VIEW_ROLE.getRoleName())
 
                 .requestMatchers(HttpMethod.POST, userTypeBaseUrl).hasAuthority(UserTypeRoles.CREATE_USER_TYPE.getRoleName())
