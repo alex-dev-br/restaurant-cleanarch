@@ -4,7 +4,7 @@ name: CI  # Nome do workflow (aparece no badge de status)
 
 on:
   push:
-    branches: [ "main" ]  # Executa em pushes para main 
+    branches: [ "main" ]  # Executa em pushes para main e develop
   pull_request:
     branches: [ "main" ]  # Executa em PRs
 
@@ -54,9 +54,10 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
+          git remote set-url origin https://x:${{ secrets.GIT_PAT }}@github.com/alex-dev-br/restaurant-cleanarch.git  # Usa PAT para autenticação com permissão de push
           git add docs/images/jacoco-coverage.png
           git commit -m "Update Jacoco coverage screenshot [ci skip]" || echo "No changes to commit"
-          git push
+          git push origin HEAD  # Push para a branch atual
         if: github.ref == 'refs/heads/main'  # Só em main para evitar loops
 
       - name: Upload Screenshot Artifact
