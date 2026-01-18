@@ -15,8 +15,10 @@ public interface RestaurantRestMapper {
 
     CreateRestaurantInput toInput(RestaurantRequest request);
 
+    @Mapping(target = "menu", source = "menuItems")
     RestaurantResponse toResponse(RestaurantManagementOutput output);
 
+    @Mapping(target = "menu", source = "menuItems")
     RestaurantSummaryResponse toResponseSummary(RestaurantPublicOutput output);
 
     @Mapping(target = "id", expression = "java(id)")
