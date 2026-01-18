@@ -36,7 +36,7 @@ public class FakeUsers {
         return new User(
                 DEV_OWNER_ID,
                 "Dev Owner",
-                "dev.owner@dev.local",
+                "dev.ownerId@dev.local",
                 null,
                 type,
                 PASSWORD_HASH

@@ -353,7 +353,7 @@ class UpdateMenuItemUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve negar quando restaurante não possui owner (ownerId == null)")
+    @DisplayName("Deve negar quando restaurante não possui ownerId (ownerId == null)")
     void shouldThrowOperationNotAllowedWhenRestaurantHasNoOwner() {
         // Arrange
         Long itemId = 10L;

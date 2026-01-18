@@ -1,9 +1,6 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.config;
 
-import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.MenuItemRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RoleRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserManagementRoles;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserTypeRoles;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.*;
 import br.com.techchallenge.restaurant_cleanarch.infra.controller.response.SimpleErroResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
@@ -36,6 +33,7 @@ public class SecurityConfig {
         final var userWithIdUrl = "/user/{id}";
         final var menuItemBaseUrl = "/restaurants/{restaurant-id}/menu";
         final var menuWithIdUrl = "/restaurants/{restaurant-id}/menu/{id}";
+        final var restaurantWithIdUrl = "/restaurants/{id}";
 
         http
             .cors(Customizer.withDefaults())
@@ -50,7 +48,7 @@ public class SecurityConfig {
                         "/actuator/health",
                         "/api/v1/_ping"
                 ).permitAll()
-                .requestMatchers(HttpMethod.GET,"/restaurants", "/restaurants/{id}", menuItemBaseUrl, menuWithIdUrl).permitAll()
+                .requestMatchers(HttpMethod.GET,"/restaurants", restaurantWithIdUrl, menuItemBaseUrl, menuWithIdUrl).permitAll()
                 .requestMatchers(HttpMethod.GET, "/roles").hasAuthority(RoleRoles.VIEW_ROLE.getRoleName())
 
                 .requestMatchers(HttpMethod.POST, userTypeBaseUrl).hasAuthority(UserTypeRoles.CREATE_USER_TYPE.getRoleName())
@@ -68,6 +66,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, menuItemBaseUrl).hasAuthority(MenuItemRoles.CREATE_MENU_ITEM.getRoleName())
                 .requestMatchers(HttpMethod.PUT, menuWithIdUrl).hasAuthority(MenuItemRoles.UPDATE_MENU_ITEM.getRoleName())
                 .requestMatchers(HttpMethod.DELETE, menuWithIdUrl).hasAuthority(MenuItemRoles.DELETE_MENU_ITEM.getRoleName())
+
+                .requestMatchers(HttpMethod.POST, "/restaurants").hasAuthority(RestaurantRoles.CREATE_RESTAURANT.getRoleName())
+                .requestMatchers(HttpMethod.PUT, restaurantWithIdUrl).hasAuthority(RestaurantRoles.UPDATE_RESTAURANT.getRoleName())
+                .requestMatchers(HttpMethod.DELETE, restaurantWithIdUrl).hasAuthority(RestaurantRoles.DELETE_RESTAURANT.getRoleName())
+
                 .anyRequest().authenticated() // Boa prática: fechar com uma regra padrão
             )
             .httpBasic(Customizer.withDefaults())

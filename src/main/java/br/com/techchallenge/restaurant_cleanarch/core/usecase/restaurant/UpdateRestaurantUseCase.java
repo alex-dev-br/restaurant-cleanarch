@@ -82,7 +82,7 @@ public class UpdateRestaurantUseCase extends UseCaseWithoutOutput<UpdateRestaura
                 ? current.getMenuItems()
                 : input.menu().stream().map(this::buildMenu).collect(Collectors.toSet());
 
-        // cache para evitar consultar 2x (owner tb pode ser employee)
+        // cache para evitar consultar 2x (ownerId tb pode ser employee)
         Map<UUID, User> usersCache = new HashMap<>();
         usersCache.put(targetOwner.getId(), targetOwner);
 
@@ -105,7 +105,7 @@ public class UpdateRestaurantUseCase extends UseCaseWithoutOutput<UpdateRestaura
     private OpeningHours buildOpeningHours(UpdateOpeningHoursInput input) {
         return input == null ? null : new OpeningHours(
                 input.id(),
-                input.dayOfDay(),
+                input.dayOfWeek(),
                 input.openHour(),
                 input.closeHour()
         );

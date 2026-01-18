@@ -125,7 +125,7 @@ class RestaurantTest {
         // Act & Assert
         assertThatThrownBy(() -> new Restaurant(restaurantId, restaurantName, address, cuisineType, invalidOwner))
                 .isInstanceOf(UserCannotBeRestaurantOwnerException.class)
-                .hasMessageContaining("User cannot be restaurant owner");
+                .hasMessageContaining("User cannot be restaurant ownerId");
     }
 
     @Test
@@ -277,7 +277,7 @@ class RestaurantTest {
     }
 
     @Test
-    @DisplayName("canBeManagedBy deve retornar true quando currentUser for o owner")
+    @DisplayName("canBeManagedBy deve retornar true quando currentUser for o ownerId")
     void canBeManagedBy_deveRetornarTrue_quandoCurrentUserForOwner() {
         var restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
 
@@ -294,7 +294,7 @@ class RestaurantTest {
     }
 
     @Test
-    @DisplayName("canBeManagedBy deve retornar false quando currentUser não for owner nem employee")
+    @DisplayName("canBeManagedBy deve retornar false quando currentUser não for ownerId nem employee")
     void canBeManagedBy_deveRetornarFalse_quandoCurrentUserNaoTiverPermissao() {
         var restaurant = new Restaurant(restaurantId, restaurantName, address, cuisineType, owner);
         var outsider = new UserBuilder().build();

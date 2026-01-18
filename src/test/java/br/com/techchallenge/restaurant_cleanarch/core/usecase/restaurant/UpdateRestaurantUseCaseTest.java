@@ -1,15 +1,11 @@
 package br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant;
 
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Restaurant;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.AddressBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.MenuItemBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.OpeningHoursBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.RestaurantBuilder;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.UserBuilder;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.*;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.Address;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.valueobject.OpeningHours;
-import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.RestaurantRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.UserRoles;
 import br.com.techchallenge.restaurant_cleanarch.core.exception.BusinessException;
@@ -34,7 +30,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Method;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -179,7 +174,7 @@ class UpdateRestaurantUseCaseTest {
                 null,
                 null,
                 null, // employees null => mantém
-                null  // owner null => mantém owner atual
+                null  // ownerId null => mantém ownerId atual
         );
 
         given(loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT)).willReturn(true);
@@ -243,9 +238,8 @@ class UpdateRestaurantUseCaseTest {
         given(loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT)).willReturn(false);
 
         // Act & Assert
-        assertThatThrownBy(() -> updateRestaurantUseCase.execute(
-                new UpdateRestaurantInput(restaurantId, "x", null, "y", null, null, null, null)
-        ))
+        var updateRestaurantInput = new UpdateRestaurantInput(restaurantId, "x", null, "y", null, null, null, null);
+        assertThatThrownBy(() -> updateRestaurantUseCase.execute(updateRestaurantInput))
                 .isInstanceOf(OperationNotAllowedException.class)
                 .hasMessageContaining("permission to perform this action");
 
@@ -255,7 +249,7 @@ class UpdateRestaurantUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve lançar OperationNotAllowedException quando usuário logado não é owner nem employee")
+    @DisplayName("Deve lançar OperationNotAllowedException quando usuário logado não é ownerId nem employee")
     void shouldThrowOperationNotAllowedWhenCurrentUserCannotManage() {
         // Arrange
         User outsider = new UserBuilder().withDefaults().withId(UUID.randomUUID()).build();
@@ -314,7 +308,7 @@ class UpdateRestaurantUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve lançar BusinessException quando novo owner não for encontrado")
+    @DisplayName("Deve lançar BusinessException quando novo ownerId não for encontrado")
     void shouldThrowWhenNewOwnerNotFound() {
         // Arrange
         UUID newOwnerId = UUID.randomUUID();
@@ -345,11 +339,11 @@ class UpdateRestaurantUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve lançar UserCannotBeRestaurantOwnerException quando novo owner não pode ser dono")
+    @DisplayName("Deve lançar UserCannotBeRestaurantOwnerException quando novo ownerId não pode ser dono")
     void shouldThrowWhenUserCannotBeOwner() {
         // Arrange
         UUID newOwnerId = UUID.randomUUID();
-        User newOwner = new UserBuilder().withDefaults().withId(newOwnerId).build(); // sem role de owner
+        User newOwner = new UserBuilder().withDefaults().withId(newOwnerId).build(); // sem role de ownerId
 
         UpdateRestaurantInput input = new UpdateRestaurantInput(
                 restaurantId,
@@ -417,7 +411,7 @@ class UpdateRestaurantUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve reutilizar cache quando owner também está na lista de employees (não consulta userGateway 2x)")
+    @DisplayName("Deve reutilizar cache quando ownerId também está na lista de employees (não consulta userGateway 2x)")
     void shouldNotQueryUserGatewayTwiceWhenOwnerIsAlsoEmployee() {
         // Arrange
         UUID sameOwnerId = owner.getId();
@@ -429,8 +423,8 @@ class UpdateRestaurantUseCaseTest {
                 null,
                 null,
                 null,
-                Set.of(sameOwnerId), // employee == owner (cache)
-                sameOwnerId          // novo owner == owner atual
+                Set.of(sameOwnerId), // employee == ownerId (cache)
+                sameOwnerId          // novo ownerId == ownerId atual
         );
 
         given(loggedUserGateway.hasRole(RestaurantRoles.UPDATE_RESTAURANT)).willReturn(true);
@@ -446,7 +440,7 @@ class UpdateRestaurantUseCaseTest {
         Restaurant saved = restaurantCaptor.getValue();
 
         assertThat(saved.getOwner().getId()).isEqualTo(sameOwnerId);
-        assertThat(saved.getEmployees()).contains(owner); // agora employee inclui owner
+        assertThat(saved.getEmployees()).contains(owner); // agora employee inclui ownerId
 
         then(userGateway).should(times(1)).findById(sameOwnerId);
         then(restaurantGateway).should(never()).existsRestaurantWithName(anyString());
@@ -508,6 +502,6 @@ class UpdateRestaurantUseCaseTest {
 
         assertThat(openingHours).isNotNull();
         assertThat(openingHours.getId()).isEqualTo(77L);
-        assertThat(openingHours.getDayOfWeek()).isEqualTo(hoursInput.dayOfDay());
+        assertThat(openingHours.getDayOfWeek()).isEqualTo(hoursInput.dayOfWeek());
     }
 }
