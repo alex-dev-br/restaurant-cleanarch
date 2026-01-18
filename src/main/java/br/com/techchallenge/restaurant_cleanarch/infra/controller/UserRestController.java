@@ -37,4 +37,10 @@ public class UserRestController {
         userController.update(updateUserInput);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable("id") UUID id) {
+        userController.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }
