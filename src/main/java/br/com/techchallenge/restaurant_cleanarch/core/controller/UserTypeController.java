@@ -55,7 +55,7 @@ public class UserTypeController {
         return result.map(UserTypePresenter::toOutput);
     }
 
-    public List<UserTypeOutput> getAllUserTypes() {
+    public List<UserTypeOutput> listAllUserTypes() {
         var userTypes = listUserTypesUseCase.execute();
         return userTypes.stream().map(UserTypePresenter::toOutput).toList();
     }
