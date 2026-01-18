@@ -332,6 +332,7 @@ percentual de código testado via Jacoco e Codecov.
 [![CI Build](https://github.com/alex-dev-br/restaurant-cleanarch/actions/workflows/ci.yml/badge.svg)](https://github.com/alex-dev-br/restaurant-cleanarch/actions/workflows/ci.yml)
 [![Codecov Coverage Graph](https://codecov.io/gh/alex-dev-br/restaurant-cleanarch/graphs/sunburst.svg?token=SEU_TOKEN)](https://codecov.io/gh/alex-dev-br/restaurant-cleanarch)
 
+![Gráfico de Cobertura Jacoco](docs/images/jacoco-coverage.png)
 ---
 
 ## 7. Collections para Teste
