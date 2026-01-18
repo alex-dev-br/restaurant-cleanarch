@@ -1,6 +1,7 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.config;
 
 import br.com.techchallenge.restaurant_cleanarch.core.gateway.*;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem.CreateMenuItemUseCase;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem.ListMenuItemsByRestaurantUseCase;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.*;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.role.ListRolesUseCase;
@@ -89,6 +90,11 @@ public class UseCaseConfig {
     @Bean
     public ListMenuItemsByRestaurantUseCase listMenuItemsByRestaurantUseCase(LoggedUserGateway loggedUserGateway, MenuItemGateway menuItemGateway, RestaurantGateway restaurantGateway) {
         return new ListMenuItemsByRestaurantUseCase(loggedUserGateway, menuItemGateway, restaurantGateway);
+    }
+
+    @Bean
+    public CreateMenuItemUseCase createMenuItemUseCase(LoggedUserGateway loggedUserGateway, MenuItemGateway menuItemGateway, RestaurantGateway restaurantGateway) {
+        return new CreateMenuItemUseCase(loggedUserGateway, menuItemGateway, restaurantGateway);
     }
 
     /* ============================
