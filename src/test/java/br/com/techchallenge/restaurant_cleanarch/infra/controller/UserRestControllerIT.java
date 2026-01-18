@@ -18,8 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ActiveProfiles({"test"})
@@ -192,7 +191,7 @@ class UserRestControllerIT {
     @Test
     @WithMockUser(authorities = {"UPDATE_USER"})
     @DisplayName("Deve retornar erro ao tentar alterar o userType para um inválido")
-    void deveDarErroAoAlterarUsuarioParaUserTypeInvalido() throws Exception {
+    void deveRetornarErroAoAlterarUsuarioParaUserTypeInvalido() throws Exception {
         var userTypeId = Long.MAX_VALUE;
         var userRequest = new UserRequest();
         userRequest.setName("Maria Oliveira");
@@ -208,5 +207,26 @@ class UserRestControllerIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message", is(equalTo("User type with ID " + userTypeId + " not found."))));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"DELETE_USER"})
+    @DisplayName("Deve deletar usuário com sucesso")
+    void deveDeletarUsuarioComSucesso() throws Exception {
+        mockMvc.perform(delete("/user/{id}", user.getId())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"DELETE_USER"})
+    @DisplayName("Deve retornar erro ao tentar deletar usuário inexistente")
+    void deveDevolverErroAoDeletarUsuarioInexistente() throws Exception {
+        UUID randomUUID = UUID.randomUUID();
+        mockMvc.perform(delete("/user/{id}", randomUUID)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.message", is(equalTo("User with ID " + randomUUID + " not found."))));
     }
 }
