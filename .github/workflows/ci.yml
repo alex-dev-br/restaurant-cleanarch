@@ -1,67 +1,92 @@
-# This workflow builds a Java project with Maven, runs tests, generates coverage reports, and uploads to Codecov.
-# For more info: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-name: CI  # Nome do workflow (aparece no badge de status)
+# This workflow builds a Java project with Maven, runs tests, generates coverage reports,
+# uploads to Codecov, captures a JaCoCo HTML screenshot, and commits it to the repo (main only).
+name: CI
 
 on:
   push:
-    branches: [ "main", "develop" ]  # Executa em pushes para main e develop
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main", "develop" ]  # Executa em PRs
+    branches: [ "main", "develop" ]
+
+# Permite que o GITHUB_TOKEN faça push no repositório
+permissions:
+  contents: write
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Máquina virtual gratuita do GitHub
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4  # Baixa o código do repo
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
-          distribution: 'temurin'  # Distribuição compatível com Java 21
-          cache: maven  # Cache de dependências Maven para builds mais rápidos
+          distribution: 'temurin'
+          cache: maven
 
       - name: Build with Maven
-        run: mvn clean package --file pom.xml  # Build completo (compila e empacota)
+        run: mvn clean package --file pom.xml
 
       - name: Run Tests and Generate Coverage Report
-        run: mvn verify jacoco:report --file pom.xml  # Executa testes, verifica cobertura mínima (se configurada no pom.xml) e gera relatório Jacoco
+        run: mvn verify jacoco:report --file pom.xml
 
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v4  # Action oficial para upload (versão mais recente)
+        uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}  # Usa o secret configurado no repo
-          files: ./target/site/jacoco/jacoco.xml  # Relatório XML gerado pelo Jacoco
-          verbose: true  # Logs detalhados para debug
-          fail_ci_if_error: true  # Falha o build se upload falhar (boa para qualidade)
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./target/site/jacoco/jacoco.xml
+          verbose: true
+          fail_ci_if_error: true
 
-      - name: Install Node.js for Screenshot
+      - name: Set up Node.js (for screenshot)
         uses: actions/setup-node@v4
         with:
-          node-version: '20'  # Versão estável
+          node-version: '20'
 
       - name: Create Images Directory
-        run: mkdir -p docs/images  # Cria a pasta se não existir, evitando ENOENT
+        run: mkdir -p docs/images
 
-      - name: Capture Jacoco Report Screenshot
+      # (Opcional, mas ajuda quando Puppeteer falha por libs no Ubuntu)
+      - name: Install Chromium dependencies (optional)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libxkbcommon0 \
+            libxcomposite1 libxrandr2 libxdamage1 libgbm1 libpango-1.0-0 \
+            libpangocairo-1.0-0 libasound2t64 || true
+
+      - name: Capture JaCoCo Report Screenshot
         run: |
           npm init -y
           npm install puppeteer --save-dev
-          node -e "const puppeteer = require('puppeteer'); (async () => { const browser = await puppeteer.launch({ args: ['--no-sandbox'] }); const page = await browser.newPage(); await page.setViewport({ width: 1920, height: 1080 }); await page.goto('file://${{ github.workspace }}/target/site/jacoco/index.html', { waitUntil: 'networkidle2' }); await page.screenshot({ path: 'docs/images/jacoco-coverage.png', fullPage: true }); await browser.close(); })();"
+          node -e "const puppeteer = require('puppeteer'); (async () => {
+            const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+            const page = await browser.newPage();
+            await page.setViewport({ width: 1920, height: 1080 });
+            await page.goto('file://${{ github.workspace }}/target/site/jacoco/index.html', { waitUntil: 'networkidle0' });
+            await page.screenshot({ path: 'docs/images/jacoco-coverage.png', fullPage: true });
+            await browser.close();
+          })();"
 
-      - name: Commit and Push Screenshot
+      - name: Commit and Push Screenshot (main only)
+        if: github.ref == 'refs/heads/main'
         run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git remote set-url origin https://${{ secrets.GIT_PAT }}@github.com/alex-dev-br/restaurant-cleanarch.git  # Usa PAT diretamente para autenticação (sem 'x:')
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add docs/images/jacoco-coverage.png
-          git commit -m "Update Jacoco coverage screenshot [ci skip]" || echo "No changes to commit"
-          git push origin HEAD  # Push para a branch atual
-        if: github.ref == 'refs/heads/main'  # Só em main para evitar loops
+
+          git commit -m "Update JaCoCo coverage screenshot [skip ci]" || echo "No changes to commit"
+
+          git push
 
       - name: Upload Screenshot Artifact
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-screenshot
-          path: docs/images/jacoco-coverage.png  # Salva como artefato para download
+          path: docs/images/jacoco-coverage.png
