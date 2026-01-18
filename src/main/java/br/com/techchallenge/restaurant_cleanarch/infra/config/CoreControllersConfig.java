@@ -2,6 +2,7 @@ package br.com.techchallenge.restaurant_cleanarch.infra.config;
 
 
 import br.com.techchallenge.restaurant_cleanarch.core.controller.*;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem.CreateMenuItemUseCase;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem.ListMenuItemsByRestaurantUseCase;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.restaurant.*;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.role.ListRolesUseCase;
@@ -37,8 +38,8 @@ public class CoreControllersConfig {
     }
 
     @Bean
-    public MenuItemController menuItemController(ListMenuItemsByRestaurantUseCase listMenuItemsByRestaurantUseCase) {
-        return new MenuItemController(listMenuItemsByRestaurantUseCase);
+    public MenuItemController menuItemController(ListMenuItemsByRestaurantUseCase listMenuItemsByRestaurantUseCase, CreateMenuItemUseCase createMenuItemUseCase) {
+        return new MenuItemController(listMenuItemsByRestaurantUseCase, createMenuItemUseCase);
     }
 
     @Bean

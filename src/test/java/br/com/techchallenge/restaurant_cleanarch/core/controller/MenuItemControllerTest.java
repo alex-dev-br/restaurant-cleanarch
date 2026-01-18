@@ -4,7 +4,9 @@ import br.com.techchallenge.restaurant_cleanarch.core.domain.model.MenuItem;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.model.util.MenuItemBuilder;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.Page;
 import br.com.techchallenge.restaurant_cleanarch.core.domain.pagination.PagedQuery;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateMenuItemInput;
 import br.com.techchallenge.restaurant_cleanarch.core.outbound.MenuItemOutput;
+import br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem.CreateMenuItemUseCase;
 import br.com.techchallenge.restaurant_cleanarch.core.usecase.menuitem.ListMenuItemsByRestaurantUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,6 +32,9 @@ class MenuItemControllerTest {
 
     @Mock
     private ListMenuItemsByRestaurantUseCase listMenuItemsByRestaurantUseCase;
+
+    @Mock
+    private CreateMenuItemUseCase createMenuItemUseCase;
 
     @InjectMocks
     private MenuItemController menuItemController;
@@ -96,11 +101,45 @@ class MenuItemControllerTest {
     }
 
     @Test
+    @DisplayName("Deve criar item de menu com sucesso")
+    void deveCriarItemDeMenuComSucesso() {
+        var menuItemBuilder = new MenuItemBuilder();
+        MenuItem expectedMenuItem = menuItemBuilder.build();
+        var createMenuItemInput = menuItemBuilder.buildCreateInput();
+
+        given(createMenuItemUseCase.execute(any())).willReturn(expectedMenuItem);
+
+        MenuItemOutput result = menuItemController.addItemInMenu(createMenuItemInput);
+
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(expectedMenuItem.getId());
+        assertThat(result.name()).isEqualTo(expectedMenuItem.getName());
+        assertThat(result.description()).isEqualTo(expectedMenuItem.getDescription());
+        assertThat(result.price()).isEqualTo(expectedMenuItem.getPrice());
+        assertThat(result.restaurantOnly()).isEqualTo(expectedMenuItem.getRestaurantOnly());
+        assertThat(result.photoPath()).isEqualTo(expectedMenuItem.getPhotoPath());
+        assertThat(result.restaurantId()).isEqualTo(createMenuItemInput.restaurantId());
+
+        then(createMenuItemUseCase).should().execute(any(CreateMenuItemInput.class));
+    }
+
+
+    @Test
     @DisplayName("Deve lançar exceção ao instanciar controller com ListMenuItemsByRestaurantUseCase nulo")
     void shouldThrowExceptionWhenListMenuItemsByRestaurantUseCaseIsNull() {
-        assertThatThrownBy(() -> new MenuItemController(null))
+        assertThatThrownBy(() -> new MenuItemController(null, createMenuItemUseCase))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("ListMenuItemsByRestaurantUseCase cannot be null.");
+
+        then(listMenuItemsByRestaurantUseCase).should(never()).execute(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao instanciar controller com CreateMenuItemUseCase nulo")
+    void shouldThrowExceptionWhenCreateMenuItemUseCaseIsNull() {
+        assertThatThrownBy(() -> new MenuItemController(listMenuItemsByRestaurantUseCase, null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("CreateMenuItemUseCase cannot be null.");
 
         then(listMenuItemsByRestaurantUseCase).should(never()).execute(any());
     }

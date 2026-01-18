@@ -1,33 +1,45 @@
 package br.com.techchallenge.restaurant_cleanarch.infra.controller;
 
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.Role;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.User;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.model.UserType;
+import br.com.techchallenge.restaurant_cleanarch.core.domain.roles.ForGettingRoleName;
+import br.com.techchallenge.restaurant_cleanarch.core.gateway.LoggedUserGateway;
+import br.com.techchallenge.restaurant_cleanarch.core.inbound.CreateMenuItemInput;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.entity.*;
 import br.com.techchallenge.restaurant_cleanarch.infra.persistence.repository.*;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.*;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ActiveProfiles({"test"})
 @SpringBootTest
 @AutoConfigureMockMvc
-class MenuControllerTestIT {
+class MenuRestControllerTestIT {
     private static final String USER_TYPE_RESTAURANT_OWNER = "RESTAURANT_OWNER";
 
     @Autowired
@@ -48,7 +60,12 @@ class MenuControllerTestIT {
     @Autowired
     private OpeningHoursRepository openingHoursRepo;
 
+    @MockitoBean
+    private LoggedUserGateway loggedUserGateway;
+
     private RestaurantEntity restaurant;
+    private Long restaurantId;
+    private UUID ownerId;
 
     @BeforeEach
     void setUp() {
@@ -59,6 +76,7 @@ class MenuControllerTestIT {
         ownerEntity.setEmail("ownerEntity@mail.com.br");
         ownerEntity.setUserType(userType);
         UserEntity owner = userRepository.save(ownerEntity);
+        ownerId = owner.getId();
 
         var addressEntity = new AddressEmbeddableEntity();
         addressEntity.setStreet("Rua Ipanema");
@@ -73,9 +91,9 @@ class MenuControllerTestIT {
         newRestaurant.setCuisineType("Tradicional");
         newRestaurant.setAddress(addressEntity);
         newRestaurant.setOwner(owner);
-        newRestaurant.setMenu(Set.of());
 
         restaurant = restaurantRepo.save(newRestaurant);
+        restaurantId = restaurant.getId();
 
         var monday = new OpeningHoursEntity();
         monday.setDayOfWeek(DayOfWeek.MONDAY);
@@ -109,6 +127,18 @@ class MenuControllerTestIT {
         strogonoff.setPhotoPath("/foto-menu/strogonoff-frago.jpg");
 
         menuRepo.save(strogonoff);
+
+        //internamente valida se é dono ou funcionario, tive que mockar aqui
+        var roles = userType.getRoles().stream().map(r -> new Role(r.getId(), r.getName())).collect(Collectors.toSet());
+        var loggedOwner = new User(ownerId, owner.getName(), owner.getEmail(), null, new UserType(userType.getId(), userType.getName(), roles), owner.getPasswordHash());
+        given(loggedUserGateway.requireCurrentUser()).willReturn(loggedOwner);
+        given(loggedUserGateway.hasRole(ArgumentMatchers.any(ForGettingRoleName.class))).willReturn(true);
+    }
+
+    @AfterEach
+    void tearDown() {
+        restaurantRepo.deleteById(restaurantId);
+        userRepository.deleteById(ownerId);
     }
 
     @Test
@@ -116,9 +146,8 @@ class MenuControllerTestIT {
     void deveBuscaOsItensDoMenu() throws Exception {
         var pageNumber = 0;
         var pageSize = 10;
-        Long restaurantId = restaurant.getId();
         var itensMenu = restaurant.getMenu().stream().map(MenuItemEntity::getName).toArray();
-        mockMvc.perform(get("/restaurants/{id}/menu?pageNumber={pageNumber}&pageSize={pageSize}", restaurantId, pageNumber, pageSize)
+        mockMvc.perform(get("/restaurants/{id}/menu?pageNumber={pageNumber}&pageSize={pageSize}", restaurant.getId(), pageNumber, pageSize)
                 .characterEncoding("UTF-8")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -127,6 +156,34 @@ class MenuControllerTestIT {
                 .andExpect(jsonPath("$.pageSize", is(equalTo(pageSize))))
                 .andExpect(jsonPath("$.totalElements", is(greaterThanOrEqualTo(2))))
                 .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(2))))
+                .andExpect(jsonPath("$.content[*].id").exists())
                 .andExpect(jsonPath("$.content[*].name", hasItems(itensMenu)));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"CREATE_MENU_ITEM"})
+    @DisplayName("Deve adicionar novo item no menu")
+    void deveAdicionarNovoItemAoMenu() throws Exception {
+        var camaraoInput = new CreateMenuItemInput (
+            "Risoto de Camarão ao Limão Siciliano",
+            "Arroz arbóreo cremoso com camarões grelhados no azeite de ervas, finalizado com raspas de limão siciliano, queijo parmesão e brotos frescos.",
+            new BigDecimal("98"),
+                true,
+                "/fotos-menu/risoto-camarao.jpg",
+                restaurantId
+        );
+        mockMvc.perform(post("/restaurants/{id}/menu", restaurantId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding("UTF-8")
+                .content(JsonUtil.parseToString(camaraoInput)))
+                .andExpect(status().isCreated())
+                .andExpect(redirectedUrlPattern("**/restaurants/"+restaurantId+"/menu/*"))
+                .andExpect(jsonPath("$.id", notNullValue()))
+                .andExpect(jsonPath("$.name", is(equalTo(camaraoInput.name()))))
+                .andExpect(jsonPath("$.description", is(equalTo(camaraoInput.description()))))
+                .andExpect(jsonPath("$.price", comparesEqualTo(camaraoInput.price().intValue())))
+                .andExpect(jsonPath("$.restaurantOnly", is(equalTo(camaraoInput.restaurantOnly()))))
+                .andExpect(jsonPath("$.photoPath", is(equalTo(camaraoInput.photoPath()))));
+
     }
 }
