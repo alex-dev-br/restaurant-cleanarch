@@ -264,4 +264,22 @@ class UserTypeRestControllerIT {
                 .andExpect(jsonPath("$.message", containsString("ALL")));
     }
 
+
+    @Test
+    @WithMockUser(authorities = {"DELETE_USER_TYPE"})
+    @DisplayName("Deve retornar erro tentar delete ID inexistente")
+    void shouldDeleteUseTypeWithSuccess() throws Exception{
+        mockMvc.perform(delete("/user-types/{id}", managerId)).andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"DELETE_USER_TYPE"})
+    @DisplayName("Deve retornar erro tentar delete ID inexistente")
+    void shouldThrowErrorWhenDeleteUseTypeWithIdNotExists() throws Exception {
+        Long idInexistente = Long.MAX_VALUE;
+        mockMvc.perform(delete("/user-types/{id}", idInexistente))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.message", equalTo("User type not found.")));
+    }
 }
