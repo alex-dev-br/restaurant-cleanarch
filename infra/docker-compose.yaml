@@ -2,12 +2,13 @@
 # Subir só o postgres (para usar a IDE local) => docker compose --profile ide up -d
 
 services:
+
   postgres:
-    networks: [app_net]
     image: postgres:17
     container_name: pg-restaurant
     restart: unless-stopped
     profiles: ["ide", "stack"]
+    networks: [app_net]
     ports:
       - "${DB_PORT:-5432}:5432"
     environment:
@@ -16,16 +17,15 @@ services:
       POSTGRES_PASSWORD: "${DB_PASSWORD:-restaurant_backend_password}"
       TZ: "${TZ:-America/Sao_Paulo}"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-restaurant_backend_user} -d ${DB_NAME:-restaurant_backend_db}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-restaurant_backend_user} -d ${DB_NAME:-restaurant_backend_db}"]
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 15
       start_period: 10s
     volumes:
       - db_data:/var/lib/postgresql/data
 
   app:
-    networks: [app_net]
     build:
       context: ..
       dockerfile: infra/Dockerfile
@@ -33,32 +33,32 @@ services:
     container_name: restaurant-api
     restart: unless-stopped
     profiles: ["stack"]
+    networks: [app_net]
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      # Definir na .env: SPRING_PROFILES_ACTIVE=dev, prod ou test
-      SPRING_PROFILES_ACTIVE: "${SPRING_PROFILES_ACTIVE:-dev}"
-      # Datasource container-para-container (DNS 'postgres' na rede do Compose)
+      SPRING_PROFILES_ACTIVE: "${SPRING_PROFILES_ACTIVE:-prod}"
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/${DB_NAME:-restaurant_backend_db}"
       SPRING_DATASOURCE_USERNAME: "${DB_USER:-restaurant_backend_user}"
       SPRING_DATASOURCE_PASSWORD: "${DB_PASSWORD:-restaurant_backend_password}"
+
       JWT_SECURITY_TOKEN: "${JWT_SECURITY_TOKEN:-dev-placeholder}"
       JWT_EXPIRATION: "${JWT_EXPIRATION:-3600}"
-      # Flags JVM e timezone
+
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75 -XX:+UseSerialGC"
       TZ: "${TZ:-America/Sao_Paulo}"
     ports:
       - "${APP_PORT:-8080}:8080"
     healthcheck:
-      test: [ "CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health | grep -q UP" ]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health >/dev/null || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 10
-      start_period: 20s
+      start_period: 25s
 
 volumes:
-  db_data: { }
+  db_data: {}
 
 networks:
   app_net:

@@ -78,6 +78,13 @@
             <artifactId>spring-boot-starter-flyway</artifactId>
         </dependency>
 
+        <!-- Flyway: suporte ao PostgreSQL -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
