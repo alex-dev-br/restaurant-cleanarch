@@ -8,25 +8,25 @@
 
 ---
 
-## Sumário
-
-- [1. Introdução](#1-introdução)
-- [2. Arquitetura do Sistema (Clean Architecture)](#2-arquitetura-do-sistema-clean-architecture)
-- [3. Descrição dos Endpoints da API](#3-descrição-dos-endpoints-da-api)
-- [4. Configuração do Projeto](#4-configuração-do-projeto)
-- [5. Qualidade do Código](#5-qualidade-do-código)
-- [6. Collections para Teste](#6-collections-para-teste)
-- [7. Repositório do Código](#7-repositório-do-código)
-- [Notas](#notas)
-
----
-
 ## Equipe
 
 | Nome                                             | RM       | E‑mail                  |
 |--------------------------------------------------|----------|-------------------------|
 | Alexandre Belisário Duarte Leite de Andrade      | RM367163 | alexbdla@gmail.com      |
 | Kervin Sama Candido da Silva                     | RM367345 | kervincandido@gmail.com |
+
+---
+
+## Sumário
+- [1. Introdução](#1-introdução)
+- [2. Arquitetura do Sistema (Clean Architecture)](#2-arquitetura-do-sistema-clean-architecture)
+- [3. Tecnologias utilizadas](#3-tecnologias-utilizadas)
+- [4. Descrição dos Endpoints da API](#4-descrição-dos-endpoints-da-api)
+- [5. Configuração do Projeto](#5-configuração-do-projeto)
+- [6. Qualidade do Código](#6-qualidade-do-código)
+- [7. Collections para Teste (Postman)](#7-collections-para-teste)
+- [8. Repositório do Código](#8-repositório-do-código)
+- [Notas](#notas)
 
 ---
 
@@ -51,11 +51,10 @@ orientadas a código limpo e uma arquitetura em camadas que facilite a manutenç
 ### Objetivo do projeto
 
 Desenvolver um backend robusto em **Java 21** com **Spring Boot** para gerenciar tipos de usuário, restaurantes e itens 
-de cardápio, seguindo a **CleanArchitecture** e atendendo aos requisitos definidos na Tech Challenge. O projeto 
+de cardápio, seguindo a **Clean Architecture** e atendendo aos requisitos definidos na Tech Challenge. O projeto 
 utiliza banco de dados PostgreSQL com migrações via **Flyway**, mapeamento de entidades com **JPA**, autenticação via 
 **Spring Security** e mapeamento de DTOs com **MapStruct**. O código foi estruturado para garantir alta coesão, 
 baixo acoplamento e facilidade de testes automatizados.
-
 
 Este projeto prioriza a separação de responsabilidades, com foco em escalabilidade e manutenção. Futuras fases podem 
 incluir integração com serviços externos (ex: pagamentos, notificações) e expansão para pedidos online.
@@ -65,18 +64,22 @@ incluir integração com serviços externos (ex: pagamentos, notificações) e e
 ## 2. Arquitetura do Sistema (Clean Architecture)
 
 ### Visão Geral
-Este projeto adota a Clean Architecture, proposta por Robert C. Martin (Uncle Bob), para isolar a lógica de negócio das dependências externas. Isso promove testabilidade, independência de frameworks e facilidade de evolução. A estrutura é dividida em camadas concêntricas:
+Este projeto adota a Clean Architecture, proposta por Robert C. Martin (Uncle Bob), para isolar a lógica de negócio das 
+dependências externas. Isso promove testabilidade, independência de frameworks e facilidade de evolução. A estrutura é 
+dividida em camadas concêntricas:
 
-Domain (Entidades): Regras de negócio puras e invariantes (ex: validações em MenuItem para preço positivo e nome obrigatório).
-Application (Use Cases): Orquestração de fluxos de negócio (ex: CreateRestaurantUseCase verifica unicidade de nomes e permissões).
-Ports (Interfaces): Contratos para entrada/saída (inbound/outbound), garantindo inversão de dependência.
-Adapters (Infraestrutura): Implementações concretas (ex: JPA para persistência, REST para API).
+- **Domain (Entidades):** regras de negócio puras e invariantes (ex: validações em `MenuItem` para preço positivo e nome 
+  obrigatório).
+- **Application (Use Cases):** orquestração de fluxos de negócio (ex: `CreateRestaurantUseCase` verifica unicidade de nomes 
+  e permissões).
+- **Ports (Interfaces):** contratos para entrada/saída (inbound/outbound), garantindo inversão de dependência.
+- **Adapters (Infraestrutura):** implementações concretas (ex: JPA para persistência, REST para API).
 
-#### Benefícios:
+#### Benefícios
 
-Independência: O core (domínio e use cases) não depende de frameworks; pode ser testado isoladamente.
-Flexibilidade: Fácil trocar banco de dados ou adicionar novos adapters (ex: gRPC em vez de REST).
-Testabilidade: Use cases são unitários; adapters são testados em integração.
+- **Independência:** o core (domínio e use cases) não depende de frameworks; pode ser testado isoladamente.
+- **Flexibilidade:** fácil trocar banco de dados ou adicionar novos adapters (ex: gRPC em vez de REST).
+- **Testabilidade:** use cases são unitários; adapters são testados em integração.
 
 ### Diagrama de Camadas
 
@@ -104,64 +107,62 @@ Testabilidade: Use cases são unitários; adapters são testados em integração
 +----------------------------------------------------------------------+
 ```
 
-Como pode ser visto no diagrama acima, este projeto utiliza a **Clean Architecture** para separar as regras de negócio dos detalhes de implementação. A
-estrutura é dividida em duas camadas principais: `core` e `infra`.
+Como pode ser visto no diagrama acima, este projeto utiliza a **Clean Architecture** para separar as regras de negócio 
+dos detalhes de implementação. A estrutura é dividida em duas camadas principais: `core` e `infra`.
 
-- **`core`**: Contém a lógica de negócio pura, sem dependências de frameworks externos.
-- **`infra`**: Fornece as implementações técnicas, como acesso a banco de dados e a API REST, dependendo do `core`.
+- **`core`**: contém a lógica de negócio pura, sem dependências de frameworks externos.
+- **`infra`**: fornece as implementações técnicas, como acesso a banco de dados e a API REST, dependendo do `core`.
+
 ### Camada Core
 
 O `core` é o coração da aplicação e é subdividido em:
 
-- **`domain`**: Contém as entidades de negócio (`Restaurant`, `User`) e suas regras de validação. Garante que os objetos 
-de negócio estejam sempre em um estado válido.
-- **`gateway`**: Define as interfaces (contratos) para operações externas, como persistência de dados 
-(ex: `SalvarRestauranteGateway`).
-- **`usecase`**: Orquestra as regras de negócio da aplicação, utilizando o `domain` e os `gateways` para executar ações 
-específicas (ex: `CadastrarRestauranteUseCase`).
+- **`domain`**: contém as entidades de negócio (`Restaurant`, `User`) e suas regras de validação. Garante que os objetos 
+  de negócio estejam sempre em um estado válido.
+- **`gateway`**: define as interfaces (contratos) para operações externas, como persistência de dados.
+- **`usecase`**: orquestra as regras de negócio da aplicação, utilizando o `domain` e os `gateways` para executar ações 
+  específicas.
 - **`inbound` / `outbound`**: DTOs (Data Transfer Objects) que definem a fronteira de dados para os `usecases`.
-- **`presenter`**: Interfaces responsáveis por converter objetos do `domain` para o formato de saída (`outbound`).
-- **`controller`**: Ponto de entrada para o `core`. Recebe solicitações, chama os `usecases` apropriados e gerencia o 
-fluxo de negócio.
+- **`presenter`**: interfaces responsáveis por converter objetos do `domain` para o formato de saída (`outbound`).
+- **`controller`**: ponto de entrada para o `core`. Recebe solicitações, chama os `usecases` apropriados e gerencia o 
+  fluxo de negócio.
 
 ### Camada Infra
 
 A `infra` implementa as interfaces do `core` e lida com as tecnologias externas.
 
-- **`config`**: Configurações do Spring Framework, como injeção de dependência (Beans) e segurança.
-- **`controller`**: Controladores da API REST (Spring MVC). Recebem requisições HTTP e as delegam para o `controller` 
-do `core`.
-- **`mapper`**: Conversores (usando MapStruct) que transformam os DTOs da API nos DTOs do `core` e vice-versa.
-- **`persistence`**: Implementação dos `gateways` de persistência. Contém as entidades JPA e os repositórios Spring Data
-que interagem com o banco de dados.
+- **`config`**: configurações do Spring Framework, como injeção de dependência (Beans) e segurança.
+- **`controller`**: controladores da API REST (Spring MVC). Recebem requisições HTTP e as delegam para o `controller` 
+  do `core`.
+- **`mapper`**: conversores (usando MapStruct) que transformam os DTOs da API nos DTOs do `core` e vice-versa.
+- **`persistence`**: implementação dos `gateways` de persistência. Contém as entidades JPA e os repositórios Spring Data
+  que interagem com o banco de dados.
 
 ### Testes
 
 A estratégia de testes garante a qualidade em ambas as camadas:
 
-- **Testes de Unidade**: Focam na camada `core` (`domain`, `usecases`), utilizando mocks (Mockito) para simular as 
-dependências externas (gateways).
-- **Testes de Integração**: Validam a camada `infra`, testando a integração com o banco de dados (`@DataJpaTest`) e a 
-API REST (`@SpringBootTest`).
+- **Testes de Unidade**: focam na camada `core` (`domain`, `usecases`), utilizando mocks (Mockito) para simular as 
+  dependências externas (gateways).
+- **Testes de Integração**: validam a camada `infra`, testando a integração com o banco de dados (`@DataJpaTest`) e a 
+  API REST (`@SpringBootTest`).
 
 **Ferramentas:** JUnit, AssertJ, Mockito e Spring Boot Test.
 
 ### Visão geral da arquitetura
 
-Para o desenvolvimento deste projeto, adotamos a **CleanArchitecture**, um padrão de design proposto por Robert C. 
+Para o desenvolvimento deste projeto, adotamos a **Clean Architecture**, um padrão de design proposto por Robert C. 
 Martin (Uncle Bob). O objetivo principal é isolar a lógica de negócio das dependências externas, promovendo 
 testabilidade e facilidade de evolução. A estrutura geral é composta de quatro anéis concêntricos:
 
 1. **Domínio** – contém entidades e objetos de valor, com invariantes e regras intrínsecas. Por exemplo, `MenuItem` 
-garante que nome não seja vazio e preço seja positivo; `Restaurant` valida que o dono possui
-permissão para ser proprietário.
+   garante que nome não seja vazio e preço seja positivo; `Restaurant` valida que o dono possui permissão para ser proprietário.
 2. **Casos de Uso (Application)** – implementa as regras de negócio. Casos de uso como `CreateRestaurantUseCase` 
-verificam unicidade de nomes e permissões antes de persistir dados.
+   verificam unicidade de nomes e permissões antes de persistir dados.
 3. **Ports** – interfaces que definem contratos de entrada (inbound) e saída (outbound) entre aplicação e infraestrutura. 
-Inbound ports são usados por controladores; outbound ports abstraem persistência, envio de e‑mail ou hashing de senhas.
+   Inbound ports são usados por controladores; outbound ports abstraem persistência, envio de e‑mail ou hashing de senhas.
 4. **Infraestrutura** – implementa os ports com tecnologias concretas: controladores REST, adaptadores de persistência
-(JPA), mapeadores MapStruct, configuração de segurança e Docker.
-
+   (JPA), mapeadores MapStruct, configuração de segurança e Docker.
 
 ### Organização dos pacotes
 
@@ -169,31 +170,33 @@ O código está organizado da seguinte forma:
 
 - **`core/domain`** – modelos de domínio (entidades e objetos de valor) e regras de negócio próprias.
 - **`core/usecase`** – casos de uso (serviços da aplicação) que orquestram operações, aplicando validações e regras 
-específicas.
+  específicas.
 - **`core/inbound` e `core/outbound`** – definem ports. Inbound ports representam contratos de entrada para controladores; 
-outbound ports definem interfaces para persistência, hashing de senhas, recuperação de usuário logado, etc.
+  outbound ports definem interfaces para persistência, hashing de senhas, recuperação de usuário logado, etc.
 - **`core/controller`** – controladores de aplicação que coordenam casos de uso e apresentam respostas (presenters).
 - **`infra/controller`** – adaptadores HTTP (REST) implementados com Spring MVC. Cada REST controller mapeia os requests 
-para os ports de entrada e converte os outputs para DTOs.
+  para os ports de entrada e converte os outputs para DTOs.
 - **`infra/persistence`** – adaptadores de persistência usando Spring Data JPA para implementar os ports de saída. 
-Mappers convertem entre entidades JPA e objetos de domínio.
+  Mappers convertem entre entidades JPA e objetos de domínio.
 - **`infra/config`** – configuração de infraestrutura, como segurança com Spring Security, perfil de banco de dados e 
-serialização JSON. A classe `SecurityConfig` permite acesso público apenas aos endpoints de listagem de restaurantes e 
-menu, exigindo autenticação para as demais rotas.
+  serialização JSON. A classe `SecurityConfig` permite acesso público apenas aos endpoints de listagem de restaurantes e 
+  menu, exigindo autenticação para as demais rotas.
 
 ### Fluxo Típico
 
 1. Requisição REST → infra/controller → Mapper para inbound DTO.
-2. Inbound → core/controller → Valida acesso (via LoggedUserGateway).
+2. Inbound → core/controller → Valida acesso (via `LoggedUserGateway`).
 3. Chama use case → Validações de negócio + interage com gateways.
 4. Persistência via infra/persistence adapters.
 5. Resposta: Presenter converte domínio para outbound DTO → Mapper para response REST.
+
+---
 
 ## 3. Tecnologias utilizadas
 
 - **Linguagem**: Java 21 (com records para DTOs e imutabilidade).
 - **Framework**: Spring Boot 3.x (MVC, Data JPA, Security).
-- **Banco de Dados**: PostgreSQL (dev/prod), H2 (testes).
+- **Banco de Dados**: PostgreSQL (prod/stack), H2 (dev/test).
 - **Migração**: Flyway.
 - **Mapeamento**: MapStruct (DTOs e entities).
 - **Autenticação**: Spring Security (HTTP Basic, roles-based).
@@ -206,43 +209,70 @@ menu, exigindo autenticação para as demais rotas.
 ### Banco de dados
 
 Utilizamos **PostgreSQL** como banco de dados principal, com scripts de migração gerenciados pelo **Flyway**.
-Para testes de integração, o perfil `test` usa H2 in‑memory. O Docker Compose define um contêiner PostgreSQL com volume 
-persistente e um contêiner para a aplicação. As variáveis de ambiente e credenciais são configuradas via `.env`.
-
+Para desenvolvimento local, o profile `dev` utiliza H2 in-memory. Para testes automatizados, o profile `test` utiliza H2
+e executa as migrações via Flyway.
 
 ---
 
 ## 4. Descrição dos Endpoints da API
 
-O backend expõe uma API REST organizada sob `/restaurants`, `/user-types`, `/user`, `/roles` e 
-`/restaurants/{restaurant-id}/menu`. A autenticação padrão é **HTTP Basic**, e cada rota exige papéis definidos na 
-classe de configuração de segurança.
+O backend expõe uma API REST organizada sob os recursos:
+
+- `/restaurants`
+- `/user-types`
+- `/user`
+- `/roles`
+- `/restaurants/{restaurant-id}/menu`
+
+A autenticação padrão é **HTTP Basic**. As regras de autorização (papéis/roles exigidos por rota) são definidas na
+**configuração de segurança** do projeto.
+
+### Autenticação por profile
+- **dev**: rotas liberadas (`permitAll`) e usuário logado é simulado (FakeLoggedUserContext), facilitando desenvolvimento.
+- **prod/stack**: autenticação **HTTP Basic** e autorização por **roles**.
+
+> No profile `dev`, os endpoints podem ser testados sem autenticação (rotas liberadas).
+
+### Credencial padrão (para testes rápidos em prod/stack)
+O Flyway cria um usuário inicial:
+- **username (email):** dev.ownerId@mail.com
+- **password:** dev
+- **tipo:** RESTAURANT_OWNER
 
 ### Tabela de Endpoints
 
-| Path                                   | Métodos                     | Segurança      | Descrição                                                                                 |
-|----------------------------------------|-----------------------------|----------------|-------------------------------------------------------------------------------------------|
-| **/restaurants**                       | GET                        | Público        | Lista restaurantes com paginação e permite filtrar pelo tipo de cozinha.                  |
-|                                        | POST                       | Autenticado    | Cria um novo restaurante. É necessário papel de criação de restaurante.                   |
-|                                        | PUT                        | Autenticado    | Atualiza dados de um restaurante existente.                                               |
-| **/restaurants/{id}**                  | GET                        | Público        | Retorna dados públicos de um restaurante pelo ID.                                         |
-|                                        | DELETE                     | Autenticado    | Exclui um restaurante (somente para usuários autorizados).                                |
-| **/restaurants/{id}/management**       | GET                        | Autenticado    | Retorna detalhes de gestão do restaurante, incluindo equipe, horários e cardápio.         |
-| **/user-types**                        | GET                        | Com permissão  | Lista todos os tipos de usuário.                                                          |
-|                                        | POST                       | Com permissão  | Cria um novo tipo de usuário.                                                             |
-| **/user-types/{id}**                   | GET                        | Com permissão  | Consulta um tipo de usuário pelo ID.                                                      |
-|                                        | PUT                        | Com permissão  | Atualiza um tipo de usuário existente.                                                    |
-|                                        | DELETE                     | Com permissão  | Exclui um tipo de usuário.                                                                |
-| **/user**                              | GET                        | Com permissão  | Lista usuários com paginação.                                                             |
-|                                        | POST                       | Com permissão  | Cria um novo usuário.                                                                     |
-| **/user/{id}**                         | GET                        | Com permissão  | Consulta usuário pelo UUID.                                                               |
-|                                        | PUT                        | Com permissão  | Atualiza dados de um usuário existente.                                                   |
-|                                        | DELETE                     | Com permissão  | Remove um usuário.                                                                        |
-| **/roles**                             | GET                        | Com permissão  | Lista todos os papéis/roles existentes. Não há endpoints para criar ou atualizar roles.   |
-| **/restaurants/{id}/menu**             | GET                        | Público        | Lista itens de menu de um restaurante com paginação.                                      |
+| Path                                       | Métodos        | Segurança                   | Descrição                                                                         |
+|--------------------------------------------|----------------|-----------------------------|-----------------------------------------------------------------------------------|
+| **/restaurants**                           | GET            | Público                     | Lista restaurantes com paginação e permite filtrar pelo tipo de cozinha.          |
+|                                            | POST           | Autenticado (com permissão) | Cria um novo restaurante.                                                         |
+| **/restaurants/{id}**                      | GET            | Público                     | Retorna dados públicos de um restaurante pelo ID.                                 |
+|                                            | PUT            | Autenticado (com permissão) | Atualiza dados de um restaurante existente.                                       |
+|                                            | DELETE         | Autenticado (com permissão) | Exclui um restaurante (somente para usuários autorizados).                        |
+| **/restaurants/{id}/management**           | GET            | Autenticado (com permissão) | Retorna detalhes de gestão do restaurante (equipe, horários e cardápio).          |
+| **/user-types**                            | GET            | Autenticado (com permissão) | Lista todos os tipos de usuário.                                                  |
+|                                            | POST           | Autenticado (com permissão) | Cria um novo tipo de usuário.                                                     |
+| **/user-types/{id}**                       | GET            | Autenticado (com permissão) | Consulta um tipo de usuário pelo ID.                                              |
+|                                            | PUT            | Autenticado (com permissão) | Atualiza um tipo de usuário existente.                                            |
+|                                            | DELETE         | Autenticado (com permissão) | Exclui um tipo de usuário.                                                        |
+| **/user**                                  | GET            | Autenticado (com permissão) | Lista usuários com paginação.                                                     |
+|                                            | POST           | Autenticado (com permissão) | Cria um novo usuário.                                                             |
+| **/user/{id}**                             | GET            | Autenticado (com permissão) | Consulta usuário pelo UUID.                                                       |
+|                                            | PUT            | Autenticado (com permissão) | Atualiza dados de um usuário existente.                                           |
+|                                            | DELETE         | Autenticado (com permissão) | Remove um usuário.                                                                |
+| **/roles**                                 | GET            | Autenticado (com permissão) | Lista todos os papéis/roles existentes (somente leitura).                         |
+| **/restaurants/{restaurant-id}/menu**      | GET            | Público                     | Lista itens de menu de um restaurante com paginação.                              |
+|                                            | POST           | Autenticado (com permissão) | Cria um item de cardápio para o restaurante.                                      |
+| **/restaurants/{restaurant-id}/menu/{id}** | GET            | Público                     | Retorna um item do cardápio pelo ID (no contexto do restaurante).                 |
+|                                            | PUT            | Autenticado (com permissão) | Atualiza um item do cardápio.                                                     |
+|                                            | DELETE         | Autenticado (com permissão) | Exclui um item do cardápio.                                                       |
 
-> **Observação:** os casos de uso para **criar, atualizar e excluir itens de cardápio** existem no núcleo da aplicação, 
-> mas ainda não estão expostos por rotas REST. Esses endpoints serão adicionados ⚠️⚠️⚠️Em elaboração⚠️⚠️⚠️.
+> **Observação:** os endpoints de **MenuItem** estão expostos em REST sob `/restaurants/{restaurant-id}/menu` e 
+> `/restaurants/{restaurant-id}/menu/{id}` (CRUD completo).
+
+#### Notas úteis (parâmetros comuns)
+
+- **Paginação**: endpoints de listagem aceitam `pageNumber` e `pageSize` (quando aplicável).
+- **Filtro por tipo de cozinha**: `GET /restaurants` aceita `cuisineType`.
 
 ### Documentação & Saúde
 
@@ -254,53 +284,166 @@ classe de configuração de segurança.
 
 ---
 
-## 5. Configuração do Projeto (⚠️⚠️⚠️Em elaboração⚠️⚠️⚠️)
+## 5. Configuração do Projeto
 
-### 5.1 Pré-requisitos
-- Java 21 JDK.
-- Maven 3.8+.
-- Docker & Docker Compose (para containerização).
-- PostgreSQL (opcional para dev local).
+### 5.1 Configurações de Ambiente e Docker
 
-### 5.1 Arquivos de Configuração
+Para facilitar a execução local e a entrega do projeto, foram adicionadas/configuradas as seguintes estruturas:
 
-- **`.env.example`** – arquivo de exemplo com variáveis de ambiente; copie para `infra/.env` e ajuste os valores 
-conforme sua máquina. Campos como `DB_NAME`, `DB_USER`, `DB_PASSWORD` e `JWT_SECURITY_TOKEN` devem ser definidos.
-- **`infra/docker-compose.yaml`** – orquestra os contêineres do PostgreSQL e da aplicação. O serviço `postgres` monta 
-um volume persistente, configura usuário, senha e banco de dados, e define *healthcheck*. O serviço `app` executa a 
-aplicação com variáveis como `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_PROFILES_ACTIVE` e `JWT_SECURITY_TOKEN`【186017117635155†L26-L50】.
+#### Perfis de configuração (Spring)
+- **`application.yaml`**: configurações base comuns do projeto (porta, Flyway, JPA e SpringDoc).
+- **`application-dev.yaml`**: perfil de desenvolvimento com **H2 em memória**, console do H2 e migrações adicionais para 
+  ambiente dev.
+- **`application-prod.yaml`**: perfil de produção voltado para execução com **PostgreSQL**, recebendo URL e credenciais 
+  via variáveis de ambiente (ideal para Docker e ambientes externos).
+
+#### Banco de dados e migrações (Flyway)
+O projeto utiliza **Flyway** para versionar e aplicar migrações automaticamente na inicialização da aplicação. As 
+migrations ficam em `src/main/resources/db/migration` (e, quando aplicável, uma pasta adicional específica para o 
+ambiente `dev`).
+
+#### Docker / Docker Compose
+Foi configurada uma stack Docker para execução consistente do sistema:
+
+- **`infra/Dockerfile`**: build **multi-stage**, compilando o projeto com Maven e gerando uma imagem final enxuta 
+  (JRE 21).
+- **`infra/docker-compose.yaml`**: orquestração dos serviços com perfis:
+  - **`stack`**: sobe **PostgreSQL + aplicação**
+  - **`ide`**: sobe **apenas o PostgreSQL** (para rodar a aplicação pela IDE)
+  - **`test`** (opcional): executa a suíte de testes em container (Maven) apontando para o banco de testes
+- **`infra/.env`**: centraliza variáveis de ambiente (porta da aplicação, credenciais do banco...), evitando valores fixos no `docker-compose.yaml`.
+
+#### Healthcheck
+O Docker Compose inclui healthchecks para garantir que:
+- o **PostgreSQL** esteja pronto antes da aplicação iniciar;
+- a **aplicação** seja considerada saudável quando o endpoint **`/actuator/health`** estiver respondendo adequadamente.
+
+### 5.2 Pré-requisitos
+
+#### Executando com Docker (recomendado)
+- **Docker Desktop** (inclui Docker Engine e Docker Compose)
+
+#### Executando localmente (sem Docker)
+- **Java 21 JDK**
+- **Maven 3.8+**
+- **PostgreSQL** (se usar o profile `prod`) **ou** **H2** (no profile `dev`)
+
+### 5.3 Arquivos de Configuração
+
+- **`.env.example`** – arquivo de exemplo com variáveis de ambiente; copie para `infra/.env` e ajuste os valores
+  conforme sua máquina. Campos como `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `APP_PORT` e `SPRING_PROFILES_ACTIVE`
+  (quando aplicável) devem ser definidos.
+
+- **`infra/docker-compose.yaml`** – orquestra os contêineres do PostgreSQL e da aplicação. O serviço `postgres` monta
+  um volume persistente, configura usuário, senha e banco de dados, e define *healthcheck*. O serviço `app` executa a
+  aplicação com variáveis como `SPRING_PROFILES_ACTIVE`, `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` e
+  `SPRING_DATASOURCE_PASSWORD`.
+
+- **`src/test/resources/application-test.yaml`** – configurações do profile `test` (H2 + Flyway). É carregado quando o 
+  profile `test` está ativo (ex.: via `@ActiveProfiles("test")` em testes de integração ou via parâmetro no Maven).
+
 - **`infra/Dockerfile`** – build multi-stage (Maven + JRE 21) para compilar e empacotar a aplicação.
 
-### 5.2 Perfis
+> **Observação:** no profile `dev` a aplicação pode utilizar H2 in-memory. No profile `prod/stack` a aplicação utiliza PostgreSQL.
 
-- **stack** – sobe banco de dados e aplicação no Docker.
-- **ide** – sobe apenas o banco de dados no Docker; a aplicação pode ser executada localmente pela IDE.
+### 5.4 Perfis
 
-### 5.3 Como executar (⚠️⚠️⚠️Em elaboração⚠️⚠️⚠️)
+#### Perfis do Spring (application-*.yaml)
 
-1. Clone o repo: git clone https://github.com/alex-dev-br/restaurant-cleanarch.
-2. Configure `.env`: Copie de .`infra/env.example` e ajuste (ex: `DB_PASSWORD`, `JWT_SECURITY_TOKEN`).`.
-3. Build: `mvn clean package`.
-4. Docker: `cd infra && docker compose --profile stack up -d --build`.
-5. Local (sem Docker): `mvn spring-boot:run -Dspring-boot.run.profiles=dev`.
+- **dev** (local): usa H2 em memória e facilita desenvolvimento (pode ter rotas liberadas).
+  - Arquivo: `src/main/resources/application-dev.yaml`
+- **prod** (execução com PostgreSQL): pensado para rodar com Docker/stack e receber credenciais por variáveis de ambiente.
+  - Arquivo: `src/main/resources/application-prod.yaml`
+- **test** (suíte de testes): usado nos testes que ativam o profile `test` (H2 + Flyway).
+  - Arquivo: `src/test/resources/application-test.yaml`
+  - Observação: vários testes ativam esse profile via `@ActiveProfiles("test")`. Se necessário, também é possível
+    forçar pelo Maven com `-Dspring.profiles.active=test`.  
 
-- Na raiz do projeto, execute:
+#### Perfis do Docker Compose (infra/docker-compose.yaml)
 
-```bash
-cd infra
-# Para subir toda a stack (app + postgres)
-docker compose --profile stack up -d --build
-# Para subir apenas o banco de dados (perfil ide)
-docker compose --profile ide up -d
-```
+- **stack**: sobe **PostgreSQL + aplicação**
+- **ide**: sobe **apenas o PostgreSQL** (para rodar a aplicação pela IDE)
+- **test** (se aplicável no seu compose): executa a suíte de testes em container (Maven) apontando para o banco de testes
 
-- Verifique se a aplicação está rodando acessando `http://localhost:8080/actuator/health`.
+> As regras de autenticação por profile estão detalhadas na seção 4 (Endpoints).
 
-### 5.4 URLs úteis (perfis locais)
+### 5.5 Como executar
+
+A execução pode ser feita de duas formas: **via Docker (recomendado)** ou **localmente pela IDE**.
+
+#### Opção A — Executar com Docker (recomendado)
+
+1. Clone o repositório:
+   ```bash
+   git clone https://github.com/alex-dev-br/restaurant-cleanarch
+   cd restaurant-cleanarch
+   ```
+
+2. Configure as variáveis de ambiente:
+   - Copie o arquivo `.env.example` para `.env` dentro da pasta `infra/` e ajuste os valores (ex.: `DB_PASSWORD`).
+   ```bash
+   cd infra
+   cp .env.example .env
+   ```
+
+3. Suba a stack completa (**app + PostgreSQL**):
+   ```bash
+   docker compose --profile stack up -d --build
+   ```
+
+4. Verifique o status dos containers e logs (se necessário):
+   ```bash
+   docker compose --profile stack ps
+   docker compose --profile stack logs -f app
+   ```
+
+#### Opção B — Executar localmente (sem Docker)
+
+1. (Opcional) Suba apenas o PostgreSQL via Docker para usar na IDE:
+   ```bash
+   cd infra
+   docker compose --profile ide up -d
+   ```
+
+2. Rode a aplicação localmente com o profile `dev` (H2):
+   ```bash
+   mvn spring-boot:run -Dspring-boot.run.profiles=dev
+   ```
+
+> **Observação:** se você quiser rodar localmente com PostgreSQL (profile `prod`), ajuste as variáveis de ambiente do 
+> datasource conforme o `application-prod.yaml`.
+
+#### Validação rápida
+
+- Healthcheck:
+  - `http://localhost:8080/actuator/health`
+
+#### Como rodar os testes
+
+- Rodar testes localmente:
+  ```bash
+  mvn test
+  # ou
+  mvn clean verify
+  ```
+
+- (Opcional) Forçar o profile test, caso necessário:
+  ```bash
+  mvn test -Dspring.profiles.active=test
+  ```
+
+- (Opcional — se o infra/docker-compose.yaml tiver o profile test) Rodar testes via Docker Compose:
+  ```bash
+  cd infra
+  docker compose --profile test up --build --abort-on-container-exit
+  ```
+
+### 5.6 URLs úteis
 
 - **API**: `http://localhost:8080`
 - **Health**: `http://localhost:8080/actuator/health`
-- **Swagger**: `http://localhost:8080/swagger-ui/index.html`
+- **Swagger UI**: `http://localhost:8080/swagger-ui/index.html`
+- **OpenAPI JSON**: `http://localhost:8080/v3/api-docs`
 
 ---
 
@@ -309,37 +452,57 @@ docker compose --profile ide up -d
 O projeto adota práticas de código limpo e princípios de engenharia de software:
 
 - **Clean Architecture** e **SOLID** – separação de domínios, casos de uso, ports e adapters. A lógica de negócio 
-reside em classes de domínio e casos de uso; a infraestrutura injeta implementações concretas por meio de interfaces.
+  reside em classes de domínio e casos de uso; a infraestrutura injeta implementações concretas por meio de interfaces.
 - **Validações de domínio** – entidades como `MenuItem` e `Restaurant` possuem invariantes que impedem estados inválidos 
-(por exemplo, preço > 0 e nome obrigatório).
+  (por exemplo, preço > 0 e nome obrigatório).
 - **Casos de uso coesos** – classes como `CreateRestaurantUseCase` validam permissões, unicidade de nomes e persistem 
-apenas após todas as regras serem atendidas.
+  apenas após todas as regras serem atendidas.
 - **Segurança configurada** – `SecurityConfig` define rotas públicas e protegidas, desabilita CSRF em ambientes não dev 
-e utiliza autenticação HTTP Basic.
+  e utiliza autenticação HTTP Basic.
 - **Persistência limpa** – adaptadores JPA convertem entre entidades e objetos de domínio, e usam `ExampleMatcher` para 
-checar duplicidades.
+  checar duplicidades.
 - **Testes automatizados** – o projeto inclui testes unitários e de integração cobrindo mais de 80% dos casos de uso. 
-Os testes verificam cenários de sucesso e de falha (campos obrigatórios, permissões, nomes duplicados, etc.).
+  Os testes verificam cenários de sucesso e de falha (campos obrigatórios, permissões, nomes duplicados, etc.).
 - **Plugins Maven** – Jacoco para cobertura de testes e Surefire para execução, configurados no `pom.xml`.
 - **Docker** – contêineres multi‑stage geram imagens enxutas e performáticas; healthchecks garantem que os serviços só 
-iniciem quando seus dependentes estiverem prontos.
+  iniciem quando seus dependentes estiverem prontos.
 
 **Métricas de Qualidade do Projeto:**  
-O badge de CI indica o status do build e testes automatizados via GitHub Actions, enquanto o de cobertura mostra o 
-percentual de código testado via Jacoco e Codecov.
+
+A cobertura de testes do projeto é gerada automaticamente pelo JaCoCo, configurado no `pom.xml`. Durante a execução do 
+`mvn clean verify`, o JaCoCo instrumenta a aplicação enquanto os testes rodam e, ao final do build, gera relatórios de 
+cobertura na pasta `target/site/jacoco/`.
+
+- **Relatório HTML**: usado para visualização local e também para gerar o screenshot capturado no GitHub Actions.
+- **Relatório XML**: usado para integração com o **Codecov**, permitindo exibir o badge de cobertura no repositório.
+
+Para evitar distorções na métrica, algumas classes são excluídas da contagem, como: classe principal do Spring Boot, 
+DTOs de request/response, mappers gerados pelo MapStruct, classes de configuração/segurança, entidades de persistência 
+(JPA) e estruturas de suporte (ex.: roles, paginação, exceptions). Assim, a métrica foca no que mais importa: casos de 
+uso e regras de negócio.
+
+Além disso, há uma regra de qualidade que exige pelo menos 80% de cobertura (instruções e branches). Se esse mínimo não 
+for atingido, o build falha, ajudando a manter a consistência e confiabilidade do projeto.
+
+Os indicadores abaixo mostram a qualidade contínua do projeto: o badge de CI reflete o status do build e execução dos 
+testes no GitHub Actions; o badge do Codecov exibe o percentual de cobertura publicado; e o gráfico (sunburst) ajuda a 
+visualizar a distribuição da cobertura por pacotes/módulos. Além disso, o repositório inclui um screenshot do relatório 
+HTML do JaCoCo (`docs/images/jacoco-coverage.png`), gerado automaticamente no pipeline para servir como evidência visual 
+da cobertura.
 
 [![Codecov Coverage](https://codecov.io/gh/alex-dev-br/restaurant-cleanarch/graph/badge.svg)](https://codecov.io/gh/alex-dev-br/restaurant-cleanarch)
 [![CI Build](https://github.com/alex-dev-br/restaurant-cleanarch/actions/workflows/ci.yml/badge.svg)](https://github.com/alex-dev-br/restaurant-cleanarch/actions/workflows/ci.yml)
-[![Codecov Coverage Graph](https://codecov.io/gh/alex-dev-br/restaurant-cleanarch/graphs/sunburst.svg?token=SEU_TOKEN)](https://codecov.io/gh/alex-dev-br/restaurant-cleanarch)
+[![Codecov Coverage Graph](https://codecov.io/gh/alex-dev-br/restaurant-cleanarch/graphs/sunburst.svg)](https://codecov.io/gh/alex-dev-br/restaurant-cleanarch)
 
 ![Gráfico de Cobertura Jacoco](docs/images/jacoco-coverage.png)
+
 ---
 
 ## 7. Collections para Teste
 
-⚠️⚠️⚠️Em elaboração⚠️⚠️⚠️
+### Postman
 
-
+⚠️⚠️⚠️ Em elaboração ⚠️⚠️⚠️
 
 ---
 
@@ -349,13 +512,12 @@ percentual de código testado via Jacoco e Codecov.
 
 [GitHub](https://github.com/alex-dev-br/restaurant-cleanarch)
 
-Este repositório contém todo o código fonte, incluindo as camadas de domínio, casos de uso, adaptadores, configurações e scripts de banco de dados. Os branches e releases podem ser acompanhados para verificar a evolução da fase 2 e futuras fases.
+Este repositório contém todo o código fonte, incluindo as camadas de domínio, casos de uso, adaptadores, configurações 
+e scripts de banco de dados. 
 
 ---
 
 ## Notas
 
-- A especificação da API é gerada automaticamente pelo SpringDoc e pode ser consultada em `/v3/api-docs`. Em caso de divergência, a OpenAPI é a fonte da verdade para contratos e esquemas.
-- Para executar o projeto em produção, ajuste as variáveis sensíveis (`DB_PASSWORD`, `JWT_SECURITY_TOKEN`) e utilize perfis adequados (`prod`).
-- Esse README é uma documentação viva e pode sofrer ajustes conforme novas funcionalidades sejam implementadas (por exemplo, endpoints de criação e edição de itens do cardápio).
-
+- Esse README é uma documentação viva e pode sofrer ajustes conforme novas funcionalidades sejam implementadas 
+(por exemplo, endpoints de criação e edição de itens do cardápio).
