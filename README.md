@@ -523,21 +523,40 @@ A collection para teste está disponível na pasta postman desse repositório
 ### Sugestão de Roteiro de testes
 
 - #### Tipo de Usuário.
-> - Consultar todos tipos de usuário. Requisição: <b>Autenticação Necessária\Usuário\Consulta Todos Tipos de Usuário</b>
-> - Cria um novo tipo de usuário. Requisição: <b>Autenticação Necessária\Usuário\Cria Novo Tipo de Usuário</b>
-> - Consultar o novo tipo de usuário, passado o ID do que foi criado. Requisição: <b>Autenticação Necessária\Usuário\Consulta Um Tipo de Usuário</b>
-> - Atualize o tipo de usuário, passado o ID do que foi criado. Requisição: <b>Autenticação Necessária\Usuário\Altera Tipo de Usuário</b>
-> - Consultar novamente, passado o ID do que foi alterado para validar a alteração. Requisição: <b>Autenticação Necessária\Usuário\Consulta Um Tipo de Usuário</b>
-> - Exclua o tipo de usuário, passada o ID do que foi criado. Requisição: <b>Autenticação Necessária\Usuário\Exclui Tipo de Usuário</b>
-- #### Cadastro de Restaurante.
+> - Consultar todos os tipos de acesso que podem ser atribuídos aos tipos de usuários. Requisição: <b>Autenticação Necessária\Tipo de Usuário\Consulta Roles Disponíveis</b>
+> - Consultar todos tipos de usuário. Requisição: <b>Autenticação Necessária\Tipo de Usuário\Consulta Todos Tipos de Usuário</b>
+> - Cria um novo tipo de usuário. Requisição: <b>Autenticação Necessária\Tipo de Usuário\Cria Novo Tipo de Usuário</b>
+> - Consultar o novo tipo de usuário, passando o ID do que foi criado. Requisição: <b>Autenticação Necessária\Tipo de Usuário\Consulta Um Tipo de Usuário</b>
+> - Atualize o tipo de usuário, passando o ID do que foi criado. Requisição: <b>Autenticação Necessária\Tipo de Usuário\Altera Tipo de Usuário</b>
+> - Consultar novamente, passando o ID do que foi alterado para validar a alteração. Requisição: <b>Autenticação Necessária\Tipo de Usuário\Consulta Um Tipo de Usuário</b>
+> - Exclua o tipo de usuário, passada o ID do que foi criado. Requisição: <b>Autenticação Necessária\Tipo de Usuário\Exclui Tipo de Usuário</b>
+
+
+- #### Restaurante.
+> - Criar um restaurante. Requisição: <b>Autenticação Necessária\Restaurant\Cria Restaurante</b>
+> - Alterar um restaurante, passando o ID que foi criado: Requisição: <b>Autenticação Necessária\Restaurant\Altera Restaurante</b>
 > - Consultar todos os restaurantes. Requisição: <b>Público\Consulta Todos os Restaurantes</b>
-> - Criar um restaurante. Requisição: <b>Autenticação Necessária\Usuário\Cria Novo Restaurante</b>
 > - Consulta o resturante (Consulta Gerencial), passando o ID. Requisição: <b>Autenticação Necessária\Usuário\Consulta Restaurante (Visão Gerencial)</b>
 > - Consulta todos os restaurantes novamente(visão do público). Requisição: <b>Público\Consulta Todos os Restaurantes</b>
-- ### Cadastro de item do Restaurante.
+> - Exclua o restaurante, passando o ID do restaurante que foi criado. Requisição: <b>Autenticação Necessária\Restaurant\Exclui Restaurante</b>
+
+
+- ### Item do Menu.
+> - Precisamos criar um restaurante, para que possamos consultar os itens de menu. Requisição: <b>Autenticação Necessária\Restaurant\Cria Restaurante</b>
 > - Consulta todos os itens do menu colocando o ID do restaurante criado na url. Requisição: <b>Público\Consulta Todos Itens do Menu</b>
 > - Adiciona novo item ao menu, colocando o ID do restaurante criado na url. Requisição: <b>Público\Adiciona Novo Item no Menu</b>
 > - Consulta novamente todos os itens para validar a inclusão. Requisição: <b>Público\Consulta Todos Itens do Menu</b>
+> - Consultando o item que foi incluído. Requisição: <b>Público\Consultar Um Item do Menu</b>
+> - Deletando o item que foi incluído. Requisição: <b>Autenticação Necessária\Menu\
+
+
+- ### Usuário.
+> - Criar um usuário. Requisição: <b>Autenticação Necessária\Usuário\Cria Usuário</b>
+> - Consulta um usuário. Requisição: <b>Autenticação Necessária\Usuário\Consulta Um Usuário</b>
+> - Consulta todos os usuários. Requisição: <b>Autenticação Necessária\Usuário\Consulta Todos Usuários Paginado</b>
+> - Altera um usuário. Requisição: <b>Autenticação Necessária\Usuário\Altera Usuário</b>
+> - Exclui um usuário. Requisição: <b>Autenticação Necessária\Usuário\Exclui Usuário</b>
+
 ---
 
 ## 8. Repositório do Código

@@ -1,110 +1,12 @@
 {
   "info": {
-    "_postman_id": "396056bb-3daa-44f2-9d4d-bed5a1a495c9",
+    "_postman_id": "cfacab1c-2ac7-45aa-9186-9e1f8490f8dc",
     "name": "Clean Arch Restaurantes API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "7819036",
-    "_collection_link": "https://go.postman.co/collection/7819036-396056bb-3daa-44f2-9d4d-bed5a1a495c9?source=collection_link"
+    "_exporter_id": "24615610",
+    "_collection_link": "https://go.postman.co/collection/24615610-cfacab1c-2ac7-45aa-9186-9e1f8490f8dc?source=collection_link"
   },
   "item": [
-    {
-      "name": "Público",
-      "item": [
-        {
-          "name": "Consulta Todos os Restaurantes",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "localhost:8080/restaurants?pageNumber=0&pageSize=5",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "restaurants"
-              ],
-              "query": [
-                {
-                  "key": "cuisineType",
-                  "value": "Italiana",
-                  "disabled": true
-                },
-                {
-                  "key": "pageNumber",
-                  "value": "0"
-                },
-                {
-                  "key": "pageSize",
-                  "value": "5"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Consulta Um Restaurante",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "localhost:8080/restaurants/1",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "restaurants",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Consulta Todos Itens do Menu",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "localhost:8080/restaurants/1/menu",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "restaurants",
-                "1",
-                "menu"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Consulta Um Item do Menu",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "localhost:8080/restaurants/1/menu/1",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "restaurants",
-                "1",
-                "menu",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
     {
       "name": "Autenticação Necessária",
       "item": [
@@ -130,7 +32,7 @@
               "response": []
             },
             {
-              "name": "Consulta Todos Tipos de Usuário",
+              "name": "Consulta Todos User Type",
               "request": {
                 "method": "GET",
                 "header": [],
@@ -149,6 +51,22 @@
             },
             {
               "name": "Cria Novo Tipo de Usuário",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();\r",
+                      "\r",
+                      "// pega o id do body\r",
+                      "pm.collectionVariables.set(\"usertypeId\", json.id);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
               "request": {
                 "method": "POST",
                 "header": [],
@@ -180,7 +98,7 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "http://localhost:8080/user-types/3",
+                  "raw": "http://localhost:8080/user-types/{{usertypeId}}",
                   "protocol": "http",
                   "host": [
                     "localhost"
@@ -188,7 +106,7 @@
                   "port": "8080",
                   "path": [
                     "user-types",
-                    "3"
+                    "{{usertypeId}}"
                   ]
                 }
               },
@@ -209,14 +127,14 @@
                   }
                 },
                 "url": {
-                  "raw": "localhost:8080/user-types/3",
+                  "raw": "localhost:8080/user-types/{{usertypeId}}",
                   "host": [
                     "localhost"
                   ],
                   "port": "8080",
                   "path": [
                     "user-types",
-                    "3"
+                    "{{usertypeId}}"
                   ]
                 }
               },
@@ -237,139 +155,14 @@
                   }
                 },
                 "url": {
-                  "raw": "localhost:8080/user-types/3",
+                  "raw": "localhost:8080/user-types/{{usertypeId}}",
                   "host": [
                     "localhost"
                   ],
                   "port": "8080",
                   "path": [
                     "user-types",
-                    "3"
-                  ]
-                }
-              },
-              "response": []
-            }
-          ]
-        },
-        {
-          "name": "Usuário",
-          "item": [
-            {
-              "name": "Consulta Todos Usuários Páginado",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "localhost:8080/user",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "8080",
-                  "path": [
-                    "user"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Consulta Um Usuário",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "localhost:8080/user/11111111-1111-1111-1111-111111111111",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "8080",
-                  "path": [
-                    "user",
-                    "11111111-1111-1111-1111-111111111111"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Cria Usuário",
-              "request": {
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n  \"name\": \"Maria Silva\",\r\n  \"email\": \"maria.silva@exemplo.com.br\",\r\n  \"address\": {\r\n    \"street\": \"Avenida Paulista\",\r\n    \"number\": \"1000\",\r\n    \"complement\": \"Apto 42\",\r\n    \"neighborhood\": \"Bela Vista\",\r\n    \"city\": \"São Paulo\",\r\n    \"state\": \"SP\",\r\n    \"zipCode\": \"01310-100\"\r\n  },\r\n  \"userTypeId\": 1,\r\n  \"password\": \"SenhaSegura123!\"\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "localhost:8080/user",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "8080",
-                  "path": [
-                    "user"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Altera Usuário",
-              "request": {
-                "method": "PUT",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n  \"name\": \"Maria Silva\",\r\n  \"email\": \"maria.silva@exemplo.com.br\",\r\n  \"address\": {\r\n    \"street\": \"Avenida Paulista\",\r\n    \"number\": \"1000\",\r\n    \"complement\": \"Apto 42\",\r\n    \"neighborhood\": \"Bela Vista\",\r\n    \"city\": \"São Paulo\",\r\n    \"state\": \"SP\",\r\n    \"zipCode\": \"01310-100\"\r\n  },\r\n  \"userTypeId\": 1,\r\n  \"password\": \"SenhaSegura123!\" /*retirar ?*/\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "localhost:8080/user/e8ba421f-bfa4-4a85-8bf3-ce5127165423",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "8080",
-                  "path": [
-                    "user",
-                    "e8ba421f-bfa4-4a85-8bf3-ce5127165423"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Deleta Usuário",
-              "request": {
-                "method": "DELETE",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n  \"name\": \"Maria Silva\",\r\n  \"email\": \"maria.silva@exemplo.com.br\",\r\n  \"address\": {\r\n    \"street\": \"Avenida Paulista\",\r\n    \"number\": \"1000\",\r\n    \"complement\": \"Apto 42\",\r\n    \"neighborhood\": \"Bela Vista\",\r\n    \"city\": \"São Paulo\",\r\n    \"state\": \"SP\",\r\n    \"zipCode\": \"01310-100\"\r\n  },\r\n  \"userTypeId\": 3,\r\n  \"password\": \"SenhaSegura123!\"\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "localhost:8080/user/e8ba421f-bfa4-4a85-8bf3-ce5127165423",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "8080",
-                  "path": [
-                    "user",
-                    "e8ba421f-bfa4-4a85-8bf3-ce5127165423"
+                    "{{usertypeId}}"
                   ]
                 }
               },
@@ -382,6 +175,22 @@
           "item": [
             {
               "name": "Cria Restaurante",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();\r",
+                      "\r",
+                      "// pega o id do body\r",
+                      "pm.collectionVariables.set(\"restaurantId\", json.id);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
               "request": {
                 "method": "POST",
                 "header": [],
@@ -422,21 +231,53 @@
                   }
                 },
                 "url": {
-                  "raw": "localhost:8080/restaurants/1",
+                  "raw": "localhost:8080/restaurants/{{restaurantId}}",
                   "host": [
                     "localhost"
                   ],
                   "port": "8080",
                   "path": [
                     "restaurants",
-                    "1"
+                    "{{restaurantId}}"
                   ]
                 }
               },
               "response": []
             },
             {
-              "name": "Deleta Restaurante",
+              "name": "Consulta Restaurante (Visão Gerencial)",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"Cantina Italiana da Dona Nonna\",\r\n  \"cuisineType\": \"Italiana\",\r\n  \"ownerId\": \"11111111-1111-1111-1111-111111111111\",\r\n  \"address\": {\r\n    \"street\": \"Rua das Flores\",\r\n    \"number\": \"123\",\r\n    \"city\": \"São Paulo\",\r\n    \"state\": \"SP\",\r\n    \"zipCode\": \"01234-567\",\r\n    \"complement\": \"Loja 1\"\r\n  },\r\n  \"openingHours\": [\r\n    {\r\n      \"dayOfWeek\": \"MONDAY\",\r\n      \"openHour\": \"11:00\",\r\n      \"closeHour\": \"22:00\"\r\n    },\r\n    {\r\n      \"dayOfWeek\": \"TUESDAY\",\r\n      \"openHour\": \"11:00\",\r\n      \"closeHour\": \"22:00\"\r\n    },\r\n    {\r\n      \"dayOfWeek\": \"WEDNESDAY\",\r\n      \"openHour\": \"11:00\",\r\n      \"closeHour\": \"22:00\"\r\n    },\r\n    {\r\n      \"dayOfWeek\": \"Thursday\",\r\n      \"openHour\": \"11:00\",\r\n      \"closeHour\": \"22:00\"\r\n    }\r\n  ],\r\n  \"menu\": [\r\n    {\r\n      \"name\": \"Spaghetti Carbonara\",\r\n      \"description\": \"Massa fresca com molho à base de ovos e guanciale\",\r\n      \"price\": 45.90,\r\n      \"restaurantOnly\": false,\r\n      \"photoPath\": \"/carbonara.jpg\"\r\n    },\r\n    {\r\n      \"name\": \"Tiramisu\",\r\n      \"description\": \"Sobremesa clássica com café e mascarpone\",\r\n      \"price\": 18.50,\r\n      \"restaurantOnly\": false,\r\n      \"photoPath\": \"/tiramisu.jpg\"\r\n    }\r\n  ],\r\n  \"employees\": [\r\n    \"11111111-1111-1111-1111-111111111111\"/*,\"8bcf638f-7e90-40df-a09d-9a34445730ca\"*/\r\n  ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "localhost:8080/restaurants/{{restaurantId}}/management",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "restaurants",
+                    "{{restaurantId}}",
+                    "management"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Exclui Restaurante",
               "request": {
                 "method": "DELETE",
                 "header": [],
@@ -450,34 +291,14 @@
                   }
                 },
                 "url": {
-                  "raw": "localhost:8080/restaurants/1",
+                  "raw": "localhost:8080/restaurants/{{restaurantId}}",
                   "host": [
                     "localhost"
                   ],
                   "port": "8080",
                   "path": [
                     "restaurants",
-                    "1"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Consulta Restaurante (Visão Gerencial)",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "localhost:8080/restaurants/1/management",
-                  "host": [
-                    "localhost"
-                  ],
-                  "port": "8080",
-                  "path": [
-                    "restaurants",
-                    "1",
-                    "management"
+                    "{{restaurantId}}"
                   ]
                 }
               },
@@ -490,6 +311,22 @@
           "item": [
             {
               "name": "Adiciona Novo Item no Menu",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();\r",
+                      "\r",
+                      "// pega o id do body\r",
+                      "pm.collectionVariables.set(\"menuitemId\", json.id);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
               "request": {
                 "method": "POST",
                 "header": [],
@@ -503,14 +340,14 @@
                   }
                 },
                 "url": {
-                  "raw": "localhost:8080/restaurants/1/menu",
+                  "raw": "localhost:8080/restaurants/2/menu",
                   "host": [
                     "localhost"
                   ],
                   "port": "8080",
                   "path": [
                     "restaurants",
-                    "1",
+                    "2",
                     "menu"
                   ]
                 }
@@ -532,28 +369,28 @@
                   }
                 },
                 "url": {
-                  "raw": "localhost:8080/restaurants/1/menu/3",
+                  "raw": "localhost:8080/restaurants/{{restaurantId}}/menu/{{menuitemId}}",
                   "host": [
                     "localhost"
                   ],
                   "port": "8080",
                   "path": [
                     "restaurants",
-                    "1",
+                    "{{restaurantId}}",
                     "menu",
-                    "3"
+                    "{{menuitemId}}"
                   ]
                 }
               },
               "response": []
             },
             {
-              "name": "Deleta Item do Menu",
+              "name": "Exclui Item do Menu",
               "request": {
                 "method": "DELETE",
                 "header": [],
                 "url": {
-                  "raw": "localhost:8080/restaurants/1/menu/3",
+                  "raw": "localhost:8080/restaurants/1/menu/7",
                   "host": [
                     "localhost"
                   ],
@@ -562,7 +399,171 @@
                     "restaurants",
                     "1",
                     "menu",
-                    "3"
+                    "7"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Usuário",
+          "item": [
+            {
+              "name": "Cria Usuário",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const json = pm.response.json();\r",
+                      "\r",
+                      "// pega o id do body\r",
+                      "pm.collectionVariables.set(\"userId\", json.id);\r",
+                      "\r",
+                      "// (opcional) valida que veio\r",
+                      "pm.test(\"User id foi retornado\", () => {\r",
+                      "  pm.expect(json).to.have.property(\"id\");\r",
+                      "  pm.expect(json.id).to.match(\r",
+                      "    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i\r",
+                      "  );\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"Maria Silva\",\r\n  \"email\": \"maria.silva@exemplo.com.br\",\r\n  \"address\": {\r\n    \"street\": \"Avenida Paulista\",\r\n    \"number\": \"1000\",\r\n    \"complement\": \"Apto 42\",\r\n    \"neighborhood\": \"Bela Vista\",\r\n    \"city\": \"São Paulo\",\r\n    \"state\": \"SP\",\r\n    \"zipCode\": \"01310-100\"\r\n  },\r\n  \"userTypeId\": 1,\r\n  \"password\": \"SenhaSegura123!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "localhost:8080/user",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "user"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Consulta Um Usuário",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"MANAGER\",\r\n  \"roles\": [\r\n    \"VIEW_USER_TYPE\",\r\n    \"CREATE_USER_TYPE\",\r\n    \"UPDATE_USER_TYPE\",\r\n    \"VIEW_RESTAURANT_MANAGEMENT\",\r\n    \"CREATE_MENU_ITEM\",\r\n    \"VIEW_RESTAURANT\",\r\n    \"CREATE_USER\",\r\n    \"VIEW_MENU_ITEM\",\r\n    \"VIEW_USER\",\r\n    \"VIEW_ROLE\",\r\n    \"DELETE_MENU_ITEM\",\r\n    \"UPDATE_USER\",\r\n    \"CREATE_RESTAURANT\",\r\n    \"UPDATE_MENU_ITEM\"\r\n  ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "localhost:8080/user/11111111-1111-1111-1111-111111111111",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "user",
+                    "11111111-1111-1111-1111-111111111111"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Consulta Todos Usuários Paginado",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"MANAGER\",\r\n  \"roles\": [\r\n    \"VIEW_USER_TYPE\",\r\n    \"CREATE_USER_TYPE\",\r\n    \"UPDATE_USER_TYPE\",\r\n    \"VIEW_RESTAURANT_MANAGEMENT\",\r\n    \"CREATE_MENU_ITEM\",\r\n    \"VIEW_RESTAURANT\",\r\n    \"CREATE_USER\",\r\n    \"VIEW_MENU_ITEM\",\r\n    \"VIEW_USER\",\r\n    \"VIEW_ROLE\",\r\n    \"DELETE_MENU_ITEM\",\r\n    \"UPDATE_USER\",\r\n    \"CREATE_RESTAURANT\",\r\n    \"UPDATE_MENU_ITEM\"\r\n  ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "localhost:8080/user",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "user"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Altera Usuário",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"Maria Silva\",\r\n  \"email\": \"maria.silva@exemplo.com.br\",\r\n  \"address\": {\r\n    \"street\": \"Avenida Paulista\",\r\n    \"number\": \"1000\",\r\n    \"complement\": \"Apto 42\",\r\n    \"neighborhood\": \"Bela Vista\",\r\n    \"city\": \"São Paulo\",\r\n    \"state\": \"SP\",\r\n    \"zipCode\": \"01310-100\"\r\n  },\r\n  \"userTypeId\": 1,\r\n  \"password\": \"SenhaSegura123!\" /*retirar ?*/\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "localhost:8080/user/{{userId}}",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "user",
+                    "{{userId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Exclui Usuário",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "localhost:8080/user/{{userId}}",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "user",
+                    "{{userId}}"
                   ]
                 }
               },
@@ -610,6 +611,89 @@
           }
         }
       ]
+    },
+    {
+      "name": "Público",
+      "item": [
+        {
+          "name": "Consulta Todos os Restaurantes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/restaurants",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "restaurants"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Consulta Um Restaurante",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/restaurants/{{restaurantId}}",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "restaurants",
+                "{{restaurantId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Consulta Todos Itens do Menu",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/restaurants/{{restaurantId}}/menu",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "restaurants",
+                "{{restaurantId}}",
+                "menu"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Consulta Um Item do Menu",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/restaurants/{{restaurantId}}/menu/{{menuitemId}}",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "restaurants",
+                "{{restaurantId}}",
+                "menu",
+                "{{menuitemId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "event": [
@@ -645,6 +729,22 @@
       "key": "default_pass",
       "value": "dev",
       "type": "default"
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "usertypeId",
+      "value": ""
+    },
+    {
+      "key": "restaurantId",
+      "value": ""
+    },
+    {
+      "key": "menuitemId",
+      "value": ""
     }
   ]
 }
