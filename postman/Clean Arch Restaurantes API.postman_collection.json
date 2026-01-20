@@ -16,13 +16,28 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "localhost:8080/restaurants",
+              "raw": "localhost:8080/restaurants?pageNumber=0&pageSize=5",
               "host": [
                 "localhost"
               ],
               "port": "8080",
               "path": [
                 "restaurants"
+              ],
+              "query": [
+                {
+                  "key": "cuisineType",
+                  "value": "Italiana",
+                  "disabled": true
+                },
+                {
+                  "key": "pageNumber",
+                  "value": "0"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "5"
+                }
               ]
             }
           },
@@ -222,14 +237,14 @@
                   }
                 },
                 "url": {
-                  "raw": "localhost:8080/user-types/4",
+                  "raw": "localhost:8080/user-types/3",
                   "host": [
                     "localhost"
                   ],
                   "port": "8080",
                   "path": [
                     "user-types",
-                    "4"
+                    "3"
                   ]
                 }
               },
@@ -242,21 +257,9 @@
           "item": [
             {
               "name": "Consulta Todos Usuários Páginado",
-              "protocolProfileBehavior": {
-                "disableBodyPruning": true
-              },
               "request": {
                 "method": "GET",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n  \"name\": \"MANAGER\",\r\n  \"roles\": [\r\n    \"VIEW_USER_TYPE\",\r\n    \"CREATE_USER_TYPE\",\r\n    \"UPDATE_USER_TYPE\",\r\n    \"VIEW_RESTAURANT_MANAGEMENT\",\r\n    \"CREATE_MENU_ITEM\",\r\n    \"VIEW_RESTAURANT\",\r\n    \"CREATE_USER\",\r\n    \"VIEW_MENU_ITEM\",\r\n    \"VIEW_USER\",\r\n    \"VIEW_ROLE\",\r\n    \"DELETE_MENU_ITEM\",\r\n    \"UPDATE_USER\",\r\n    \"CREATE_RESTAURANT\",\r\n    \"UPDATE_MENU_ITEM\"\r\n  ]\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
                   "raw": "localhost:8080/user",
                   "host": [
@@ -272,21 +275,9 @@
             },
             {
               "name": "Consulta Um Usuário",
-              "protocolProfileBehavior": {
-                "disableBodyPruning": true
-              },
               "request": {
                 "method": "GET",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n  \"name\": \"MANAGER\",\r\n  \"roles\": [\r\n    \"VIEW_USER_TYPE\",\r\n    \"CREATE_USER_TYPE\",\r\n    \"UPDATE_USER_TYPE\",\r\n    \"VIEW_RESTAURANT_MANAGEMENT\",\r\n    \"CREATE_MENU_ITEM\",\r\n    \"VIEW_RESTAURANT\",\r\n    \"CREATE_USER\",\r\n    \"VIEW_MENU_ITEM\",\r\n    \"VIEW_USER\",\r\n    \"VIEW_ROLE\",\r\n    \"DELETE_MENU_ITEM\",\r\n    \"UPDATE_USER\",\r\n    \"CREATE_RESTAURANT\",\r\n    \"UPDATE_MENU_ITEM\"\r\n  ]\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
                   "raw": "localhost:8080/user/11111111-1111-1111-1111-111111111111",
                   "host": [
@@ -343,14 +334,14 @@
                   }
                 },
                 "url": {
-                  "raw": "localhost:8080/user/b9957b3d-8288-49b2-9140-5b593dd27b7e",
+                  "raw": "localhost:8080/user/e8ba421f-bfa4-4a85-8bf3-ce5127165423",
                   "host": [
                     "localhost"
                   ],
                   "port": "8080",
                   "path": [
                     "user",
-                    "b9957b3d-8288-49b2-9140-5b593dd27b7e"
+                    "e8ba421f-bfa4-4a85-8bf3-ce5127165423"
                   ]
                 }
               },
@@ -371,14 +362,14 @@
                   }
                 },
                 "url": {
-                  "raw": "localhost:8080/user/810eebe7-6649-4578-ac78-d55afa53c8c2",
+                  "raw": "localhost:8080/user/e8ba421f-bfa4-4a85-8bf3-ce5127165423",
                   "host": [
                     "localhost"
                   ],
                   "port": "8080",
                   "path": [
                     "user",
-                    "810eebe7-6649-4578-ac78-d55afa53c8c2"
+                    "e8ba421f-bfa4-4a85-8bf3-ce5127165423"
                   ]
                 }
               },
@@ -474,21 +465,9 @@
             },
             {
               "name": "Consulta Restaurante (Visão Gerencial)",
-              "protocolProfileBehavior": {
-                "disableBodyPruning": true
-              },
               "request": {
                 "method": "GET",
                 "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n  \"name\": \"Cantina Italiana da Dona Nonna\",\r\n  \"cuisineType\": \"Italiana\",\r\n  \"ownerId\": \"11111111-1111-1111-1111-111111111111\",\r\n  \"address\": {\r\n    \"street\": \"Rua das Flores\",\r\n    \"number\": \"123\",\r\n    \"city\": \"São Paulo\",\r\n    \"state\": \"SP\",\r\n    \"zipCode\": \"01234-567\",\r\n    \"complement\": \"Loja 1\"\r\n  },\r\n  \"openingHours\": [\r\n    {\r\n      \"dayOfWeek\": \"MONDAY\",\r\n      \"openHour\": \"11:00\",\r\n      \"closeHour\": \"22:00\"\r\n    },\r\n    {\r\n      \"dayOfWeek\": \"TUESDAY\",\r\n      \"openHour\": \"11:00\",\r\n      \"closeHour\": \"22:00\"\r\n    },\r\n    {\r\n      \"dayOfWeek\": \"WEDNESDAY\",\r\n      \"openHour\": \"11:00\",\r\n      \"closeHour\": \"22:00\"\r\n    },\r\n    {\r\n      \"dayOfWeek\": \"Thursday\",\r\n      \"openHour\": \"11:00\",\r\n      \"closeHour\": \"22:00\"\r\n    }\r\n  ],\r\n  \"menu\": [\r\n    {\r\n      \"name\": \"Spaghetti Carbonara\",\r\n      \"description\": \"Massa fresca com molho à base de ovos e guanciale\",\r\n      \"price\": 45.90,\r\n      \"restaurantOnly\": false,\r\n      \"photoPath\": \"/carbonara.jpg\"\r\n    },\r\n    {\r\n      \"name\": \"Tiramisu\",\r\n      \"description\": \"Sobremesa clássica com café e mascarpone\",\r\n      \"price\": 18.50,\r\n      \"restaurantOnly\": false,\r\n      \"photoPath\": \"/tiramisu.jpg\"\r\n    }\r\n  ],\r\n  \"employees\": [\r\n    \"11111111-1111-1111-1111-111111111111\"/*,\"8bcf638f-7e90-40df-a09d-9a34445730ca\"*/\r\n  ]\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
                   "raw": "localhost:8080/restaurants/1/management",
                   "host": [
