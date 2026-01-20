@@ -17,6 +17,60 @@
 
 ---
 
+## Informações rápidas para teste
+
+**Repositório:**  
+[GitHub](https://github.com/alex-dev-br/restaurant-cleanarch)
+
+### Pré-requisitos
+- Docker + Docker Compose instalados
+
+### Subir a aplicação completa (API + PostgreSQL)
+Dentro da pasta `infra/`:
+
+```bash
+docker compose --profile stack up -d --build
+```
+
+**Acesso após subir:**
+- API: `http://localhost:8080`
+- Healthcheck: `http://localhost:8080/actuator/health`
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html` 
+
+Para derrubar:
+
+```bash
+docker compose --profile stack down
+```
+
+Para derrubar e apagar o banco (volumes):
+
+```bash
+docker compose --profile stack down -v
+```
+
+### Rodar testes em container (profile test com H2)
+Dentro da pasta `infra/`:
+
+```bash
+docker compose --profile test run --rm tests mvn -B -ntp clean verify
+```
+
+> Os testes usam H2 em memória (`application-test.yaml`) e aplicam migrations via Flyway.
+
+## Collection do Postman
+Arquivo:  
+`postman/Clean Arch Restaurantes API.postman_collection.json`
+
+## Variáveis de ambiente (opcional)
+Não é necessário criar `.env` para rodar, pois o `docker-compose` possui valores padrão.
+Se quiser customizar, você pode sobrescrever via `infra/.env` com base em `infra/.env.example`.
+
+> Obs.: se você alterar `APP_PORT`, substitua `8080` nas URLs.
+
+
+___
+
 ## Sumário
 - [1. Introdução](#1-introdução)
 - [2. Arquitetura do Sistema (Clean Architecture)](#2-arquitetura-do-sistema-clean-architecture)
@@ -278,8 +332,8 @@ Foi configurada uma stack Docker para execução consistente do sistema:
 - **`infra/docker-compose.yaml`**: orquestração dos serviços com perfis:
   - **`stack`**: sobe **PostgreSQL + aplicação**
   - **`ide`**: sobe **apenas o PostgreSQL** (para rodar a aplicação pela IDE)
-  - **`test`** (opcional): executa a suíte de testes em container (Maven) apontando para o banco de testes
-- **`infra/.env`**: centraliza variáveis de ambiente (porta da aplicação, credenciais do banco...), evitando valores fixos no `docker-compose.yaml`.
+  - **`test`** (opcional): executa a suíte de testes em container (Maven) usando o profile test (H2 em memória + Flyway).
+- **`infra/.env` (opcional)**: permite sobrescrever portas/credenciais; o docker-compose já possui valores padrão.
 
 #### Healthcheck
 O Docker Compose inclui healthchecks para garantir que:
@@ -298,9 +352,8 @@ O Docker Compose inclui healthchecks para garantir que:
 
 ### 5.3 Arquivos de Configuração
 
-- **`.env.example`** – arquivo de exemplo com variáveis de ambiente; copie para `infra/.env` e ajuste os valores
-  conforme sua máquina. Campos como `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `APP_PORT` e `SPRING_PROFILES_ACTIVE`
-  (quando aplicável) devem ser definidos.
+- **`.env.example`** – arquivo de exemplo arquivo de exemplo (opcional). Se quiser customizar portas/credenciais, copie 
+  para `infra/.env` e ajuste.
 
 - **`infra/docker-compose.yaml`** – orquestra os contêineres do PostgreSQL e da aplicação. O serviço `postgres` monta
   um volume persistente, configura usuário, senha e banco de dados, e define *healthcheck*. O serviço `app` executa a
@@ -329,9 +382,9 @@ O Docker Compose inclui healthchecks para garantir que:
 
 #### Perfis do Docker Compose (infra/docker-compose.yaml)
 
-- **stack**: sobe **PostgreSQL + aplicação**
-- **ide**: sobe **apenas o PostgreSQL** (para rodar a aplicação pela IDE)
-- **test** (se aplicável no seu compose): executa a suíte de testes em container (Maven) apontando para o banco de testes
+- **stack**: sobe **PostgreSQL + aplicação**.
+- **ide**: sobe **apenas o PostgreSQL** (para rodar a aplicação pela IDE).
+- **test**: executa a suíte de testes em container (Maven) usando o profile test (H2 em memória + Flyway).
 
 > As regras de autenticação por profile estão detalhadas na seção 4 (Endpoints).
 
@@ -348,11 +401,7 @@ A execução pode ser feita de duas formas: **via Docker (recomendado)** ou **lo
    ```
 
 2. Configure as variáveis de ambiente:
-   - Copie o arquivo `.env.example` para `.env` dentro da pasta `infra/` e ajuste os valores (ex.: `DB_PASSWORD`).
-   ```bash
-   cd infra
-   cp .env.example .env
-   ```
+   - (Opcional) Copie o arquivo `infra/.env.example` para `infra/.env` caso queira customizar portas/credenciais.
 
 3. Suba a stack completa (**app + PostgreSQL**):
    ```bash
@@ -400,10 +449,10 @@ A execução pode ser feita de duas formas: **via Docker (recomendado)** ou **lo
   mvn test -Dspring.profiles.active=test
   ```
 
-- (Opcional — se o infra/docker-compose.yaml tiver o profile test) Rodar testes via Docker Compose:
+- Rodar testes via Docker Compose:
   ```bash
   cd infra
-  docker compose --profile test up --build --abort-on-container-exit
+  docker compose --profile test run --rm tests mvn -B -ntp clean verify
   ```
 
 ### 5.6 URLs úteis

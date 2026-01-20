@@ -57,8 +57,23 @@ services:
       retries: 10
       start_period: 25s
 
+  tests:
+    image: maven:3.9-eclipse-temurin-21
+    container_name: restaurant-tests
+    profiles: [ "test" ]
+    networks: [ app_net ]
+    working_dir: /workspace
+    volumes:
+      - ..:/workspace
+      - m2_cache:/root/.m2
+    environment:
+      SPRING_PROFILES_ACTIVE: test
+      TZ: "${TZ:-America/Sao_Paulo}"
+
+
 volumes:
   db_data: {}
+  m2_cache: {}
 
 networks:
   app_net:
