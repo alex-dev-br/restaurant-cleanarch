@@ -130,7 +130,7 @@
               "response": []
             },
             {
-              "name": "Consulta Todos User Type",
+              "name": "Consulta Todos Tipos de Usuário",
               "request": {
                 "method": "GET",
                 "header": [],
@@ -195,7 +195,7 @@
               "response": []
             },
             {
-              "name": "Cria Novo Tipo de Usuário Copy",
+              "name": "Altera Tipo de Usuário",
               "request": {
                 "method": "PUT",
                 "header": [],

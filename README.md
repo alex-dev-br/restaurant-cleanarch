@@ -149,39 +149,6 @@ A estratégia de testes garante a qualidade em ambas as camadas:
 
 **Ferramentas:** JUnit, AssertJ, Mockito e Spring Boot Test.
 
-### Visão geral da arquitetura
-
-Para o desenvolvimento deste projeto, adotamos a **Clean Architecture**, um padrão de design proposto por Robert C. 
-Martin (Uncle Bob). O objetivo principal é isolar a lógica de negócio das dependências externas, promovendo 
-testabilidade e facilidade de evolução. A estrutura geral é composta de quatro anéis concêntricos:
-
-1. **Domínio** – contém entidades e objetos de valor, com invariantes e regras intrínsecas. Por exemplo, `MenuItem` 
-   garante que nome não seja vazio e preço seja positivo; `Restaurant` valida que o dono possui permissão para ser proprietário.
-2. **Casos de Uso (Application)** – implementa as regras de negócio. Casos de uso como `CreateRestaurantUseCase` 
-   verificam unicidade de nomes e permissões antes de persistir dados.
-3. **Ports** – interfaces que definem contratos de entrada (inbound) e saída (outbound) entre aplicação e infraestrutura. 
-   Inbound ports são usados por controladores; outbound ports abstraem persistência, envio de e‑mail ou hashing de senhas.
-4. **Infraestrutura** – implementa os ports com tecnologias concretas: controladores REST, adaptadores de persistência
-   (JPA), mapeadores MapStruct, configuração de segurança e Docker.
-
-### Organização dos pacotes
-
-O código está organizado da seguinte forma:
-
-- **`core/domain`** – modelos de domínio (entidades e objetos de valor) e regras de negócio próprias.
-- **`core/usecase`** – casos de uso (serviços da aplicação) que orquestram operações, aplicando validações e regras 
-  específicas.
-- **`core/inbound` e `core/outbound`** – definem ports. Inbound ports representam contratos de entrada para controladores; 
-  outbound ports definem interfaces para persistência, hashing de senhas, recuperação de usuário logado, etc.
-- **`core/controller`** – controladores de aplicação que coordenam casos de uso e apresentam respostas (presenters).
-- **`infra/controller`** – adaptadores HTTP (REST) implementados com Spring MVC. Cada REST controller mapeia os requests 
-  para os ports de entrada e converte os outputs para DTOs.
-- **`infra/persistence`** – adaptadores de persistência usando Spring Data JPA para implementar os ports de saída. 
-  Mappers convertem entre entidades JPA e objetos de domínio.
-- **`infra/config`** – configuração de infraestrutura, como segurança com Spring Security, perfil de banco de dados e 
-  serialização JSON. A classe `SecurityConfig` permite acesso público apenas aos endpoints de listagem de restaurantes e 
-  menu, exigindo autenticação para as demais rotas.
-
 ### Fluxo Típico
 
 1. Requisição REST → infra/controller → Mapper para inbound DTO.
@@ -235,7 +202,8 @@ A autenticação padrão é **HTTP Basic**. As regras de autorização (papéis/
 
 ### Credencial padrão (para testes rápidos em prod/stack)
 O Flyway cria um usuário inicial:
-- **username (email):** dev.ownerId@mail.com
+- **username**: dev 
+- **(email):** dev.ownerId@mail.com
 - **password:** dev
 - **tipo:** RESTAURANT_OWNER
 
@@ -501,9 +469,26 @@ da cobertura.
 ## 7. Collections para Teste
 
 ### Postman
+A collection para teste está disponível na pasta postman desse repositório
 
-⚠️⚠️⚠️ Em elaboração ⚠️⚠️⚠️
+### Sugestão de Roteiro de testes
 
+- #### Tipo de Usuário.
+> - Consultar todos tipos de usuário. Requisição: <b>Autenticação Necessária\Usuário\Consulta Todos Tipos de Usuário</b>
+> - Cria um novo tipo de usuário. Requisição: <b>Autenticação Necessária\Usuário\Cria Novo Tipo de Usuário</b>
+> - Consultar o novo tipo de usuário, passado o ID do que foi criado. Requisição: <b>Autenticação Necessária\Usuário\Consulta Um Tipo de Usuário</b>
+> - Atualize o tipo de usuário, passado o ID do que foi criado. Requisição: <b>Autenticação Necessária\Usuário\Altera Tipo de Usuário</b>
+> - Consultar novamente, passado o ID do que foi alterado para validar a alteração. Requisição: <b>Autenticação Necessária\Usuário\Consulta Um Tipo de Usuário</b>
+> - Exclua o tipo de usuário, passada o ID do que foi criado. Requisição: <b>Autenticação Necessária\Usuário\Exclui Tipo de Usuário</b>
+- #### Cadastro de Restaurante.
+> - Consultar todos os restaurantes. Requisição: <b>Público\Consulta Todos os Restaurantes</b>
+> - Criar um restaurante. Requisição: <b>Autenticação Necessária\Usuário\Cria Novo Restaurante</b>
+> - Consulta o resturante (Consulta Gerencial), passando o ID. Requisição: <b>Autenticação Necessária\Usuário\Consulta Restaurante (Visão Gerencial)</b>
+> - Consulta todos os restaurantes novamente(visão do público). Requisição: <b>Público\Consulta Todos os Restaurantes</b>
+- ### Cadastro de item do Restaurante.
+> - Consulta todos os itens do menu colocando o ID do restaurante criado na url. Requisição: <b>Público\Consulta Todos Itens do Menu</b>
+> - Adiciona novo item ao menu, colocando o ID do restaurante criado na url. Requisição: <b>Público\Adiciona Novo Item no Menu</b>
+> - Consulta novamente todos os itens para validar a inclusão. Requisição: <b>Público\Consulta Todos Itens do Menu</b>
 ---
 
 ## 8. Repositório do Código
