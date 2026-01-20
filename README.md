@@ -33,7 +33,7 @@ docker compose --profile stack up -d --build
 ```
 
 **Acesso após subir:**
-- API: `http://localhost:8080`
+
 - Healthcheck: `http://localhost:8080/actuator/health`
 - Swagger UI: `http://localhost:8080/swagger-ui/index.html` 
 
