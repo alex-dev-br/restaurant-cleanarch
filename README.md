@@ -20,7 +20,12 @@
 ## Informações rápidas para teste
 
 **Repositório:**  
+
 [GitHub](https://github.com/alex-dev-br/restaurant-cleanarch)
+
+**Video:**
+
+[Apresentação do Projeto](https://drive.google.com/file/d/1v8xB7ZzofcANyf-TnoizLTDccsng6NkO/view?usp=drive_link)
 
 ### Pré-requisitos
 - Docker + Docker Compose instalados
