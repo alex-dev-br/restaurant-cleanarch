@@ -340,14 +340,14 @@
                   }
                 },
                 "url": {
-                  "raw": "localhost:8080/restaurants/2/menu",
+                  "raw": "localhost:8080/restaurants/{{restaurantId}}/menu",
                   "host": [
                     "localhost"
                   ],
                   "port": "8080",
                   "path": [
                     "restaurants",
-                    "2",
+                    "{{restaurantId}}",
                     "menu"
                   ]
                 }
@@ -390,7 +390,7 @@
                 "method": "DELETE",
                 "header": [],
                 "url": {
-                  "raw": "localhost:8080/restaurants/1/menu/7",
+                  "raw": "localhost:8080/restaurants/1/menu/{{menuitemId}}",
                   "host": [
                     "localhost"
                   ],
@@ -399,7 +399,7 @@
                     "restaurants",
                     "1",
                     "menu",
-                    "7"
+                    "{{menuitemId}}"
                   ]
                 }
               },
